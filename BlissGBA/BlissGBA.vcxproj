@@ -140,6 +140,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Memory\DisplayMemory.cpp" />
+    <ClCompile Include="Memory\GeneralMemory.cpp" />
+    <ClCompile Include="Memory\Memory.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>

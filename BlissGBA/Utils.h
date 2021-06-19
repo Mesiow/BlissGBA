@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <algorithm>
 
 using u8 = uint8_t;
 using s8 = int8_t;

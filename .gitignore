@@ -9,6 +9,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+BlissGBA/roms/
+BlissGBA/test_roms/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

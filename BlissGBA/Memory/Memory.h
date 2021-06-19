@@ -31,6 +31,23 @@ Unused Memory Area
 #include "GeneralMemory.h"
 #include "DisplayMemory.h"
 
-class Memory {
+#define GENERAL_MEM_END 0x5000000
+#define DISPLAY_MEM_END 0x70003FF
+#define EXTERNAL_MEM_START 0x8000000
+#define EXTERNAL_MEM_END 0xE00FFFF
 
+class Memory {
+public:
+	Memory();
+	void writeU8(u32 address, u8 value);
+	void writeU16(u32 address, u16 value);
+	void writeU32(u32 address, u16 value);
+
+	u8 readU8(u32 address);
+	u16 readU16(u32 address);
+	u32 readU32(u32 address);
+
+private:
+	GeneralMemory genMem;
+	DisplayMemory displayMem;
 };
