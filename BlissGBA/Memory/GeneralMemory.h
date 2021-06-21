@@ -16,6 +16,8 @@
 
 class GeneralMemory {
 public:
+	void loadBios(const std::string& fileName);
+
 	void zero();
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);

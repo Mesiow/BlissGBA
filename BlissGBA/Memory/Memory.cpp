@@ -4,6 +4,8 @@ Memory::Memory()
 {
 	genMem.zero();
 	displayMem.zero();
+
+	genMem.loadBios("roms/gba_bios.bin");
 }
 
 void Memory::writeU8(u32 address, u8 value)
