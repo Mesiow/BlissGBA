@@ -18,7 +18,7 @@
 //Do not change manually
 #define T (1 << 5)
 
-//FIQ disable (0 = enable, 1 = disable)
+//FIQ disable (Fast interrupt request) (0 = enable, 1 = disable)
 #define F (1 << 6)
 
 //IRQ disable (0 = enable, 1 = disable)
@@ -36,14 +36,43 @@
 //Sign flag (0 = Not signed, 1 = Signed)
 #define N (1 << 31)
 
+//Program counter register format (R15)
 
+
+union Register {
+	struct {
+		u16 lo;
+		u16 hi;
+	};
+	u32 value;
+};
 
 enum class State : u8 {
 	ARM = 0,
 	THUMB
 };
 
+struct Instruction {
+	u8 cond();
+	u8 i(); //immediate operand (0 = operand 2 is a register, 1 = operand 2 is an immediate value)
+	u8 s(); //set condition codes (0 = do not alter cond codes, 1 = set condition codes)
+	u8 rn(); //1st operand register
+	u8 rd(); //destination register
+	u8 opcode;
+};
+
 class Arm {
+public:
+	Arm();
+
+	void reset();
+	void setFlag(u32 flagBits, bool condition);
+	void setFlag(u32 flagBits);
+	void clearFlag(u32 flagBits);
+
+	//Returns 24 bit PC from R15 in 26 bit mode
+	u32 getPC();
+
 private:
 	State state;
 	/*
@@ -51,11 +80,12 @@ private:
 		while R8-R12 and up (Hi registers) can be accessed 
 		only by some instructions.
 	*/
-	u32 registers[0xC];
+	Register registers[0xD]; //R0 - R12
 
-	u32 SP;
-	//stores return addr when calling subroutine or branch instr
-	u32 LR; 
-	u32 PC;
+	u32 SP; //R13
+	//Stores return addr when calling subroutine or branch instr
+	u32 LR; //R14
+	u32 PC; //R15
 	u32 CPSR;
+	u32 SPSR;
 };

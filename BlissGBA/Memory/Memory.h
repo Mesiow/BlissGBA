@@ -47,6 +47,9 @@ public:
 	u16 readU16(u32 address);
 	u32 readU32(u32 address);
 
+	bool isAlignedU16(u32 address);
+	bool isAlignedU32(u32 address);
+
 private:
 	GeneralMemory genMem;
 	DisplayMemory displayMem;

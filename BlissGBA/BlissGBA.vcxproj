@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Cpu\Arm.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\DisplayMemory.cpp" />
     <ClCompile Include="Memory\GeneralMemory.cpp" />
