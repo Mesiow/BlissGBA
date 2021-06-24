@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cpu\Arm.h" />
+    <ClInclude Include="Cpu\Instruction.h" />
     <ClInclude Include="Memory\DisplayMemory.h" />
     <ClInclude Include="Memory\GeneralMemory.h" />
     <ClInclude Include="Memory\Memory.h" />

@@ -1,5 +1,9 @@
 #pragma once
-#include "../Utils.h"
+#include "Instruction.h"
+#include <array>
+#include <functional>
+
+#define b(x) std::bind(x, this, std::placeholders::_1)
 
 /*
 	The ARM7TDMI is a 32bit RISC (Reduced Instruction Set Computer) CPU, 
@@ -52,26 +56,32 @@ enum class State : u8 {
 	THUMB
 };
 
-struct Instruction {
-	u8 cond();
-	u8 i(); //immediate operand (0 = operand 2 is a register, 1 = operand 2 is an immediate value)
-	u8 s(); //set condition codes (0 = do not alter cond codes, 1 = set condition codes)
-	u8 rn(); //1st operand register
-	u8 rd(); //destination register
-	u8 opcode;
-};
+class MemoryBus;
 
 class Arm {
 public:
-	Arm();
-
+	Arm(MemoryBus *mbus);
+	u8 clock();
+	void decodeAndExecute(u8 opcode);
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);
 
+	u8 fetchOp(u32 encoding);
+
 	//Returns 24 bit PC from R15 in 26 bit mode
 	u32 getPC();
+
+	u32 readU32();
+	u32 fetchU32();
+
+private:
+	void mapArmOpcodes();
+	void mapThumbOpcodes();
+
+	//Arm Instructions
+	u8 opMOV(ArmInstruction& ins);
 
 private:
 	State state;
@@ -88,4 +98,10 @@ private:
 	u32 PC; //R15
 	u32 CPSR;
 	u32 SPSR;
+
+	std::array<std::function<u8(ArmInstruction&)>, 0xF> armlut;
+	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;
+
+	u32 cycles;
+	MemoryBus* mbus;
 };
