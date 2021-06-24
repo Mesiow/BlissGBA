@@ -27,10 +27,13 @@
     <ClCompile Include="Memory\GeneralMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Memory\Memory.cpp">
+    <ClCompile Include="Cpu\Arm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Cpu\Arm.cpp">
+    <ClCompile Include="Cpu\Opcodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\MemoryBus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,13 +47,13 @@
     <ClInclude Include="Memory\DisplayMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Memory\Memory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Cpu\Arm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Cpu\Instruction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\MemoryBus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
-#include "Memory.h"
+#include "MemoryBus.h"
 
-Memory::Memory()
+MemoryBus::MemoryBus()
 {
 	genMem.zero();
 	displayMem.zero();
@@ -8,7 +8,7 @@ Memory::Memory()
 	genMem.loadBios("roms/gba_bios.bin");
 }
 
-void Memory::writeU8(u32 address, u8 value)
+void MemoryBus::writeU8(u32 address, u8 value)
 {
 	if (address < GENERAL_MEM_END) {
 		genMem.writeU8(address, value);
@@ -21,7 +21,7 @@ void Memory::writeU8(u32 address, u8 value)
 	}
 }
 
-void Memory::writeU16(u32 address, u16 value)
+void MemoryBus::writeU16(u32 address, u16 value)
 {
 	if (!isAlignedU16(address)) {
 		std::cerr << "--Unaligned memory write U16 attempted--" << std::endl;
@@ -39,7 +39,7 @@ void Memory::writeU16(u32 address, u16 value)
 	}
 }
 
-void Memory::writeU32(u32 address, u16 value)
+void MemoryBus::writeU32(u32 address, u16 value)
 {
 	if (!isAlignedU32(address)) {
 		std::cerr << "--Unaligned memory write U32 attempted--" << std::endl;
@@ -57,27 +57,27 @@ void Memory::writeU32(u32 address, u16 value)
 	}
 }
 
-u8 Memory::readU8(u32 address)
+u8 MemoryBus::readU8(u32 address)
 {
 	return u8();
 }
 
-u16 Memory::readU16(u32 address)
+u16 MemoryBus::readU16(u32 address)
 {
 	return u16();
 }
 
-u32 Memory::readU32(u32 address)
+u32 MemoryBus::readU32(u32 address)
 {
 	return u32();
 }
 
-bool Memory::isAlignedU16(u32 address)
+bool MemoryBus::isAlignedU16(u32 address)
 {
 	return ((address % 2) == 0);
 }
 
-bool Memory::isAlignedU32(u32 address)
+bool MemoryBus::isAlignedU32(u32 address)
 {
 	return ((address % 4) == 0);
 }

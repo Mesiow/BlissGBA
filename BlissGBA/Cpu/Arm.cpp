@@ -24,7 +24,7 @@ void Arm::decodeAndExecute(u8 opcode)
 		ins.opcode = opcode;
 	}
 	else if (state == State::THUMB) {
-
+		ThumbInstruction ins;
 	}
 }
 

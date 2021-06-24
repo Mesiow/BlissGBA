@@ -140,10 +140,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Cpu\Arm.cpp" />
+    <ClCompile Include="Cpu\Opcodes.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\DisplayMemory.cpp" />
     <ClCompile Include="Memory\GeneralMemory.cpp" />
-    <ClCompile Include="Memory\Memory.cpp" />
+    <ClCompile Include="Memory\MemoryBus.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -151,7 +152,7 @@
     <ClInclude Include="Cpu\Instruction.h" />
     <ClInclude Include="Memory\DisplayMemory.h" />
     <ClInclude Include="Memory\GeneralMemory.h" />
-    <ClInclude Include="Memory\Memory.h" />
+    <ClInclude Include="Memory\MemoryBus.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

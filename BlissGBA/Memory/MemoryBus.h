@@ -36,9 +36,9 @@ Unused Memory Area
 #define EXTERNAL_MEM_START 0x8000000
 #define EXTERNAL_MEM_END 0xE00FFFF
 
-class Memory {
+class MemoryBus {
 public:
-	Memory();
+	MemoryBus();
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
 	void writeU32(u32 address, u16 value);
