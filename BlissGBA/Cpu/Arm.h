@@ -74,13 +74,14 @@ public:
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);
-	u8 isFlagSet(u32 flag);
+	u8 getFlag(u32 flag);
 
 	u8 fetchOp(u32 encoding);
 
 	//Returns 24 bit PC from R15 in 26 bit mode
 	u32 getPC();
 	State getState();
+	u8 getConditionCode(u8 cond);
 
 	u32 readU32();
 	u32 fetchU32();

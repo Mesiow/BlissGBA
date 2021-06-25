@@ -122,7 +122,7 @@ void Arm::clearFlag(u32 flagBits)
 	}
 }
 
-u8 Arm::isFlagSet(u32 flag)
+u8 Arm::getFlag(u32 flag)
 {
 	return (CPSR & flag) ? 1 : 0;
 }
@@ -143,6 +143,27 @@ State Arm::getState()
 {
 	u8 st = ((CPSR & T) >> T_BIT);
 	return State(st);
+}
+
+u8 Arm::getConditionCode(u8 cond)
+{
+	switch (cond) {
+		case 0b0000: return getFlag(Z); break;
+		case 0b0001: return (getFlag(Z) == 0); break;
+		case 0b0010: return getFlag(C); break;
+		case 0b0011: return (getFlag(C) == 0); break;
+		case 0b0100: return getFlag(N); break;
+		case 0b0101: return (getFlag(N) == 0); break;
+		case 0b0110: return getFlag(V); break;
+		case 0b0111: return (getFlag(V) == 0); break;
+		case 0b1000: return (getFlag(C) && (getFlag(Z) == 0)); break;
+		case 0b1001: return ((getFlag(C) == 0) || getFlag(Z)); break;
+		case 0b1010: return (getFlag(N) == getFlag(V)); break;
+		case 0b1011: return (getFlag(N) != getFlag(V)); break;
+		case 0b1100: return ((getFlag(Z) == 0) && (getFlag(N) == getFlag(V))); break;
+		case 0b1101: return (getFlag(Z) || (getFlag(N) != getFlag(V))); break;
+		case 0b1110: return 1; //always
+	}
 }
 
 u32 Arm::readU32()
@@ -172,11 +193,16 @@ u8 Arm::opMOV(ArmInstruction& ins)
 	u8 i = ins.i();
 	u8 s = ins.s();
 
+	u8 condition = getConditionCode(cond);
 	bool set = (s == 0x0) ? false : true;
 	bool immediate = (i == 0x0) ? false : true;
 
-	if (set) {
-
+	
+	if (condition) {
+		if (set) {
+			//calc flags
+		}
+		//execute instruction
 	}
 
 	return 1;

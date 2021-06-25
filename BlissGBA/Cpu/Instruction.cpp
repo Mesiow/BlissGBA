@@ -35,3 +35,27 @@ u16 ArmInstruction::operand2()
     u16 op2 = (this->encoding) & 0xFFF;
     return op2;
 }
+
+u8 ArmInstruction::shift()
+{
+    u8 shift = ((this->encoding) >> 4) & 0xFF;
+    return shift;
+}
+
+u8 ArmInstruction::rm()
+{
+    u8 rm = (this->encoding) & 0xF;
+    return rm;
+}
+
+u8 ArmInstruction::rotate()
+{
+    u8 rotate = ((this->encoding) >> 8) & 0xF;
+    return rotate;
+}
+
+u8 ArmInstruction::imm()
+{
+    u8 imm = (this->encoding) & 0xF;
+    return imm;
+}
