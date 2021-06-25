@@ -46,17 +46,75 @@ void Arm::reset()
 
 void Arm::setFlag(u32 flagBits, bool condition)
 {
-
+	if (condition) {
+		setFlag(flagBits);
+	}
 }
 
 void Arm::setFlag(u32 flagBits)
 {
+	//M0 - M4
+	for (s32 i = 0; i < 5; i++) {
+		u8 mi = (1 << i);
+		if (flagBits & mi) {
+			CPSR |= mi;
+		}
+	}
 
+	if (flagBits & T) {
+		CPSR |= T;
+	}
+	if (flagBits & F) {
+		CPSR |= F;
+	}
+	if (flagBits & I) {
+		CPSR |= I;
+	}
+	if (flagBits & V) {
+		CPSR |= V;
+	}
+	if (flagBits & C) {
+		CPSR |= C;
+	}
+	if (flagBits & Z) {
+		CPSR |= Z;
+	}
+	if (flagBits & N) {
+		CPSR |= N;
+	}
 }
 
 void Arm::clearFlag(u32 flagBits)
 {
+	//M0 - M4
+	for (s32 i = 0; i < 5; i++) {
+		u8 mi = (1 << i);
+		if (flagBits & mi) {
+			CPSR &= ~(mi);
+		}
+	}
 
+	if (flagBits & T) {
+		CPSR &= ~(T);
+	}
+	if (flagBits & F) {
+		CPSR &= ~(F);
+	}
+	if (flagBits & I) {
+		CPSR &= ~(I);
+	}
+	if (flagBits & V) {
+		CPSR &= ~(V);
+	}
+	if (flagBits & C) {
+		CPSR &= ~(C);
+	}
+	if (flagBits & Z) {
+		CPSR &= ~(Z);
+	}
+	if (flagBits & N) {
+		CPSR &= ~(N);
+	}
 }
 
 u8 Arm::fetchOp(u32 encoding)
