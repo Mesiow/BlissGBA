@@ -1,7 +1,7 @@
-#include "Memory\Memory.h"
+#include "Memory/MemoryBus.h"
 
 int main() {
-	Memory mem;
+	MemoryBus mem;
 
 	return 0;
 }

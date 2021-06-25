@@ -11,7 +11,9 @@ struct ArmInstruction {
 	u8 s(); //set condition codes (0 = do not alter cond codes, 1 = set condition codes)
 	u8 rn(); //1st operand register
 	u8 rd(); //destination register
-	u8 opcode;
+	u16 operand2();
+
+	u32 encoding;
 };
 
 struct ThumbInstruction {

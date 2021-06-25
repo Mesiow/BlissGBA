@@ -69,7 +69,7 @@ class Arm {
 public:
 	Arm(MemoryBus *mbus);
 	u8 clock();
-	void decodeAndExecute(u8 opcode);
+	void decodeAndExecute(u32 encoding, u8 opcode);
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);

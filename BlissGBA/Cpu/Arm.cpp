@@ -10,23 +10,28 @@ Arm::Arm(MemoryBus *mbus)
 u8 Arm::clock()
 {
 	state = getState();
+	if (state == State::ARM) {
+		u32 encoding = fetchU32();
+		u8 opcode = fetchOp(encoding);
 
-	u32 encoding = fetchU32();
-	u8 opcode = fetchOp(encoding);
+		decodeAndExecute(encoding, opcode);
+	}
+	else if (state == State::THUMB) {
 
-	decodeAndExecute(opcode);
-
-	return 0;
+	}
+	return cycles;
 }
 
-void Arm::decodeAndExecute(u8 opcode)
+void Arm::decodeAndExecute(u32 encoding, u8 opcode)
 {
 	if (state == State::ARM) {
 		ArmInstruction ins;
-		ins.opcode = opcode;
+		ins.encoding = encoding;
+
+		cycles += armlut[opcode](ins);
 	}
 	else if (state == State::THUMB) {
-		ThumbInstruction ins;
+		//ThumbInstruction ins;
 	}
 }
 

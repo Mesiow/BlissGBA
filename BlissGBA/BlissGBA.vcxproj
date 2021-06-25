@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Cpu\Arm.cpp" />
+    <ClCompile Include="Cpu\Instruction.cpp" />
     <ClCompile Include="Cpu\Opcodes.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\DisplayMemory.cpp" />
