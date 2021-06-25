@@ -21,24 +21,31 @@
 //State bit (0 = ARM, 1 = THUMB) 
 //Do not change manually
 #define T (1 << 5)
+#define T_BIT 5
 
 //FIQ disable (Fast interrupt request) (0 = enable, 1 = disable)
 #define F (1 << 6)
+#define F_BIT 6
 
 //IRQ disable (0 = enable, 1 = disable)
 #define I (1 << 7)
+#define I_BIT 7
 
 //Overflow flag (0 = no overflow, 1 = overflow)
 #define V (1 << 28)
+#define V_BIT 28
 
 //Carry flag (0 = Borrow/No Carry, 1 = Carry/No Borrow)
 #define C (1 << 29)
+#define C_BIT 29
 
 //Zero flag (0 = Not Zero, 1 = Zero)
 #define Z (1 << 30)
+#define Z_BIT 30
 
 //Sign flag (0 = Not signed, 1 = Signed)
 #define N (1 << 31)
+#define N_BIT
 
 //Program counter register format (R15)
 
@@ -72,6 +79,7 @@ public:
 
 	//Returns 24 bit PC from R15 in 26 bit mode
 	u32 getPC();
+	State getState();
 
 	u32 readU32();
 	u32 fetchU32();

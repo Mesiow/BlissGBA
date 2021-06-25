@@ -9,6 +9,8 @@ Arm::Arm(MemoryBus *mbus)
 
 u8 Arm::clock()
 {
+	state = getState();
+
 	u32 encoding = fetchU32();
 	u8 opcode = fetchOp(encoding);
 
@@ -67,6 +69,12 @@ u32 Arm::getPC()
 {
 	u32 pc = ((PC >> 2) & 0xFFFFFF);
 	return pc;
+}
+
+State Arm::getState()
+{
+	u8 st = ((CPSR & T) >> T_BIT);
+	return State(st);
 }
 
 u32 Arm::readU32()
