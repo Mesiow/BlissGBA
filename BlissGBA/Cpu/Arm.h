@@ -74,6 +74,7 @@ public:
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);
+	u8 isFlagSet(u32 flag);
 
 	u8 fetchOp(u32 encoding);
 

@@ -122,6 +122,11 @@ void Arm::clearFlag(u32 flagBits)
 	}
 }
 
+u8 Arm::isFlagSet(u32 flag)
+{
+	return (CPSR & flag) ? 1 : 0;
+}
+
 u8 Arm::fetchOp(u32 encoding)
 {
 	u8 opcode = ((encoding >> 21) & 0xF);
@@ -162,6 +167,17 @@ u32 Arm::fetchU32()
 
 u8 Arm::opMOV(ArmInstruction& ins)
 {
+	u8 cond = ins.cond();
+	u8 rd = ins.rd();
+	u8 i = ins.i();
+	u8 s = ins.s();
+
+	bool set = (s == 0x0) ? false : true;
+	bool immediate = (i == 0x0) ? false : true;
+
+	if (set) {
+
+	}
 
 	return 1;
 }
