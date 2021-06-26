@@ -80,11 +80,17 @@ public:
 
 	//Returns 24 bit PC from R15 in 26 bit mode
 	u32 getPC();
+
+	u32 getRegister(u8 id);
+	void writeRegister(u8 id, u32 value);
+
 	State getState();
 	u8 getConditionCode(u8 cond);
 
 	u32 readU32();
 	u32 fetchU32();
+	u32 shift(u32 value, u8 amount, u8 type);
+
 
 private:
 	void mapArmOpcodes();

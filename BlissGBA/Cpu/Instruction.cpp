@@ -36,10 +36,16 @@ u16 ArmInstruction::operand2()
     return op2;
 }
 
-u8 ArmInstruction::shift()
+u8 ArmInstruction::shiftAmount()
 {
-    u8 shift = ((this->encoding) >> 4) & 0xFF;
+    u8 shift = ((this->encoding) >> 7) & 0x1F;
     return shift;
+}
+
+u8 ArmInstruction::shiftType()
+{
+    u8 type = ((this->encoding) >> 5) & 0x3;
+    return type;
 }
 
 u8 ArmInstruction::rm()

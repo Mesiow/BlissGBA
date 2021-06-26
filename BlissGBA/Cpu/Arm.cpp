@@ -135,8 +135,30 @@ u8 Arm::fetchOp(u32 encoding)
 
 u32 Arm::getPC()
 {
-	u32 pc = ((PC >> 2) & 0xFFFFFF);
+	u32 pc = ((PC >> 2) & 0xFFFFFFFF);
 	return pc;
+}
+
+u32 Arm::getRegister(u8 id)
+{
+	if (id >= 0xD) {
+		if (id == 0xD) return SP;
+		if (id == 0xE) return LR;
+		if (id == 0xF) return PC;
+	}
+	return registers[id].value;
+}
+
+void Arm::writeRegister(u8 id, u32 value)
+{
+	if (id >= 0xD) {
+		if (id == 0xD) SP = value;
+		if (id == 0xE) LR = value;
+		if (id == 0xF) PC = value;
+
+		return;
+	}
+	registers[id].value = value;
 }
 
 State Arm::getState()
@@ -186,6 +208,25 @@ u32 Arm::fetchU32()
 	return word;
 }
 
+u32 Arm::shift(u32 value, u8 amount, u8 type)
+{
+	switch (type) {
+		case 0b00: value <<= amount; break;
+		case 0b01: value >>= amount; break;
+		case 0b10: 
+			u8 msb = ((value >> 31) & 0x1);
+			value >>= amount;
+			value |= (msb << 31);
+			break;
+		case 0b11: 
+			u8 lsb = (value & 0x1);
+			value >>= amount;
+			value |= (lsb << 31);
+			break;
+	}
+	return value;
+}
+
 u8 Arm::opMOV(ArmInstruction& ins)
 {
 	u8 cond = ins.cond();
@@ -193,16 +234,40 @@ u8 Arm::opMOV(ArmInstruction& ins)
 	u8 i = ins.i();
 	u8 s = ins.s();
 
+	u32 reg_rd = getRegister(rd);
+
 	u8 condition = getConditionCode(cond);
 	bool set = (s == 0x0) ? false : true;
 	bool immediate = (i == 0x0) ? false : true;
 
 	
 	if (condition) {
-		if (set) {
-			//calc flags
+		//result
+		if (immediate) {
+			//op2 is an immediate val
 		}
-		//execute instruction
+		else {
+			//op2 is a register
+			u8 shiftAmount = ins.shiftAmount();
+			u8 shiftType = ins.shiftType();
+			u8 rm = ins.rm();
+
+			u32 rm_reg = getRegister(rm);
+			rm_reg = shift(rm_reg, shiftAmount, shiftType);
+
+			//mov
+			reg_rd = rm_reg;
+			writeRegister(rd, reg_rd);
+		}
+
+		if (set) {
+			if (reg_rd & 80000000) {
+				setFlag(N);
+			}
+			if (reg_rd == 0) {
+				setFlag(Z);
+			}
+		}
 	}
 
 	return 1;
