@@ -62,6 +62,6 @@ u8 ArmInstruction::rotate()
 
 u8 ArmInstruction::imm()
 {
-    u8 imm = (this->encoding) & 0xF;
+    u8 imm = (this->encoding) & 0xFF;
     return imm;
 }

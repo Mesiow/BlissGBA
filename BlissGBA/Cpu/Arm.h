@@ -1,5 +1,6 @@
 #pragma once
 #include "Instruction.h"
+#include "AddressingModes.h"
 #include <array>
 #include <functional>
 
@@ -83,13 +84,15 @@ public:
 
 	u32 getRegister(u8 id);
 	void writeRegister(u8 id, u32 value);
+	void writePC(u32 pc);
 
 	State getState();
 	u8 getConditionCode(u8 cond);
 
 	u32 readU32();
 	u32 fetchU32();
-	u32 shift(u32 value, u8 amount, u8 type);
+
+	u32 shift(u32 value, u8 amount, u8 type, u8 &shiftedBit);
 
 
 private:
@@ -98,6 +101,7 @@ private:
 
 	//Arm Instructions
 	u8 opMOV(ArmInstruction& ins);
+
 
 private:
 	State state;
@@ -111,9 +115,11 @@ private:
 	u32 SP; //R13
 	//Stores return addr when calling subroutine or branch instr
 	u32 LR; //R14
-	u32 PC; //R15
+	u32 R15; //contains PC
 	u32 CPSR;
 	u32 SPSR;
+
+	AddressingMode1 addrMode1;
 
 	std::array<std::function<u8(ArmInstruction&)>, 0xF> armlut;
 	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;

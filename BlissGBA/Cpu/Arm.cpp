@@ -43,7 +43,7 @@ void Arm::reset()
 	}
 
 	LR = 0x00000000;
-	PC = 0x80000000;
+	R15 = 0x80000000;
 	SP = 0x00000000;
 	CPSR = 0x6000001F;
 	SPSR = 0x03007F00;
@@ -135,7 +135,7 @@ u8 Arm::fetchOp(u32 encoding)
 
 u32 Arm::getPC()
 {
-	u32 pc = ((PC >> 2) & 0xFFFFFFFF);
+	u32 pc = ((R15 >> 2) & 0xFFFFFFFF);
 	return pc;
 }
 
@@ -144,7 +144,7 @@ u32 Arm::getRegister(u8 id)
 	if (id >= 0xD) {
 		if (id == 0xD) return SP;
 		if (id == 0xE) return LR;
-		if (id == 0xF) return PC;
+		if (id == 0xF) return R15;
 	}
 	return registers[id].value;
 }
@@ -154,11 +154,16 @@ void Arm::writeRegister(u8 id, u32 value)
 	if (id >= 0xD) {
 		if (id == 0xD) SP = value;
 		if (id == 0xE) LR = value;
-		if (id == 0xF) PC = value;
+		if (id == 0xF) R15 = value;
 
 		return;
 	}
 	registers[id].value = value;
+}
+
+void Arm::writePC(u32 pc)
+{
+	R15 |= ((pc << 2) & 0xFFFFFFFF);
 }
 
 State Arm::getState()
@@ -190,6 +195,8 @@ u8 Arm::getConditionCode(u8 cond)
 
 u32 Arm::readU32()
 {
+	u32 PC = getPC();
+
 	u32 word = (mbus->readU8(PC)) |
 		(mbus->readU8(PC + 1) << 8) |
 		(mbus->readU8(PC + 2) << 16) |
@@ -200,19 +207,31 @@ u32 Arm::readU32()
 
 u32 Arm::fetchU32()
 {
+	u32 PC = getPC();
+
 	u32 word = (mbus->readU8(PC++)) |
 		(mbus->readU8(PC++) << 8) |
 		(mbus->readU8(PC++) << 16) |
 		(mbus->readU8(PC++) << 24);
 
+	writePC(PC);
+
 	return word;
 }
 
-u32 Arm::shift(u32 value, u8 amount, u8 type)
+u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit)
 {
 	switch (type) {
-		case 0b00: value <<= amount; break;
-		case 0b01: value >>= amount; break;
+		case 0b00: 
+			shiftedBit = (31 - (amount - 1));
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+			value <<= amount; 
+			break;
+		case 0b01:
+			shiftedBit = (amount - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+			value >>= amount; 
+			break;
 		case 0b10: 
 			u8 msb = ((value >> 31) & 0x1);
 			value >>= amount;
@@ -242,33 +261,30 @@ u8 Arm::opMOV(ArmInstruction& ins)
 
 	
 	if (condition) {
-		//result
+		u8 shiftedBit = 0;
 		if (immediate) {
-			//op2 is an immediate val
+			//op2 is an immediate value
+			u8 result = addrMode1.imm(ins, shiftedBit);
+			reg_rd = result;
+
+			writeRegister(rd, reg_rd);
+			
 		}
 		else {
 			//op2 is a register
-			u8 shiftAmount = ins.shiftAmount();
-			u8 shiftType = ins.shiftType();
-			u8 rm = ins.rm();
+			u32 result = addrMode1.regShift(ins, shiftedBit);
+			reg_rd = result;
 
-			u32 rm_reg = getRegister(rm);
-			rm_reg = shift(rm_reg, shiftAmount, shiftType);
-
-			//mov
-			reg_rd = rm_reg;
 			writeRegister(rd, reg_rd);
 		}
 
 		if (set) {
-			if (reg_rd & 80000000) {
-				setFlag(N);
-			}
-			if (reg_rd == 0) {
-				setFlag(Z);
-			}
+			(reg_rd & 0x80000000) ? setFlag(N) : clearFlag(N);
+			(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+			(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
 		}
 	}
 
 	return 1;
 }
+
