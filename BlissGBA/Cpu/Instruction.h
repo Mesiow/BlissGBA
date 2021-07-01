@@ -14,6 +14,7 @@ struct ArmInstruction {
 	u16 operand2();
 	u8 shiftAmount(); //shift amount applied to Rm
 	u8 shiftType(); 
+	u8 rs();
 	u8 rm(); //2nd operand register
 	u8 rotate(); //shift applied to imm
 	u8 imm(); //u8 immediate value

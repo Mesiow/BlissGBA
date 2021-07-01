@@ -57,6 +57,8 @@ u8 GeneralMemory::readU8(u32 address)
 {
 	if (address < BIOS_SIZE)
 		return bios[address];
+
+	return 0;
 }
 
 u16 GeneralMemory::readU16(u32 address)

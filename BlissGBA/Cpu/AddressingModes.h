@@ -2,20 +2,27 @@
 
 class Arm;
 
-//(Data processing)
-struct AddressingMode1 {
-	AddressingMode1(Arm& cpu);
-
-	u32 regShift(ArmInstruction& ins, u8& shiftedBit);
-	u8 imm(ArmInstruction& ins, u8& shiftedBit); //returns result
-
+struct AddressingMode {
+	AddressingMode(Arm& cpu);
 	Arm& cpu;
 };
 
-struct AddressingMode2 {
+//(Data processing)
+struct AddressingMode1 : public AddressingMode{
+	AddressingMode1(Arm& cpu);
+
+	//handles immediate shifts and register shifts
+	u32 shift(ArmInstruction& ins, u8& shiftedBit);
+	//handles 32-bit immediate rotate 
+	u8 imm(ArmInstruction& ins, u8& shiftedBit); //returns result
+
+	u8 isRegisterShift(ArmInstruction& ins);
+};
+
+struct AddressingMode2 : public AddressingMode{
 
 };
 
-struct AddressingMode3 {
+struct AddressingMode3 : public AddressingMode{
 
 };

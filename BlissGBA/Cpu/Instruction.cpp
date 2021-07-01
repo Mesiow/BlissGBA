@@ -48,6 +48,12 @@ u8 ArmInstruction::shiftType()
     return type;
 }
 
+u8 ArmInstruction::rs()
+{
+    u8 rs = (this->encoding >> 8) & 0xF;
+    return rs;
+}
+
 u8 ArmInstruction::rm()
 {
     u8 rm = (this->encoding) & 0xF;

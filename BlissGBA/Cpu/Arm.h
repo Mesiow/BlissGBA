@@ -93,7 +93,7 @@ public:
 	u32 fetchU32();
 
 	u32 shift(u32 value, u8 amount, u8 type, u8 &shiftedBit);
-
+	u32 ror(u32 value, u8 shift);
 
 private:
 	void mapArmOpcodes();

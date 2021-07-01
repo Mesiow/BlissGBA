@@ -2,6 +2,7 @@
 #include "../Memory/MemoryBus.h"
 
 Arm::Arm(MemoryBus *mbus)
+	:addrMode1(*this)
 {
 	this->mbus = mbus;
 	reset();
@@ -222,28 +223,53 @@ u32 Arm::fetchU32()
 u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit)
 {
 	switch (type) {
-		case 0b00: 
+		case 0b00: {//Logical shift left
+			//Save carried out bit
 			shiftedBit = (31 - (amount - 1));
 			shiftedBit = ((value >> shiftedBit) & 0x1);
-			value <<= amount; 
+
+			value <<= amount;
+		}
 			break;
-		case 0b01:
+		case 0b01: {//logical shift right
+			//Save carried out bit
 			shiftedBit = (amount - 1);
 			shiftedBit = ((value >> shiftedBit) & 0x1);
-			value >>= amount; 
+
+			value >>= amount;
+		}
 			break;
-		case 0b10: 
+		case 0b10: {//arithmetic right
+			//Save carried out bit
+			shiftedBit = (amount - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+
 			u8 msb = ((value >> 31) & 0x1);
 			value >>= amount;
 			value |= (msb << 31);
+		}
 			break;
-		case 0b11: 
+		case 0b11: { //rotate right
+			//Save carried out bit
+			shiftedBit = (amount - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+
 			u8 lsb = (value & 0x1);
 			value >>= amount;
 			value |= (lsb << 31);
+		}
 			break;
 	}
 	return value;
+}
+
+u32 Arm::ror(u32 value, u8 shift)
+{
+	u32 rotatedOut = getNthBits(value, 0, shift);
+	u32 rotatedIn = getNthBits(value, shift, 31);
+
+	u32 result = rotatedIn | (rotatedOut << (31 - shift));
+	return result;
 }
 
 u8 Arm::opMOV(ArmInstruction& ins)
@@ -272,7 +298,7 @@ u8 Arm::opMOV(ArmInstruction& ins)
 		}
 		else {
 			//op2 is a register
-			u32 result = addrMode1.regShift(ins, shiftedBit);
+			u32 result = addrMode1.shift(ins, shiftedBit);
 			reg_rd = result;
 
 			writeRegister(rd, reg_rd);
