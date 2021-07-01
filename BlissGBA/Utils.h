@@ -15,3 +15,6 @@ using s32 = int32_t;
 u8 setBit(u8 val, u8 bitToSet);
 u8 resetBit(u8 val, u8 bitToReset);
 u8 testBit(u8 val, u8 bitToTest);
+
+//Return value within bit range of from - to
+u32 getNthBits(u32 value, u8 from, u8 to);
