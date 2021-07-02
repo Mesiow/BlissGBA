@@ -223,43 +223,56 @@ u32 Arm::fetchU32()
 u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit)
 {
 	switch (type) {
-		case 0b00: {//Logical shift left
-			//Save carried out bit
-			shiftedBit = (31 - (amount - 1));
-			shiftedBit = ((value >> shiftedBit) & 0x1);
-
-			value <<= amount;
-		}
+		case 0b00:
+			lsl(value, amount, shiftedBit);
 			break;
-		case 0b01: {//logical shift right
-			//Save carried out bit
-			shiftedBit = (amount - 1);
-			shiftedBit = ((value >> shiftedBit) & 0x1);
 
-			value >>= amount;
-		}
+		case 0b01:
+			lsr(value, amount, shiftedBit);
 			break;
-		case 0b10: {//arithmetic right
-			//Save carried out bit
-			shiftedBit = (amount - 1);
-			shiftedBit = ((value >> shiftedBit) & 0x1);
 
-			u8 msb = ((value >> 31) & 0x1);
-			value >>= amount;
-			value |= (msb << 31);
-		}
+		case 0b10:
+			asr(value, amount, shiftedBit);
 			break;
-		case 0b11: { //rotate right
-			//Save carried out bit
-			shiftedBit = (amount - 1);
-			shiftedBit = ((value >> shiftedBit) & 0x1);
 
-			u8 lsb = (value & 0x1);
-			value >>= amount;
-			value |= (lsb << 31);
+		case 0b11: {
+			//Save last carried out bit
+			value = ror(value, amount);
+			shiftedBit = (value >> 31) & 0x1;
 		}
 			break;
 	}
+	return value;
+}
+
+u32 Arm::lsl(u32 value, u8 shift, u8& shiftedBit)
+{
+	//Save last carried out bit
+	shiftedBit = (31 - (shift - 1));
+	shiftedBit = ((value >> shiftedBit) & 0x1);
+
+	value <<= shift;
+	return value;
+}
+
+u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit)
+{
+	shiftedBit = (shift - 1);
+	shiftedBit = ((value >> shiftedBit) & 0x1);
+
+	value >>= shift;
+	return value;
+}
+
+u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit)
+{
+	shiftedBit = (shift - 1);
+	shiftedBit = ((value >> shiftedBit) & 0x1);
+
+	u8 msb = ((value >> 31) & 0x1);
+	value >>= shift;
+	value |= (msb << 31);
+
 	return value;
 }
 
@@ -305,9 +318,16 @@ u8 Arm::opMOV(ArmInstruction& ins)
 		}
 
 		if (set) {
-			(reg_rd & 0x80000000) ? setFlag(N) : clearFlag(N);
-			(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
-			(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
+			//rd != r15
+			if (reg_rd != getRegister(0xF)) {
+				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
+			}
+			else {
+				//spsr of curr mode is copied to cpsr
+			}
+
 		}
 	}
 
