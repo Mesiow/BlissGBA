@@ -224,20 +224,20 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit)
 {
 	switch (type) {
 		case 0b00:
-			lsl(value, amount, shiftedBit);
+			value = lsl(value, amount, shiftedBit);
 			break;
 
 		case 0b01:
-			lsr(value, amount, shiftedBit);
+			value = lsr(value, amount, shiftedBit);
 			break;
 
 		case 0b10:
-			asr(value, amount, shiftedBit);
+			value = asr(value, amount, shiftedBit);
 			break;
 
 		case 0b11: {
-			//Save last carried out bit
 			value = ror(value, amount);
+			//Save last carried out bit
 			shiftedBit = (value >> 31) & 0x1;
 		}
 			break;
@@ -326,6 +326,7 @@ u8 Arm::opMOV(ArmInstruction& ins)
 			}
 			else {
 				//spsr of curr mode is copied to cpsr
+				CPSR = SPSR;
 			}
 
 		}
