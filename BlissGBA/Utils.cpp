@@ -1,23 +1,23 @@
 #include "Utils.h"
 
-u8 setBit(u8 val, u8 bitToSet)
+u32 setBit(u32 val, u8 bitToSet)
 {
-	u8 bit = (1 << bitToSet);
-	val |= bit;
+	u32 mask = (1 << bitToSet);
+	val |= mask;
 	return val;
 }
 
-u8 resetBit(u8 val, u8 bitToReset)
+u32 resetBit(u32 val, u8 bitToReset)
 {
-	u8 bit = (1 << bitToReset);
-	val &= ~(bit);
+	u32 mask = (1 << bitToReset);
+	val &= ~(mask);
 	return val;
 }
 
 u8 testBit(u8 val, u8 bitToTest)
 {
-	u8 bit = (1 << bitToTest);
-	return ((val & bit) > 0 ? 1 : 0);
+	u32 mask = (1 << bitToTest);
+	return ((val & mask) > 0 ? 1 : 0);
 }
 
 u32 getNthBits(u32 value, u8 from, u8 to)
