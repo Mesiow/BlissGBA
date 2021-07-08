@@ -30,6 +30,8 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 
 		//The least significant byte of rs is the shift amount
 		rm_reg = cpu.shift(rs_reg, ((rs_reg) & 0xFF), shiftType, shiftedBit);
+
+		return rm_reg;
 	}
 	else {
 		//Immediate shift
@@ -38,16 +40,23 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u8 rm = ins.rm();
 
 		u32 rm_reg = cpu.getRegister(rm);
-		rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit);
+		if (shiftAmount == 0) {
+			if (rm_reg == cpu.getRegister(R15_ID)) {
 
+			}
+			rm_reg = cpu.rrx(rm_reg, shiftedBit);
+		}
+		else {
+			rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit);
+		}
 		return rm_reg;
 	}
 }
 
-u8 AddressingMode1::imm(ArmInstruction& ins, u8& shiftedBit)
+u32 AddressingMode1::imm(ArmInstruction& ins, u8& shiftedBit)
 {
 	u8 rotate = ins.rotate();
-	u8 imm = ins.imm();
+	u32 imm = ins.imm();
 
 	if (rotate == 0)
 		return imm;

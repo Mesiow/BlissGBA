@@ -50,6 +50,9 @@
 
 //Program counter register format (R15)
 
+#define R13_ID 0xD
+#define R14_ID 0xE
+#define R15_ID 0xF
 
 union Register {
 	struct {
@@ -70,7 +73,7 @@ class Arm {
 public:
 	Arm(MemoryBus *mbus);
 	u8 clock();
-	void decodeAndExecute(u32 encoding, u8 opcode);
+	void decodeAndExecute(u32 encoding);
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);
@@ -97,6 +100,7 @@ public:
 	u32 lsr(u32 value, u8 shift, u8& shiftedBit);
 	u32 asr(u32 value, u8 shift, u8& shiftedBit);
 	u32 ror(u32 value, u8 shift);
+	u32 rrx(u32 value, u8 &shiftedBit);
 
 private:
 	void mapArmOpcodes();
@@ -126,6 +130,7 @@ private:
 
 	std::array<std::function<u8(ArmInstruction&)>, 0xF> armlut;
 	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;
+	u32 pipeline[2];
 
 	u32 cycles;
 	MemoryBus* mbus;

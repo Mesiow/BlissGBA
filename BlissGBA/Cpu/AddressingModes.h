@@ -14,7 +14,7 @@ struct AddressingMode1 : public AddressingMode{
 	//handles immediate shifts and register shifts
 	u32 shift(ArmInstruction& ins, u8& shiftedBit);
 	//handles 32-bit immediate rotate 
-	u8 imm(ArmInstruction& ins, u8& shiftedBit); //returns result
+	u32 imm(ArmInstruction& ins, u8& shiftedBit); //returns result
 
 	u8 isRegisterShift(ArmInstruction& ins);
 };

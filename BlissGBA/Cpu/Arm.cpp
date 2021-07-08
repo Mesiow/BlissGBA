@@ -12,10 +12,11 @@ u8 Arm::clock()
 {
 	state = getState();
 	if (state == State::ARM) {
-		u32 encoding = fetchU32();
-		u8 opcode = fetchOp(encoding);
+		u32 encoding = pipeline[0];
+		pipeline[0] = pipeline[1];
+		pipeline[1] = fetchU32();
 
-		decodeAndExecute(encoding, opcode);
+		decodeAndExecute(encoding);
 	}
 	else if (state == State::THUMB) {
 
@@ -23,16 +24,16 @@ u8 Arm::clock()
 	return cycles;
 }
 
-void Arm::decodeAndExecute(u32 encoding, u8 opcode)
+void Arm::decodeAndExecute(u32 encoding)
 {
 	if (state == State::ARM) {
 		ArmInstruction ins;
 		ins.encoding = encoding;
 
-		cycles += armlut[opcode](ins);
+		//execute(ins);
 	}
 	else if (state == State::THUMB) {
-		//ThumbInstruction ins;
+
 	}
 }
 
@@ -283,6 +284,15 @@ u32 Arm::ror(u32 value, u8 shift)
 
 	u32 result = rotatedIn | (rotatedOut << (31 - shift));
 	return result;
+}
+
+u32 Arm::rrx(u32 value, u8 &shiftedBit)
+{
+	//shifter_carry_out
+	shiftedBit = value & 0x1;
+	value = (((u32)getFlag(C) << 31) | (value >> 1));
+	
+	return value;
 }
 
 u8 Arm::opMOV(ArmInstruction& ins)
