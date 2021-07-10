@@ -50,6 +50,7 @@
 
 //Program counter register format (R15)
 
+#define NUM_REGISTERS 0xD
 #define R13_ID 0xD
 #define R14_ID 0xE
 #define R15_ID 0xF
@@ -65,6 +66,11 @@ union Register {
 enum class State : u8 {
 	ARM = 0,
 	THUMB
+};
+
+struct PSR {
+	u32 CPSR;
+	u32 SPSR;
 };
 
 class MemoryBus;
@@ -84,6 +90,7 @@ public:
 
 	//Returns 24 bit PC from R15 in 26 bit mode
 	u32 getPC();
+	PSR getPSR();
 
 	u32 getRegister(u8 id);
 	void writeRegister(u8 id, u32 value);
@@ -117,7 +124,7 @@ private:
 		while R8-R12 and up (Hi registers) can be accessed 
 		only by some instructions.
 	*/
-	Register registers[0xD]; //R0 - R12
+	Register registers[NUM_REGISTERS]; //R0 - R12
 
 	u32 SP; //R13
 	//Stores return addr when calling subroutine or branch instr

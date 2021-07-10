@@ -141,6 +141,14 @@ u32 Arm::getPC()
 	return pc;
 }
 
+PSR Arm::getPSR()
+{
+	return PSR{
+		CPSR,
+		SPSR
+	};
+}
+
 u32 Arm::getRegister(u8 id)
 {
 	if (id >= 0xD) {

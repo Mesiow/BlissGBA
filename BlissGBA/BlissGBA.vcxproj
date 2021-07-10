@@ -88,10 +88,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)/Externals/SFML-2.5.1/include;$(SolutionDir)/Externals/imgui-SFML;$(SolutionDir)/Externals/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)/Externals/SFML-2.5.1/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-main-d.lib;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-network-d.lib;sfml-audio-d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -102,12 +105,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)/Externals/SFML-2.5.1/include;$(SolutionDir)/Externals/imgui-SFML;$(SolutionDir)/Externals/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)/Externals/SFML-2.5.1/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-main.lib;sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-network.lib;sfml-audio.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -143,6 +149,12 @@
     <ClCompile Include="Cpu\Arm.cpp" />
     <ClCompile Include="Cpu\Instruction.cpp" />
     <ClCompile Include="Cpu\Opcodes.cpp" />
+    <ClCompile Include="Debugger\DebugUI.cpp" />
+    <ClCompile Include="Debugger\imgui\imgui-SFML.cpp" />
+    <ClCompile Include="Debugger\imgui\imgui.cpp" />
+    <ClCompile Include="Debugger\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Debugger\imgui\imgui_tables.cpp" />
+    <ClCompile Include="Debugger\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\DisplayMemory.cpp" />
     <ClCompile Include="Memory\GeneralMemory.cpp" />
@@ -153,6 +165,7 @@
     <ClInclude Include="Cpu\AddressingModes.h" />
     <ClInclude Include="Cpu\Arm.h" />
     <ClInclude Include="Cpu\Instruction.h" />
+    <ClInclude Include="Debugger\DebugUI.h" />
     <ClInclude Include="Memory\DisplayMemory.h" />
     <ClInclude Include="Memory\GeneralMemory.h" />
     <ClInclude Include="Memory\MemoryBus.h" />
