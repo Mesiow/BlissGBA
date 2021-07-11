@@ -12,6 +12,12 @@ u8 ArmInstruction::i()
     return i;
 }
 
+u8 ArmInstruction::opcode()
+{
+    u8 op = ((this->encoding) >> 21) & 0xF;
+    return u8();
+}
+
 u8 ArmInstruction::s()
 {
     u8 s = ((this->encoding) >> 20) & 0x1;

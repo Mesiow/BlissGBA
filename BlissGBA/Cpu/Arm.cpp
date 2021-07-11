@@ -12,29 +12,24 @@ u8 Arm::clock()
 {
 	state = getState();
 	if (state == State::ARM) {
-		u32 encoding = pipeline[0];
-		pipeline[0] = pipeline[1];
-		pipeline[1] = fetchU32();
+		u32 encoding = armpipeline[0];
+		armpipeline[0] = armpipeline[1];
+		armpipeline[1] = fetchU32();
 
-		decodeAndExecute(encoding);
-	}
-	else if (state == State::THUMB) {
-
-	}
-	return cycles;
-}
-
-void Arm::decodeAndExecute(u32 encoding)
-{
-	if (state == State::ARM) {
 		ArmInstruction ins;
 		ins.encoding = encoding;
-
-		//execute(ins);
+		executeArmIns(ins);
 	}
 	else if (state == State::THUMB) {
+		u32 encoding = thumbpipeline[0];
+		thumbpipeline[0] = thumbpipeline[1];
+		thumbpipeline[1] = fetchU16();
 
+		ThumbInstruction ins;
+		ins.encoding = encoding;
+		executeThumbIns(ins);
 	}
+	return cycles;
 }
 
 void Arm::reset()
@@ -203,6 +198,16 @@ u8 Arm::getConditionCode(u8 cond)
 	}
 }
 
+u16 Arm::readU16()
+{
+	return u16();
+}
+
+u16 Arm::fetchU16()
+{
+	return u16();
+}
+
 u32 Arm::readU32()
 {
 	u32 PC = getPC();
@@ -303,6 +308,17 @@ u32 Arm::rrx(u32 value, u8 &shiftedBit)
 	return value;
 }
 
+void Arm::executeArmIns(ArmInstruction& ins)
+{
+	switch (ins.opcode()) {
+		case 0b1101: opMOV(ins); break;
+	}
+}
+
+void Arm::executeThumbIns(ThumbInstruction& ins)
+{
+}
+
 u8 Arm::opMOV(ArmInstruction& ins)
 {
 	u8 cond = ins.cond();
@@ -337,7 +353,7 @@ u8 Arm::opMOV(ArmInstruction& ins)
 
 		if (set) {
 			//rd != r15
-			if (reg_rd != getRegister(0xF)) {
+			if (reg_rd != getRegister(R15_ID)) {
 				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);

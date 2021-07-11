@@ -79,13 +79,11 @@ class Arm {
 public:
 	Arm(MemoryBus *mbus);
 	u8 clock();
-	void decodeAndExecute(u32 encoding);
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);
 	u8 getFlag(u32 flag);
-
 	u8 fetchOp(u32 encoding);
 
 	//Returns 24 bit PC from R15 in 26 bit mode
@@ -99,6 +97,8 @@ public:
 	State getState();
 	u8 getConditionCode(u8 cond);
 
+	u16 readU16();
+	u16 fetchU16();
 	u32 readU32();
 	u32 fetchU32();
 
@@ -108,6 +108,9 @@ public:
 	u32 asr(u32 value, u8 shift, u8& shiftedBit);
 	u32 ror(u32 value, u8 shift);
 	u32 rrx(u32 value, u8 &shiftedBit);
+
+	void executeArmIns(ArmInstruction& ins);
+	void executeThumbIns(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -137,7 +140,9 @@ private:
 
 	std::array<std::function<u8(ArmInstruction&)>, 0xF> armlut;
 	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;
-	u32 pipeline[2];
+
+	u32 armpipeline[2];
+	u16 thumbpipeline[2];
 
 	u32 cycles;
 	MemoryBus* mbus;

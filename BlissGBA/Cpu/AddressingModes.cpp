@@ -38,13 +38,19 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u8 shiftAmount = ins.shiftAmount();
 		u8 shiftType = ins.shiftType();
 		u8 rm = ins.rm();
+		u8 rn = ins.rn();
 
 		u32 rm_reg = cpu.getRegister(rm);
-		if (shiftAmount == 0) {
-			if (rm_reg == cpu.getRegister(R15_ID)) {
+		u32 rn_reg = cpu.getRegister(rn);
 
+		if (shiftAmount == 0) {
+			if ((rm_reg == cpu.getRegister(R15_ID)) 
+				|| (rn_reg == cpu.getRegister(R15_ID))) {
+				u32 value = cpu.getPC();
+				rm_reg = value;
 			}
-			rm_reg = cpu.rrx(rm_reg, shiftedBit);
+			else
+				rm_reg = cpu.rrx(rm_reg, shiftedBit);
 		}
 		else {
 			rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit);
