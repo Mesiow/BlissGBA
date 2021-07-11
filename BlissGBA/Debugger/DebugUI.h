@@ -8,6 +8,7 @@
 struct DebugUI {
 	DebugUI(Arm *cpu);
 	void render();
+	void renderRegisters();
 	void update();
 	void handleButtonPresses();
 	void handleEvents(sf::Event& ev);

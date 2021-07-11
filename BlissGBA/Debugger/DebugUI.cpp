@@ -7,9 +7,21 @@ DebugUI::DebugUI(Arm* cpu)
 
 void DebugUI::render()
 {
-	ImGui::Begin("Registers");
-	ImGui::NewLine();
+	ImGui::Begin("Main");
 	
+	renderRegisters();
+
+	ImGui::End();
+}
+
+void DebugUI::renderRegisters()
+{
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+	ImGui::Text("Registers");
+	ImGui::PopStyleColor();
+
+	ImGui::NewLine();
+
 	std::string str;
 	for (s32 i = 0; i < NUM_REGISTERS; i++) {
 		str = "R" + std::to_string(i) + ": 0x%08X";
@@ -23,8 +35,6 @@ void DebugUI::render()
 	ImGui::Text("PC: 0x%08X", cpu->getPC());
 	ImGui::Text("CPSR: 0x%08X", cpu->getPSR().CPSR);
 	ImGui::Text("SPSR: 0x%08X", cpu->getPSR().SPSR);
-
-	ImGui::End();
 }
 
 void DebugUI::update()
