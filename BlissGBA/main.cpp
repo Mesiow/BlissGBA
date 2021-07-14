@@ -13,13 +13,12 @@ int main(int arc, char* argv[]) {
     sf::Image icon;
     icon.loadFromFile("icon.png");
     window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
-    window.setVerticalSyncEnabled(true);
 
     ImGui::SFML::Init(window);
 
     MemoryBus mbus;
     Arm cpu(&mbus);
-    DebugUI debug(&cpu);
+    DebugUI debug(&window, &mbus, &cpu);
 
     sf::Clock deltaClock;
     while (window.isOpen()) {

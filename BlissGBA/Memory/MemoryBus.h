@@ -50,6 +50,8 @@ public:
 	bool isAlignedU16(u32 address);
 	bool isAlignedU32(u32 address);
 
+	u8* getBiosMemory() { return genMem.getBios(); }
+
 private:
 	GeneralMemory genMem;
 	DisplayMemory displayMem;

@@ -27,6 +27,8 @@ public:
 	u16 readU16(u32 address);
 	u32 readU32(u32 address);
 
+	u8* getBios() { return &bios[0]; }
+
 private:
 	u8 bios[BIOS_SIZE];
 	u8 obwram[OB_WRAM_SIZE];
