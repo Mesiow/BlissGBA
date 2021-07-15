@@ -84,6 +84,8 @@ public:
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);
 	u8 getFlag(u32 flag);
+	u8 carryFrom(u32 op1, u32 op2);
+	u8 overflowFrom(u32 op1, u32 op2);
 	u8 fetchOp(u32 encoding);
 
 	//Returns 24 bit PC from R15 in 26 bit mode
@@ -118,6 +120,7 @@ private:
 
 	//Arm Instructions
 	u8 opMOV(ArmInstruction& ins);
+	u8 opADD(ArmInstruction& ins);
 
 
 private:

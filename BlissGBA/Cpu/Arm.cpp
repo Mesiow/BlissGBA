@@ -124,6 +124,24 @@ u8 Arm::getFlag(u32 flag)
 	return (CPSR & flag) ? 1 : 0;
 }
 
+u8 Arm::carryFrom(u32 op1, u32 op2)
+{
+	return ((op1 + op2) > 0xFFFFFFFF);
+}
+
+u8 Arm::overflowFrom(u32 op1, u32 op2)
+{
+	u32 signBit = (1 << 31);
+	if ((op1 & signBit) && (op2 & signBit)) {
+		u32 result = op1 + op2;
+		return ((result & signBit) >> 31) & 0x1;
+	}
+	else {
+		u32 result = op1 + op2;
+		return ((result & signBit) >> 31) & 0x1;
+	}
+}
+
 u8 Arm::fetchOp(u32 encoding)
 {
 	u8 opcode = ((encoding >> 21) & 0xF);
@@ -194,7 +212,8 @@ u8 Arm::getConditionCode(u8 cond)
 		case 0b1011: return (getFlag(N) != getFlag(V)); break;
 		case 0b1100: return ((getFlag(Z) == 0) && (getFlag(N) == getFlag(V))); break;
 		case 0b1101: return (getFlag(Z) || (getFlag(N) != getFlag(V))); break;
-		case 0b1110: return 1; //always
+		case 0b1110: return 1; break;//always
+		default: return 1; break; //always
 	}
 }
 
@@ -312,6 +331,7 @@ void Arm::executeArmIns(ArmInstruction& ins)
 {
 	switch (ins.opcode()) {
 		case 0b1101: opMOV(ins); break;
+		case 0b0100: opADD(ins); break;
 	}
 }
 
@@ -337,19 +357,15 @@ u8 Arm::opMOV(ArmInstruction& ins)
 		u8 shiftedBit = 0;
 		if (immediate) {
 			//op2 is an immediate value
-			u8 result = addrMode1.imm(ins, shiftedBit);
-			reg_rd = result;
-
-			writeRegister(rd, reg_rd);
-			
+			u32 result = addrMode1.imm(ins, shiftedBit);
+			reg_rd = result;	
 		}
 		else {
 			//op2 is a register
 			u32 result = addrMode1.shift(ins, shiftedBit);
 			reg_rd = result;
-
-			writeRegister(rd, reg_rd);
 		}
+		writeRegister(rd, reg_rd);
 
 		if (set) {
 			//rd != r15
@@ -363,6 +379,60 @@ u8 Arm::opMOV(ArmInstruction& ins)
 				CPSR = SPSR;
 			}
 
+		}
+	}
+
+	return 1;
+}
+
+u8 Arm::opADD(ArmInstruction& ins)
+{
+	u8 cond = ins.cond();
+	u8 rd = ins.rd();
+	u8 rn = ins.rn();
+	u8 i = ins.i();
+	u8 s = ins.s();
+
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rn = getRegister(rn);
+
+	u8 condition = getConditionCode(cond);
+	bool set = (s == 0x0) ? false : true;
+	bool immediate = (i == 0x0) ? false : true;
+
+	if (condition) {
+		u8 shiftedBit = 0;
+		bool carry = false;
+		bool overflow = false;
+
+		if (immediate) {
+			u32 shifter_op = addrMode1.imm(ins, shiftedBit);
+			u32 result = rn + shifter_op;
+			reg_rd = result;
+
+			carry = carryFrom(rn, shifter_op);
+			overflow = overflowFrom(rn, shifter_op);
+		}
+		else {
+			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
+			u32 result = rn + shifter_op;
+			reg_rd = result;
+
+			carry = carryFrom(rn, shifter_op);
+			overflow = overflowFrom(rn, shifter_op);
+		}
+		writeRegister(rd, reg_rd);
+
+		if (set) {
+			if (reg_rd != getRegister(R15_ID)) {
+				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+				(carry == true) ? setFlag(C) : clearFlag(C);
+				(overflow == true) ? setFlag(V) : clearFlag(V);
+			}
+			else {
+				CPSR = SPSR;
+			}
 		}
 	}
 
