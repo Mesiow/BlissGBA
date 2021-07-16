@@ -121,6 +121,7 @@ private:
 	//Arm Instructions
 	u8 opMOV(ArmInstruction& ins);
 	u8 opADD(ArmInstruction& ins);
+	u8 opAND(ArmInstruction& ins);
 
 
 private:
