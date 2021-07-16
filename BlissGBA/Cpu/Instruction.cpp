@@ -24,15 +24,17 @@ u8 ArmInstruction::s()
     return s;
 }
 
-u8 ArmInstruction::rn()
+RegisterID ArmInstruction::rn()
 {
-    u8 rn = ((this->encoding) >> 16) & 0xF;
+    RegisterID rn;
+    rn.id = ((this->encoding) >> 16) & 0xF;
     return rn;
 }
 
-u8 ArmInstruction::rd()
+RegisterID ArmInstruction::rd()
 {
-    u8 rd = ((this->encoding) >> 12) & 0xF;
+    RegisterID rd;
+    rd.id = ((this->encoding) >> 12) & 0xF;
     return rd;
 }
 
@@ -54,15 +56,17 @@ u8 ArmInstruction::shiftType()
     return type;
 }
 
-u8 ArmInstruction::rs()
+RegisterID ArmInstruction::rs()
 {
-    u8 rs = (this->encoding >> 8) & 0xF;
+    RegisterID rs;
+    rs.id = (this->encoding >> 8) & 0xF;
     return rs;
 }
 
-u8 ArmInstruction::rm()
+RegisterID ArmInstruction::rm()
 {
-    u8 rm = (this->encoding) & 0xF;
+    RegisterID rm;
+    rm.id = (this->encoding) & 0xF;
     return rm;
 }
 
