@@ -22,8 +22,8 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 	if (regShift) {
 		//Register shift
 		u8 shiftType = ins.shiftType();
-		u8 rm = ins.rm();
-		u8 rs = ins.rs();
+		RegisterID rm = ins.rm();
+		RegisterID rs = ins.rs();
 
 		u32 rm_reg = cpu.getRegister(rm);
 		u32 rs_reg = cpu.getRegister(rs);
@@ -37,15 +37,15 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		//Immediate shift
 		u8 shiftAmount = ins.shiftAmount();
 		u8 shiftType = ins.shiftType();
-		u8 rm = ins.rm();
-		u8 rn = ins.rn();
+		RegisterID rm = ins.rm();
+		RegisterID rn = ins.rn();
 
 		u32 rm_reg = cpu.getRegister(rm);
 		u32 rn_reg = cpu.getRegister(rn);
 
 		if (shiftAmount == 0) {
-			if ((rm_reg == cpu.getRegister(R15_ID)) 
-				|| (rn_reg == cpu.getRegister(R15_ID))) {
+			if ((rm_reg == cpu.getRegister(RegisterID{ R15_ID }))
+				|| (rn_reg == cpu.getRegister(RegisterID{ R15_ID }))) {
 				u32 value = cpu.getPC();
 				rm_reg = value;
 			}

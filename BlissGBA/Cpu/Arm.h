@@ -92,8 +92,8 @@ public:
 	u32 getPC();
 	PSR getPSR();
 
-	u32 getRegister(u8 id);
-	void writeRegister(u8 id, u32 value);
+	u32 getRegister(RegisterID reg);
+	void writeRegister(RegisterID reg, u32 value);
 	void writePC(u32 pc);
 
 	State getState();

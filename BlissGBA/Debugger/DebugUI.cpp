@@ -32,11 +32,12 @@ void DebugUI::renderRegisters()
         std::string str;
         for (s32 i = 0; i < NUM_REGISTERS; i++) {
             str = "R" + std::to_string(i) + ": 0x%08X";
-            ImGui::Text(str.c_str(), cpu->getRegister(i));
+            RegisterID id{ i };
+            ImGui::Text(str.c_str(), cpu->getRegister(id));
         }
-        ImGui::Text("R13(SP): 0x%08X", cpu->getRegister(R13_ID));
-        ImGui::Text("R14(LR): 0x%08X", cpu->getRegister(R14_ID));
-        ImGui::Text("R15: 0x%08X", cpu->getRegister(R15_ID));
+        ImGui::Text("R13(SP): 0x%08X", cpu->getRegister(RegisterID{ R13_ID }));
+        ImGui::Text("R14(LR): 0x%08X", cpu->getRegister(RegisterID{ R14_ID }));
+        ImGui::Text("R15: 0x%08X", cpu->getRegister(RegisterID{ R15_ID }));
 
         ImGui::NewLine();
         ImGui::Text("PC: 0x%08X", cpu->getPC());

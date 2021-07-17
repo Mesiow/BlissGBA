@@ -167,26 +167,26 @@ PSR Arm::getPSR()
 	};
 }
 
-u32 Arm::getRegister(u8 id)
+u32 Arm::getRegister(RegisterID reg)
 {
-	if (id >= 0xD) {
-		if (id == 0xD) return SP;
-		if (id == 0xE) return LR;
-		if (id == 0xF) return R15;
+	if (reg.id >= 0xD) {
+		if (reg.id == 0xD) return SP;
+		if (reg.id == 0xE) return LR;
+		if (reg.id == 0xF) return R15;
 	}
-	return registers[id].value;
+	return registers[reg.id].value;
 }
 
-void Arm::writeRegister(u8 id, u32 value)
+void Arm::writeRegister(RegisterID reg, u32 value)
 {
-	if (id >= 0xD) {
-		if (id == 0xD) SP = value;
-		if (id == 0xE) LR = value;
-		if (id == 0xF) R15 = value;
+	if (reg.id >= 0xD) {
+		if (reg.id == 0xD) SP = value;
+		if (reg.id == 0xE) LR = value;
+		if (reg.id == 0xF) R15 = value;
 
 		return;
 	}
-	registers[id].value = value;
+	registers[reg.id].value = value;
 }
 
 void Arm::writePC(u32 pc)
@@ -352,7 +352,7 @@ u8 Arm::opMOV(ArmInstruction& ins)
 	u8 i = ins.i();
 	u8 s = ins.s();
 
-	u32 reg_rd = getRegister(rd.id);
+	u32 reg_rd = getRegister(rd);
 
 	u8 condition = getConditionCode(cond);
 	bool set = (s == 0x0) ? false : true;
@@ -371,11 +371,10 @@ u8 Arm::opMOV(ArmInstruction& ins)
 			u32 result = addrMode1.shift(ins, shiftedBit);
 			reg_rd = result;
 		}
-		writeRegister(rd.id, reg_rd);
+		writeRegister(rd, reg_rd);
 
 		if (set) {
-			//rd != r15
-			if (reg_rd != getRegister(R15_ID)) {
+			if (reg_rd != R15) {
 				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
@@ -399,8 +398,8 @@ u8 Arm::opADD(ArmInstruction& ins)
 	u8 i = ins.i();
 	u8 s = ins.s();
 
-	u32 reg_rd = getRegister(rd.id);
-	u32 reg_rn = getRegister(rn.id);
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rn = getRegister(rn);
 
 	u8 condition = getConditionCode(cond);
 	bool set = (s == 0x0) ? false : true;
@@ -428,10 +427,10 @@ u8 Arm::opADD(ArmInstruction& ins)
 			carry = carryFrom(reg_rn, shifter_op);
 			overflow = overflowFrom(reg_rn, shifter_op);
 		}
-		writeRegister(rd.id, reg_rd);
+		writeRegister(rd, reg_rd);
 
 		if (set) {
-			if (reg_rd != getRegister(R15_ID)) {
+			if (reg_rd != R15) {
 				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 				(carry == true) ? setFlag(C) : clearFlag(C);
@@ -455,8 +454,8 @@ u8 Arm::opAND(ArmInstruction& ins)
 	u8 i = ins.i();
 	u8 s = ins.s();
 
-	u32 reg_rd = getRegister(rd.id);
-	u32 reg_rn = getRegister(rn.id);
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rn = getRegister(rn);
 	u8 condition = getConditionCode(cond);
 
 	bool set = (s == 0x0) ? false : true;
@@ -474,10 +473,10 @@ u8 Arm::opAND(ArmInstruction& ins)
 			u32 result = reg_rn & shifter_op;
 			reg_rd = result;
 		}
-		writeRegister(rd.id, reg_rd);
+		writeRegister(rd, reg_rd);
 
 		if (set) {
-			if (reg_rd != getRegister(R15_ID)) {
+			if (reg_rd != R15) {
 				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
