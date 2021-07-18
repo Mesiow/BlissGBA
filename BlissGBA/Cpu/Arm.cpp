@@ -129,21 +129,44 @@ u8 Arm::carryFrom(u32 op1, u32 op2)
 	return (((u64)op1 + (u64)op2) > 0xFFFFFFFF);
 }
 
-u8 Arm::overflowFrom(u32 op1, u32 op2)
+u8 Arm::borrowFrom(u32 op1, u32 op2)
+{
+	return (((s64)op1 - (s64)op2) < 0);
+}
+
+u8 Arm::overflowFromAdd(u32 op1, u32 op2)
 {
 	u32 signBit = 0x80000000;
 	bool negative = ((op1 & signBit) && (op2 & signBit));
 	bool positive = (((op1 & signBit) == 0) && ((op2 & signBit) == 0));
 
 	if (positive) {
-		u32 result = op1 + op2;
+		s64 result = op1 + op2;
 		if (result & signBit) return true;
 	}
 	if (negative) {
-		u32 result = op1 + op2;
+		s64 result = op1 + op2;
 		if ((result & signBit) == 0) return true;
 	}
+	return false;
+}
 
+u8 Arm::overflowFromSub(u32 op1, u32 op2) 
+{
+	u32 signBit = 0x80000000;
+	//subtracting a negative (5 - (-2))
+	bool negative = (((op1 & signBit) == 0) && (op2 & signBit));
+	//subtracting a positive (-5 - 2)
+	bool positive = ((op1 & signBit) && ((op2 & signBit) == 0));
+
+	if (positive) {
+		s64 result = op1 - op2;
+		if (result & signBit) return true;
+	}
+	if (negative) {
+		s64 result = op1 - op2;
+		if ((result & signBit) == 0) return true;
+	}
 	return false;
 }
 
@@ -335,9 +358,11 @@ u32 Arm::rrx(u32 value, u8 &shiftedBit)
 void Arm::executeArmIns(ArmInstruction& ins)
 {
 	switch (ins.opcode()) {
-		case 0b0000: opAND(ins); break;
-		case 0b1101: opMOV(ins); break;
-		case 0b0100: opADD(ins); break;
+		case 0b0000: opAND(ins, getConditionCode(ins.cond()), ins.rd(), ins.rn()); break;
+		case 0b0001: opEOR(ins, getConditionCode(ins.cond()), ins.rd(), ins.rn()); break;
+		case 0b0010: opSUB(ins, getConditionCode(ins.cond()), ins.rd(), ins.rn()); break;
+		case 0b1101: opMOV(ins, getConditionCode(ins.cond()), ins.rd(), ins.rn()); break;
+		case 0b0100: opADD(ins, getConditionCode(ins.cond()), ins.rd(), ins.rn()); break;
 	}
 }
 
@@ -345,19 +370,12 @@ void Arm::executeThumbIns(ThumbInstruction& ins)
 {
 }
 
-u8 Arm::opMOV(ArmInstruction& ins)
+u8 Arm::opMOV(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 {
-	u8 cond = ins.cond();
-	RegisterID rd = ins.rd();
-	u8 i = ins.i();
-	u8 s = ins.s();
-
 	u32 reg_rd = getRegister(rd);
 
-	u8 condition = getConditionCode(cond);
-	bool set = (s == 0x0) ? false : true;
-	bool immediate = (i == 0x0) ? false : true;
-
+	bool set = (ins.s() == 0x0) ? false : true;
+	bool immediate = (ins.i() == 0x0) ? false : true;
 	
 	if (condition) {
 		u8 shiftedBit = 0;
@@ -390,20 +408,13 @@ u8 Arm::opMOV(ArmInstruction& ins)
 	return 1;
 }
 
-u8 Arm::opADD(ArmInstruction& ins)
+u8 Arm::opADD(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 {
-	u8 cond = ins.cond();
-	RegisterID rd = ins.rd();
-	RegisterID rn = ins.rn();
-	u8 i = ins.i();
-	u8 s = ins.s();
-
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rn = getRegister(rn);
 
-	u8 condition = getConditionCode(cond);
-	bool set = (s == 0x0) ? false : true;
-	bool immediate = (i == 0x0) ? false : true;
+	bool set = (ins.s() == 0x0) ? false : true;
+	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
 		//Shifter carry out(shifted bit) is not needed here
@@ -417,7 +428,7 @@ u8 Arm::opADD(ArmInstruction& ins)
 			reg_rd = result;
 
 			carry = carryFrom(reg_rn, shifter_op);
-			overflow = overflowFrom(reg_rn, shifter_op);
+			overflow = overflowFromAdd(reg_rn, shifter_op);
 		}
 		else {
 			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
@@ -425,7 +436,7 @@ u8 Arm::opADD(ArmInstruction& ins)
 			reg_rd = result;
 
 			carry = carryFrom(reg_rn, shifter_op);
-			overflow = overflowFrom(reg_rn, shifter_op);
+			overflow = overflowFromAdd(reg_rn, shifter_op);
 		}
 		writeRegister(rd, reg_rd);
 
@@ -445,21 +456,13 @@ u8 Arm::opADD(ArmInstruction& ins)
 	return 1;
 }
 
-u8 Arm::opAND(ArmInstruction& ins)
+u8 Arm::opAND(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 {
-	//Rd = Rn AND shifter_operand
-	u8 cond = ins.cond();
-	RegisterID rd = ins.rd();
-	RegisterID rn = ins.rn();
-	u8 i = ins.i();
-	u8 s = ins.s();
-
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rn = getRegister(rn);
-	u8 condition = getConditionCode(cond);
 
-	bool set = (s == 0x0) ? false : true;
-	bool immediate = (i == 0x0) ? false : true;
+	bool set = (ins.s() == 0x0) ? false : true;
+	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
 		u8 shiftedBit = 0;
@@ -480,6 +483,94 @@ u8 Arm::opAND(ArmInstruction& ins)
 				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
+			}
+			else {
+				CPSR = SPSR;
+			}
+		}
+	}
+
+	return 1;
+}
+
+
+u8 Arm::opEOR(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
+{
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rn = getRegister(rn);
+
+	bool set = (ins.s() == 0x0) ? false : true;
+	bool immediate = (ins.i() == 0x0) ? false : true;
+
+	if (condition) {
+		u8 shiftedBit = 0;
+		if (immediate) {
+			u32 shifter_op = addrMode1.imm(ins, shiftedBit);
+			u32 result = reg_rn ^ shifter_op;
+			reg_rd = result;
+		}
+		else {
+			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
+			u32 result = reg_rn ^ shifter_op;
+			reg_rd = result;
+		}
+		writeRegister(rd, reg_rd);
+
+		if (set) {
+			if (reg_rd != R15) {
+				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
+			}
+			else {
+				CPSR = SPSR;
+			}
+		}
+	}
+
+	return 1;
+}
+
+u8 Arm::opSUB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
+{
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rn = getRegister(rn);
+
+	bool set = (ins.s() == 0x0) ? false : true;
+	bool immediate = (ins.i() == 0x0) ? false : true;
+
+	if (condition) {
+		u8 shiftedBit = 0;
+		bool borrow = false;
+		bool overflow = false;
+
+		if (immediate) {
+			u32 shifter_op = addrMode1.imm(ins, shiftedBit);
+			u32 result = reg_rn - shifter_op;
+			reg_rd = result;
+
+			borrow = borrowFrom(reg_rn, shifter_op);
+			overflow = overflowFromSub(reg_rn, shifter_op);
+		}
+		else {
+			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
+			u32 result = reg_rn - shifter_op;
+			reg_rd = result;
+
+			borrow = borrowFrom(reg_rn, shifter_op);
+			overflow = overflowFromSub(reg_rn, shifter_op);
+		}
+		writeRegister(rd, reg_rd);
+
+		if (set) {
+			if(reg_rd != R15) {
+				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+				(borrow == false) ? setFlag(C) : clearFlag(C);
+				(overflow == true) ? setFlag(V) : clearFlag(V);
+			}
+			else {
+				CPSR = SPSR;
 			}
 		}
 	}
