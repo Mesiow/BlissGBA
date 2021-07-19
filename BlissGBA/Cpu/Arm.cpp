@@ -217,6 +217,26 @@ void Arm::writePC(u32 pc)
 	R15 |= ((pc << 2) & 0xFFFFFFFF);
 }
 
+void Arm::setCC(u32 rd, bool borrow, bool overflow,
+	bool shiftOut, u8 shifterCarryOut)
+{
+	if (rd != R15) {
+		(rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(rd == 0) ? setFlag(Z) : clearFlag(Z);
+		if (shiftOut) {
+			//overflow not affected
+			(shifterCarryOut == 1) ? setFlag(C) : clearFlag(C);
+		}
+		else {
+			(borrow == false) ? setFlag(C) : clearFlag(C);
+			(overflow == true) ? setFlag(V) : clearFlag(V);
+		}
+	}
+	else {
+		CPSR = SPSR;
+	}
+}
+
 State Arm::getState()
 {
 	u8 st = ((CPSR & T) >> T_BIT);
@@ -392,16 +412,7 @@ u8 Arm::opMOV(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			if (reg_rd != R15) {
-				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
-				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
-			}
-			else {
-				//spsr of curr mode is copied to cpsr
-				CPSR = SPSR;
-			}
-
+			setCC(reg_rd, false, false, true, shiftedBit);
 		}
 	}
 
@@ -441,15 +452,7 @@ u8 Arm::opADD(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			if (reg_rd != R15) {
-				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
-				(carry == true) ? setFlag(C) : clearFlag(C);
-				(overflow == true) ? setFlag(V) : clearFlag(V);
-			}
-			else {
-				CPSR = SPSR;
-			}
+			setCC(reg_rd, !carry, overflow);
 		}
 	}
 
@@ -479,14 +482,7 @@ u8 Arm::opAND(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			if (reg_rd != R15) {
-				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
-				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
-			}
-			else {
-				CPSR = SPSR;
-			}
+			setCC(reg_rd, false, false, true, shiftedBit);
 		}
 	}
 
@@ -517,14 +513,7 @@ u8 Arm::opEOR(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			if (reg_rd != R15) {
-				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
-				(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
-			}
-			else {
-				CPSR = SPSR;
-			}
+			setCC(reg_rd, false, false, true, shiftedBit);
 		}
 	}
 
@@ -563,15 +552,7 @@ u8 Arm::opSUB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			if(reg_rd != R15) {
-				(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-				(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
-				(borrow == false) ? setFlag(C) : clearFlag(C);
-				(overflow == true) ? setFlag(V) : clearFlag(V);
-			}
-			else {
-				CPSR = SPSR;
-			}
+			setCC(reg_rd, !borrow, overflow);
 		}
 	}
 

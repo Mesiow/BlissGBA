@@ -99,6 +99,10 @@ public:
 	void writeRegister(RegisterID reg, u32 value);
 	void writePC(u32 pc);
 
+	//Set condition codes (S bit)
+	void setCC(u32 rd, bool borrow, bool overflow,
+		 bool shiftOut = false, u8 shifterCarryOut = 0);
+
 	State getState();
 	u8 getConditionCode(u8 cond);
 
