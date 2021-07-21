@@ -131,7 +131,17 @@ private:
 	u8 opAND(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 	u8 opEOR(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 	u8 opSUB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-
+	u8 opRSB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opADC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opSBC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opRSC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opTST(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opTEQ(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opCMP(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opCMN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opORR(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opBIC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opMVN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 
 private:
 	State state;
