@@ -30,6 +30,7 @@ Unused Memory Area
 */
 #include "GeneralMemory.h"
 #include "DisplayMemory.h"
+#include "../Cartridge/GamePak.h"
 
 #define GENERAL_MEM_END 0x5000000
 #define DISPLAY_MEM_END 0x70003FF
@@ -51,8 +52,11 @@ public:
 	bool isAlignedU32(u32 address);
 
 	u8* getBiosMemory() { return genMem.getBios(); }
+	u8* getGamePakMemory() { return pak.getGamePakWS0(); }
 
 private:
 	GeneralMemory genMem;
 	DisplayMemory displayMem;
+	GamePak pak;
+
 };

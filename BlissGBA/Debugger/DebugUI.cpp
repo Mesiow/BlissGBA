@@ -2,12 +2,14 @@
 
 MemoryEditor DebugUI::mainMemory;
 MemoryEditor DebugUI::biosMemory;
+MemoryEditor DebugUI::gamepakMemory;
 
 DebugUI::DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm* cpu)
 	:window(window), mbus(mbus), cpu(cpu)
 {
     showRegisterWindow = true;
     showBiosMemory = true;
+    showGamePakMemory = true;
     vsync = false;
 }
 
@@ -18,6 +20,9 @@ void DebugUI::render()
 
     if (showBiosMemory) {
         biosMemory.DrawWindow("Bios Memory", mbus->getBiosMemory(), BIOS_SIZE);
+    }
+    if (showGamePakMemory) {
+        gamepakMemory.DrawWindow("GamePak Memory", mbus->getGamePakMemory(), GAMEPAK_WS_SIZE);
     }
 }
 

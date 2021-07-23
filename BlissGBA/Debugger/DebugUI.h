@@ -17,9 +17,11 @@ struct DebugUI {
 
 	static MemoryEditor mainMemory;
 	static MemoryEditor biosMemory;
+	static MemoryEditor gamepakMemory;
 
 	bool showRegisterWindow;
 	bool showBiosMemory;
+	bool showGamePakMemory;
 	bool vsync;
 
 	bool sign;

@@ -18,6 +18,8 @@ public:
 	GamePak();
 	~GamePak();
 	void load(const std::string& fileName);
+	u8* getGamePakWS0() { return &gamepakWS0[0]; }
+
 private:
 	u8* gamepakWS0;
 	u8* gamepakWS1;

@@ -6,6 +6,7 @@ MemoryBus::MemoryBus()
 	displayMem.zero();
 
 	genMem.loadBios("roms/gba_bios.bin");
+	pak.load("test_roms/gang.gba");
 }
 
 void MemoryBus::writeU8(u32 address, u8 value)

@@ -41,9 +41,9 @@ void Arm::reset()
 
 	LR = 0x00000000;
 	R15 = 0x80000000;
-	SP = 0x00000000;
-	CPSR = 0x6000001F;
-	SPSR = 0x03007F00;
+	SP = 0x03007F00;
+	CPSR = 0x0000001F;
+	SPSR = 0x00000000;
 }
 
 void Arm::setFlag(u32 flagBits, bool condition)
@@ -626,7 +626,32 @@ u8 Arm::opADC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 
 u8 Arm::opSBC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 {
-	return u8();
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rn = getRegister(rn);
+
+	bool set = (ins.s() == 0x0) ? false : true;
+	bool immediate = (ins.i() == 0x0) ? false : true;
+
+	if (condition) {
+		u8 shiftedBit = 0;
+		bool borrow = false;
+		bool overflow = false;
+
+		u32 shifter_op = (immediate == true) ?
+			addrMode1.imm(ins, shiftedBit) : addrMode1.shift(ins, shiftedBit);
+
+		u32 result = reg_rn - (shifter_op - !getFlag(C));
+		reg_rd = result;
+
+		borrow = borrowFrom(reg_rn, shifter_op - !getFlag(C));
+		overflow = overflowFromSub(reg_rn, shifter_op - !getFlag(C));
+
+		if (set) {
+			setCC(reg_rd, !borrow, overflow);
+		}
+	}
+
+	return 1;
 }
 
 u8 Arm::opRSC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)

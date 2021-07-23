@@ -1,6 +1,10 @@
 #include "GamePak.h"
 
 GamePak::GamePak()
+	:gamepakWS0(nullptr),
+	gamepakWS1(nullptr),
+	gamepakWS2(nullptr),
+	gamepakSRAM(nullptr)
 {
 }
 
