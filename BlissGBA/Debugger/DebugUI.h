@@ -3,13 +3,16 @@
 #include "imgui_memory_editor.h"
 #include <SFML/Graphics.hpp>
 #include <string>
+#include <filesystem>
 #include "../Cpu/Arm.h"
 #include "../Memory/MemoryBus.h"
+#include "tinyfiledialogs.h"
 
 struct DebugUI {
 	DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm *cpu);
 	void render();
 	void renderRegisters();
+	void renderButtons();
 	void renderMenuBar();
 	void update();
 	void handleButtonPresses();
@@ -22,6 +25,8 @@ struct DebugUI {
 	bool showRegisterWindow;
 	bool showBiosMemory;
 	bool showGamePakMemory;
+	bool showCartWindow;
+	bool showPPUWindow;
 	bool vsync;
 
 	bool sign;

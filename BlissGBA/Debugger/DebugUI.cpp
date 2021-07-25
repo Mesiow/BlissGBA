@@ -8,8 +8,10 @@ DebugUI::DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm* cpu)
 	:window(window), mbus(mbus), cpu(cpu)
 {
     showRegisterWindow = true;
-    showBiosMemory = true;
+    showBiosMemory = false;
     showGamePakMemory = true;
+    showCartWindow = true;
+    showPPUWindow = false;
     vsync = false;
 }
 
@@ -29,7 +31,7 @@ void DebugUI::render()
 void DebugUI::renderRegisters()
 {
     if (showRegisterWindow) {
-        ImGui::Begin("Register Window");
+        ImGui::Begin("General");
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
         ImGui::Text("Registers");
         ImGui::PopStyleColor();
@@ -65,36 +67,63 @@ void DebugUI::renderRegisters()
             ImGui::SameLine();
         }
 
+        ImGui::NewLine();
+        renderButtons();
+
         ImGui::End();
+    }
+}
+
+void DebugUI::renderButtons()
+{
+    ImGui::NewLine();
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+    ImGui::Text("Emulation");
+    ImGui::PopStyleColor();
+ 
+    if (ImGui::Button("Run")) {
+
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Step")) {
+
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Pause")) {
+
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset")) {
+
     }
 }
 
 void DebugUI::renderMenuBar()
 {
-    static const char* fileTypes[] = { "*.sfc", "*.smc", "*.snes", "*.zip", "*.rar", "*.7z" };
+    static const char* fileTypes[] = { "*.gba", "*.bin", "*.zip", "*.rar", "*.7z" };
 
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::MenuItem("Open ROM")) {
-            //auto file = tinyfd_openFileDialog(
-            //    "Gib SNES ROM",
-            //    "",
-            //    6,
-            //    fileTypes,
-            //    "SNES ROMs",
-            //    0);
+            auto file = tinyfd_openFileDialog(
+                "GBA ROM",
+                "",
+                5,
+                fileTypes,
+                "GBA ROMs",
+                0);
 
-            //if (file != nullptr) {  // Check if file dialog was canceled
-            //    auto path = std::filesystem::path(file);
-            //    Memory::loadROM(path);
-            //    g_snes.reset();
-            //}
+            if (file != nullptr) {  // Check if file dialog was canceled
+                auto path = std::filesystem::path(file);
+                //Memory::loadROM(path);
+                //g_snes.reset();
+            }
         }
 
         if (ImGui::BeginMenu("Emulation")) {
             //bool cartInserted = Memory::cart.mapper != Mappers::NoCart;
 
             //if (ImGui::MenuItem("Trace", nullptr) && cartInserted) // Make sure not to run without cart
-            //    g_snes.step();
+            //    gba.step();
             //if (ImGui::MenuItem("Run", nullptr, &running)) // Same here
             //    running = running ? cartInserted : false;
             //if (ImGui::MenuItem("Pause", nullptr) && running) {
@@ -106,14 +135,11 @@ void DebugUI::renderMenuBar()
         }
 
         if (ImGui::BeginMenu("Debug")) {
-            ImGui::MenuItem("Show registers", nullptr, &showRegisterWindow);
-            /*ImGui::MenuItem("Show SPC info", nullptr, &showSPCWindow);
-            ImGui::MenuItem("Show cart info", nullptr, &showCartWindow);
-            ImGui::MenuItem("Show DMA info", nullptr, &showDMAWindow);
+            ImGui::MenuItem("General Debug Info", nullptr, &showRegisterWindow);
+            ImGui::MenuItem("Show Cart Info", nullptr, &showCartWindow);
             ImGui::MenuItem("Show PPU registers", nullptr, &showPPUWindow);
-            ImGui::MenuItem("Show VRAM editor", nullptr, &showVramEditor);*/
-            ImGui::MenuItem("Show bios memory", nullptr, &showBiosMemory);
-            //ImGui::MenuItem("Show memory", nullptr, &showMemoryEditor);
+            ImGui::MenuItem("Show Bios memory", nullptr, &showBiosMemory);
+            ImGui::MenuItem("Show GamePak memory", nullptr, &gamepakMemory);
             ImGui::EndMenu();
         }
 
