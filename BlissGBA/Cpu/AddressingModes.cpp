@@ -44,10 +44,9 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u32 rn_reg = cpu.getRegister(rn);
 
 		if (shiftAmount == 0) {
-			if ((rm_reg == cpu.getRegister(RegisterID{ R15_ID }))
-				|| (rn_reg == cpu.getRegister(RegisterID{ R15_ID }))) {
-				u32 value = cpu.getPC();
-				rm_reg = value;
+			u32 r15 = cpu.getRegister(RegisterID{ R15_ID });
+			if ((rm_reg == r15) || (rn_reg == r15)) {
+				rm_reg = r15;
 			}
 			else
 				rm_reg = cpu.rrx(rm_reg, shiftedBit);

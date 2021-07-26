@@ -45,10 +45,9 @@ void DebugUI::renderRegisters()
         }
         ImGui::Text("R13(SP): 0x%08X", cpu->getRegister(RegisterID{ R13_ID }));
         ImGui::Text("R14(LR): 0x%08X", cpu->getRegister(RegisterID{ R14_ID }));
-        ImGui::Text("R15: 0x%08X", cpu->getRegister(RegisterID{ R15_ID }));
+        ImGui::Text("R15(PC): 0x%08X", cpu->getRegister(RegisterID{ R15_ID }));
 
         ImGui::NewLine();
-        ImGui::Text("PC: 0x%08X", cpu->getPC());
         ImGui::Text("CPSR: 0x%08X", cpu->getPSR().CPSR);
         ImGui::Text("SPSR: 0x%08X", cpu->getPSR().SPSR);
 

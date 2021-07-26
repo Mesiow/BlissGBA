@@ -44,6 +44,9 @@ void Arm::reset()
 	SP = 0x03007F00;
 	CPSR = 0x0000001F;
 	SPSR = 0x00000000;
+
+	armpipeline[0] = fetchU32();
+	armpipeline[1] = fetchU32();
 }
 
 void Arm::setFlag(u32 flagBits, bool condition)
@@ -176,12 +179,6 @@ u8 Arm::fetchOp(u32 encoding)
 	return opcode;
 }
 
-u32 Arm::getPC()
-{
-	u32 pc = ((R15 >> 2) & 0xFFFFFFFF);
-	return pc;
-}
-
 PSR Arm::getPSR()
 {
 	return PSR{
@@ -277,26 +274,20 @@ u16 Arm::fetchU16()
 
 u32 Arm::readU32()
 {
-	u32 PC = getPC();
-
-	u32 word = (mbus->readU8(PC)) |
-		(mbus->readU8(PC + 1) << 8) |
-		(mbus->readU8(PC + 2) << 16) |
-		(mbus->readU8(PC + 3) << 24);
+	u32 word = (mbus->readU8(R15)) |
+		(mbus->readU8(R15 + 1) << 8) |
+		(mbus->readU8(R15 + 2) << 16) |
+		(mbus->readU8(R15 + 3) << 24);
 
 	return word;
 }
 
 u32 Arm::fetchU32()
 {
-	u32 PC = getPC();
-
-	u32 word = (mbus->readU8(PC++)) |
-		(mbus->readU8(PC++) << 8) |
-		(mbus->readU8(PC++) << 16) |
-		(mbus->readU8(PC++) << 24);
-
-	writePC(PC);
+	u32 word = (mbus->readU8(R15++)) |
+		(mbus->readU8(R15++) << 8) |
+		(mbus->readU8(R15++) << 16) |
+		(mbus->readU8(R15++) << 24);
 
 	return word;
 }
