@@ -14,6 +14,7 @@ struct DebugUI {
 	void renderRegisters();
 	void renderButtons();
 	void renderMenuBar();
+	void renderCartInfo();
 	void update();
 	void handleButtonPresses();
 	void handleEvents(sf::Event& ev);

@@ -57,6 +57,8 @@ public:
 private:
 	GeneralMemory genMem;
 	DisplayMemory displayMem;
+
+public:
 	GamePak pak;
 
 };

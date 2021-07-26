@@ -19,6 +19,7 @@ void DebugUI::render()
 {
     renderMenuBar();
 	renderRegisters();
+    renderCartInfo();
 
     if (showBiosMemory) {
         biosMemory.DrawWindow("Bios Memory", mbus->getBiosMemory(), BIOS_SIZE);
@@ -151,6 +152,18 @@ void DebugUI::renderMenuBar()
         }
 
         ImGui::EndMainMenuBar();
+    }
+}
+
+void DebugUI::renderCartInfo()
+{
+    if (showCartWindow) {
+        ImGui::Begin("Cartridge Info");
+
+        ImGui::Text("Game Title: %s", mbus->pak.title.c_str());
+        ImGui::Text("ROM Size: %s", mbus->pak.romSize.c_str());
+
+        ImGui::End();
     }
 }
 
