@@ -376,9 +376,20 @@ void Arm::executeArmIns(ArmInstruction& ins)
 		case 0b0000: opAND(ins, cond, rd, rn); break;
 		case 0b0001: opEOR(ins, cond, rd, rn); break;
 		case 0b0010: opSUB(ins, cond, rd, rn); break;
-		case 0b0011: opRSB(ins, cond, rd, rn);
-		case 0b1101: opMOV(ins, cond, rd, rn); break;
+		case 0b0011: opRSB(ins, cond, rd, rn); break;
 		case 0b0100: opADD(ins, cond, rd, rn); break;
+		case 0b0101: opADC(ins, cond, rd, rn); break;
+		case 0b0110: opSBC(ins, cond, rd, rn); break;
+		case 0b0111: opRSC(ins, cond, rd, rn); break;
+		case 0b1000: opTST(ins, cond, rd, rn); break;
+		case 0b1001: opTEQ(ins, cond, rd, rn); break;
+		case 0b1010: opCMP(ins, cond, rd, rn); break;
+		case 0b1011: opCMN(ins, cond, rd, rn); break;
+		case 0b1100: opORR(ins, cond, rd, rn); break;
+		case 0b1101: opMOV(ins, cond, rd, rn); break;
+		case 0b1110: opBIC(ins, cond, rd, rn); break;
+		case 0b1111: opMVN(ins, cond, rd, rn); break;
+
 	}
 }
 

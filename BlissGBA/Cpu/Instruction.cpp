@@ -81,3 +81,21 @@ u8 ArmInstruction::imm()
     u8 imm = (this->encoding) & 0xFF;
     return imm;
 }
+
+u8 ArmInstruction::instruction()
+{
+    u8 ins = ((this->encoding) >> 25) & 0x7;
+    return ins;
+}
+
+u8 ArmInstruction::l()
+{
+    u8 l = ((this->encoding) >> 24) & 0x1;
+    return l;
+}
+
+s32 ArmInstruction::offset()
+{
+    s32 offset = (this->encoding) & 0xFFFFFF;
+    return offset;
+}

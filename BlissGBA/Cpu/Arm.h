@@ -123,6 +123,8 @@ private:
 	void mapThumbOpcodes();
 
 	//Arm Instructions
+
+	//Data processing
 	u8 opMOV(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 	u8 opADD(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 	u8 opAND(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
