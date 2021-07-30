@@ -22,6 +22,7 @@ public:
 
 private:
 	void parseHeader(u32 size);
+	void zeroMemory();
 
 public:
 	std::string title;

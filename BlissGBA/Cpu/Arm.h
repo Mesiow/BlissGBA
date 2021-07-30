@@ -142,6 +142,9 @@ private:
 	u8 opBIC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 	u8 opMVN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 
+	//Branches
+
+
 private:
 	State state;
 	/*

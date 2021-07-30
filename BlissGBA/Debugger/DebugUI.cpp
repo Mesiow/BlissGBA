@@ -9,8 +9,8 @@ DebugUI::DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm* cpu)
 {
     showRegisterWindow = true;
     showBiosMemory = false;
-    showGamePakMemory = true;
-    showCartWindow = true;
+    showGamePakMemory = false;
+    showCartWindow = false;
     showPPUWindow = false;
     vsync = false;
 }
@@ -25,7 +25,9 @@ void DebugUI::render()
         biosMemory.DrawWindow("Bios Memory", mbus->getBiosMemory(), BIOS_SIZE);
     }
     if (showGamePakMemory) {
-        gamepakMemory.DrawWindow("GamePak Memory", mbus->getGamePakMemory(), GAMEPAK_WS_SIZE);
+        if (mbus->getGamePakMemory() != nullptr) {
+            gamepakMemory.DrawWindow("GamePak Memory", mbus->getGamePakMemory(), GAMEPAK_WS_SIZE);
+        }
     }
 }
 
@@ -113,9 +115,9 @@ void DebugUI::renderMenuBar()
                 0);
 
             if (file != nullptr) {  // Check if file dialog was canceled
-                auto path = std::filesystem::path(file);
-                //Memory::loadROM(path);
-                //g_snes.reset();
+                std::string path = std::filesystem::path(file).string();
+                mbus->loadGamePak(path);
+                //gba/core.reset();
             }
         }
 
@@ -139,7 +141,7 @@ void DebugUI::renderMenuBar()
             ImGui::MenuItem("Show Cart Info", nullptr, &showCartWindow);
             ImGui::MenuItem("Show PPU registers", nullptr, &showPPUWindow);
             ImGui::MenuItem("Show Bios memory", nullptr, &showBiosMemory);
-            ImGui::MenuItem("Show GamePak memory", nullptr, &gamepakMemory);
+            ImGui::MenuItem("Show GamePak memory", nullptr, &showGamePakMemory);
             ImGui::EndMenu();
         }
 

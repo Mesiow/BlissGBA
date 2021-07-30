@@ -5,18 +5,19 @@ GamePak::GamePak()
 	gamepakWS1(nullptr),
 	gamepakWS2(nullptr),
 	gamepakSRAM(nullptr)
-{
-}
+{ 
+	
+}	
 
 GamePak::~GamePak()
 {
-	if (gamepakWS0) delete gamepakWS0;
-	if (gamepakWS1) delete gamepakWS1;
-	if (gamepakWS2) delete gamepakWS2;
+	zeroMemory();
 }
 
 void GamePak::load(const std::string& fileName)
 {
+	zeroMemory();
+
 	std::ifstream file(fileName, std::ios::binary | std::ios::ate);
 	if (file.is_open()) {
 		u32 size = file.tellg();
@@ -53,6 +54,8 @@ void GamePak::load(const std::string& fileName)
 void GamePak::parseHeader(u32 size)
 {
 	std::string sizeStr = std::to_string(size);
+	if (size == GAMEPAK_WS_SIZE) romSize = "32MB";
+
 	//byte
 	if (size < 1000) {
 		romSize = "0." + sizeStr + "bytes";
@@ -70,21 +73,28 @@ void GamePak::parseHeader(u32 size)
 			romSize = sizeStr + "KB";
 		}
 		//mb
-		else if (sizeStr.length() == 7) {
+		else if (sizeStr.length() == 7 || sizeStr.length() == 8) {
 			//convert to mebibytes
 			size /= 1048576;
 			sizeStr = std::to_string(size);
-			sizeStr.erase(3, 6);
-			sizeStr.insert(2, ".");
 			romSize = sizeStr + "MB";
 		}
-		
 	}
 
-	33554432;
-
-	if (size == GAMEPAK_WS_SIZE) romSize = "32MB";
 	for (s32 i = 0; i < 12; i++) {
 		title.push_back((char)gamepakWS0[i + 0xA0]);
 	}
+}
+
+void GamePak::zeroMemory()
+{
+	if (gamepakWS0) delete gamepakWS0;
+	if (gamepakWS1) delete gamepakWS1;
+	if (gamepakWS2) delete gamepakWS2;
+	if (gamepakSRAM) delete gamepakSRAM;
+
+	gamepakWS0 = nullptr;
+	gamepakWS1 = nullptr;
+	gamepakWS2 = nullptr;
+	gamepakSRAM = nullptr;
 }

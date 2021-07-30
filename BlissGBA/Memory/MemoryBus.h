@@ -40,6 +40,8 @@ Unused Memory Area
 class MemoryBus {
 public:
 	MemoryBus();
+	void loadGamePak(const std::string& file);
+	
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
 	void writeU32(u32 address, u16 value);
