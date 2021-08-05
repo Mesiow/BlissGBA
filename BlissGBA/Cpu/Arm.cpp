@@ -366,35 +366,45 @@ u32 Arm::rrx(u32 value, u8 &shiftedBit)
 	return value;
 }
 
-void Arm::executeArmIns(ArmInstruction& ins)
+u8 Arm::executeArmIns(ArmInstruction& ins)
 {
 	u8 cond = getConditionCode(ins.cond());
 	RegisterID rd = ins.rd();
 	RegisterID rn = ins.rn();
 
-	switch (ins.opcode()) {
-		case 0b0000: opAND(ins, cond, rd, rn); break;
-		case 0b0001: opEOR(ins, cond, rd, rn); break;
-		case 0b0010: opSUB(ins, cond, rd, rn); break;
-		case 0b0011: opRSB(ins, cond, rd, rn); break;
-		case 0b0100: opADD(ins, cond, rd, rn); break;
-		case 0b0101: opADC(ins, cond, rd, rn); break;
-		case 0b0110: opSBC(ins, cond, rd, rn); break;
-		case 0b0111: opRSC(ins, cond, rd, rn); break;
-		case 0b1000: opTST(ins, cond, rd, rn); break;
-		case 0b1001: opTEQ(ins, cond, rd, rn); break;
-		case 0b1010: opCMP(ins, cond, rd, rn); break;
-		case 0b1011: opCMN(ins, cond, rd, rn); break;
-		case 0b1100: opORR(ins, cond, rd, rn); break;
-		case 0b1101: opMOV(ins, cond, rd, rn); break;
-		case 0b1110: opBIC(ins, cond, rd, rn); break;
-		case 0b1111: opMVN(ins, cond, rd, rn); break;
-
+	//(B,BL)
+	if (ins.branch() == 0b101) {
+		return ((ins.l() == 0x0) ? opB(ins, cond) : opBL(ins, cond));
+	}
+	//(BX)
+	else if (ins.bits20To27() == 0b00010010 && ins.bits4To7() == 0b0001) {
+		return opBX(ins, cond, rn);
+	}
+	else {
+		switch (ins.opcode()) {
+		case 0b0000: return opAND(ins, cond, rd, rn); break;
+		case 0b0001: return opEOR(ins, cond, rd, rn); break;
+		case 0b0010: return opSUB(ins, cond, rd, rn); break;
+		case 0b0011: return opRSB(ins, cond, rd, rn); break;
+		case 0b0100: return opADD(ins, cond, rd, rn); break;
+		case 0b0101: return opADC(ins, cond, rd, rn); break;
+		case 0b0110: return opSBC(ins, cond, rd, rn); break;
+		case 0b0111: return opRSC(ins, cond, rd, rn); break;
+		case 0b1000: return opTST(ins, cond, rd, rn); break;
+		case 0b1001: return opTEQ(ins, cond, rd, rn); break;
+		case 0b1010: return opCMP(ins, cond, rd, rn); break;
+		case 0b1011: return opCMN(ins, cond, rd, rn); break;
+		case 0b1100: return opORR(ins, cond, rd, rn); break;
+		case 0b1101: return opMOV(ins, cond, rd, rn); break;
+		case 0b1110: return opBIC(ins, cond, rd, rn); break;
+		case 0b1111: return opMVN(ins, cond, rd, rn); break;
+		}
 	}
 }
 
-void Arm::executeThumbIns(ThumbInstruction& ins)
+u8 Arm::executeThumbIns(ThumbInstruction& ins)
 {
+	return 1;
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
@@ -841,6 +851,29 @@ u8 Arm::opMVN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 			setCC(reg_rd, false, false, true, shifter_carry_out);
 		}
 	}
+
+	return 1;
+}
+
+u8 Arm::opB(ArmInstruction& ins, u8 condition)
+{
+	if (condition) {
+		R15 = R15 + (ins.offset() << 2);
+	}
+	return 1;
+}
+
+u8 Arm::opBL(ArmInstruction& ins, u8 condition)
+{
+	if (condition) {
+		LR = R15;
+		R15 = R15 + (ins.offset() << 2);
+	}
+	return 1;
+}
+
+u8 Arm::opBX(ArmInstruction& ins, u8 condition, RegisterID rn)
+{
 
 	return 1;
 }

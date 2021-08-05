@@ -82,7 +82,7 @@ u8 ArmInstruction::imm()
     return imm;
 }
 
-u8 ArmInstruction::instruction()
+u8 ArmInstruction::branch()
 {
     u8 ins = ((this->encoding) >> 25) & 0x7;
     return ins;
@@ -98,4 +98,16 @@ s32 ArmInstruction::offset()
 {
     s32 offset = (this->encoding) & 0xFFFFFF;
     return offset;
+}
+
+u8 ArmInstruction::bits4To7()
+{
+    u8 bits4to7 = ((this->encoding) >> 4) & 0xF;
+    return bits4to7;
+}
+
+u8 ArmInstruction::bits20To27()
+{
+    u8 bits20to27 = ((this->encoding) >> 20) & 0xFF;
+    return bits20to27;
 }

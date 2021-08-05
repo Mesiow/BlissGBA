@@ -115,8 +115,8 @@ public:
 	u32 ror(u32 value, u8 shift);
 	u32 rrx(u32 value, u8 &shiftedBit);
 
-	void executeArmIns(ArmInstruction& ins);
-	void executeThumbIns(ThumbInstruction& ins);
+	u8 executeArmIns(ArmInstruction& ins);
+	u8 executeThumbIns(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -143,7 +143,9 @@ private:
 	u8 opMVN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
 
 	//Branches
-
+	u8 opB(ArmInstruction& ins, u8 condition);
+	u8 opBL(ArmInstruction& ins, u8 condition);
+	u8 opBX(ArmInstruction& ins, u8 condition, RegisterID rn);
 
 private:
 	State state;

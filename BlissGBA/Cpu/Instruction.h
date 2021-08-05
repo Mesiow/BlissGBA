@@ -24,9 +24,11 @@ struct ArmInstruction {
 	u8 rotate(); //shift applied to imm
 	u8 imm(); //u8 immediate value
 
-	u8 instruction(); //3 bit number to determine instruction (not used in data processing)
+	u8 branch(); //3 bit number to determine if branch instruction
 	u8 l(); //link bit for branching instructions
 	s32 offset(); //sign extended offset in branch instruction
+	u8 bits4To7();
+	u8 bits20To27();
 
 	u32 encoding;
 };
