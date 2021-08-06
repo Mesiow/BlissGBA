@@ -376,12 +376,13 @@ u8 Arm::executeArmIns(ArmInstruction& ins)
 	if (ins.branch() == 0b101) {
 		return ((ins.l() == 0x0) ? opB(ins, cond) : opBL(ins, cond));
 	}
-	//(BX)
-	else if (ins.bits20To27() == 0b00010010 && ins.bits4To7() == 0b0001) {
-		return opBX(ins, cond, rn);
-	}
 	else {
-		switch (ins.opcode()) {
+		switch (ins.instruction()) {
+			case 0b000100100001: return opBX(ins, cond, rn); break;
+		}
+	}
+	
+	switch (ins.opcode()) {
 		case 0b0000: return opAND(ins, cond, rd, rn); break;
 		case 0b0001: return opEOR(ins, cond, rd, rn); break;
 		case 0b0010: return opSUB(ins, cond, rd, rn); break;
@@ -398,8 +399,8 @@ u8 Arm::executeArmIns(ArmInstruction& ins)
 		case 0b1101: return opMOV(ins, cond, rd, rn); break;
 		case 0b1110: return opBIC(ins, cond, rd, rn); break;
 		case 0b1111: return opMVN(ins, cond, rd, rn); break;
-		}
 	}
+
 }
 
 u8 Arm::executeThumbIns(ThumbInstruction& ins)
@@ -415,21 +416,15 @@ u8 Arm::opMOV(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 	
 	if (condition) {
-		u8 shiftedBit = 0;
-		if (immediate) {
-			//op2 is an immediate value
-			u32 result = addrMode1.imm(ins, shiftedBit);
-			reg_rd = result;	
-		}
-		else {
-			//op2 is a register
-			u32 result = addrMode1.shift(ins, shiftedBit);
-			reg_rd = result;
-		}
+		u8 shifter_carry_out = 0;
+		u32 shifter_op = (immediate == true) ?
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
+	
+		reg_rd = shifter_op;
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			setCC(reg_rd, false, false, true, shiftedBit);
+			setCC(reg_rd, false, false, true, shifter_carry_out);
 		}
 	}
 
@@ -445,29 +440,21 @@ u8 Arm::opADD(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		//Shifter carry out(shifted bit) is not needed here
-		u8 shiftedBit = 0;
+		//Shifter carry out is not needed here
+		u8 shifter_carry_out = 0;
 		bool carry = false;
 		bool overflow = false;
 
-		if (immediate) {
-			u32 shifter_op = addrMode1.imm(ins, shiftedBit);
-			u32 result = reg_rn + shifter_op;
-			reg_rd = result;
+		u32 shifter_op = (immediate == true) ?
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-			carry = carryFrom(reg_rn, shifter_op);
-			overflow = overflowFromAdd(reg_rn, shifter_op);
-		}
-		else {
-			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
-			u32 result = reg_rn + shifter_op;
-			reg_rd = result;
-
-			carry = carryFrom(reg_rn, shifter_op);
-			overflow = overflowFromAdd(reg_rn, shifter_op);
-		}
+		u32 result = reg_rn + shifter_op;
+		reg_rd = result;
 		writeRegister(rd, reg_rd);
 
+		carry = carryFrom(reg_rn, shifter_op);
+		overflow = overflowFromAdd(reg_rn, shifter_op);
+		
 		if (set) {
 			setCC(reg_rd, !carry, overflow);
 		}
@@ -485,21 +472,16 @@ u8 Arm::opAND(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		u8 shiftedBit = 0;
-		if (immediate) {
-			u32 shifter_op = addrMode1.imm(ins, shiftedBit);
-			u32 result = reg_rn & shifter_op;
-			reg_rd = result;
-		}
-		else {
-			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
-			u32 result = reg_rn & shifter_op;
-			reg_rd = result;
-		}
+		u8 shifter_carry_out = 0;
+		u32 shifter_op = (immediate == true) ?
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
+
+		u32 result = reg_rn & shifter_op;
+		reg_rd = result;
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			setCC(reg_rd, false, false, true, shiftedBit);
+			setCC(reg_rd, false, false, true, shifter_carry_out);
 		}
 	}
 
@@ -516,21 +498,16 @@ u8 Arm::opEOR(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		u8 shiftedBit = 0;
-		if (immediate) {
-			u32 shifter_op = addrMode1.imm(ins, shiftedBit);
-			u32 result = reg_rn ^ shifter_op;
-			reg_rd = result;
-		}
-		else {
-			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
-			u32 result = reg_rn ^ shifter_op;
-			reg_rd = result;
-		}
+		u8 shifter_carry_out = 0;
+		u32 shifter_op = (immediate == true) ?
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
+
+		u32 result = reg_rn ^ shifter_op;
+		reg_rd = result;
 		writeRegister(rd, reg_rd);
 
 		if (set) {
-			setCC(reg_rd, false, false, true, shiftedBit);
+			setCC(reg_rd, false, false, true, shifter_carry_out);
 		}
 	}
 
@@ -546,28 +523,20 @@ u8 Arm::opSUB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		u8 shiftedBit = 0;
+		u8 shifter_carry_out = 0;
 		bool borrow = false;
 		bool overflow = false;
 
-		if (immediate) {
-			u32 shifter_op = addrMode1.imm(ins, shiftedBit);
-			u32 result = reg_rn - shifter_op;
-			reg_rd = result;
+		u32 shifter_op = (immediate == true) ?
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-			borrow = borrowFrom(reg_rn, shifter_op);
-			overflow = overflowFromSub(reg_rn, shifter_op);
-		}
-		else {
-			u32 shifter_op = addrMode1.shift(ins, shiftedBit);
-			u32 result = reg_rn - shifter_op;
-			reg_rd = result;
-
-			borrow = borrowFrom(reg_rn, shifter_op);
-			overflow = overflowFromSub(reg_rn, shifter_op);
-		}
+		u32 result = reg_rn - shifter_op;
+		reg_rd = result;
 		writeRegister(rd, reg_rd);
 
+		borrow = borrowFrom(reg_rn, shifter_op);
+		overflow = overflowFromSub(reg_rn, shifter_op);
+		
 		if (set) {
 			setCC(reg_rd, !borrow, overflow);
 		}
@@ -585,12 +554,12 @@ u8 Arm::opRSB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		u8 shiftedBit = 0;
+		u8 shifter_carry_out = 0;
 		bool borrow = false;
 		bool overflow = false;
 
  		u32 shifter_op = (immediate == true) ? 
-			addrMode1.imm(ins, shiftedBit) :  addrMode1.shift(ins, shiftedBit);
+			addrMode1.imm(ins, shifter_carry_out) :  addrMode1.shift(ins, shifter_carry_out);
 		
 		u32 result = shifter_op - reg_rn;
 		reg_rd = result;
@@ -616,12 +585,12 @@ u8 Arm::opADC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		u8 shiftedBit = 0;
+		u8 shifter_carry_out = 0;
 		bool carry = false;
 		bool overflow = false;
 
 		u32 shifter_op = (immediate == true) ?
-			addrMode1.imm(ins, shiftedBit) : addrMode1.shift(ins, shiftedBit);
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 		u32 result = reg_rn + (shifter_op + getFlag(C));
 		reg_rd = result;
@@ -647,12 +616,12 @@ u8 Arm::opSBC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		u8 shiftedBit = 0;
+		u8 shifter_carry_out = 0;
 		bool borrow = false;
 		bool overflow = false;
 
 		u32 shifter_op = (immediate == true) ?
-			addrMode1.imm(ins, shiftedBit) : addrMode1.shift(ins, shiftedBit);
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 		u32 result = reg_rn - (shifter_op - !getFlag(C));
 		reg_rd = result;
@@ -678,12 +647,12 @@ u8 Arm::opRSC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 	bool immediate = (ins.i() == 0x0) ? false : true;
 
 	if (condition) {
-		u8 shiftedBit = 0;
+		u8 shifter_carry_out = 0;
 		bool borrow = false;
 		bool overflow = false;
 
 		u32 shifter_op = (immediate == true) ?
-			addrMode1.imm(ins, shiftedBit) : addrMode1.shift(ins, shiftedBit);
+			addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 		u32 result = shifter_op - (reg_rn - !getFlag(C));
 		reg_rd = result;

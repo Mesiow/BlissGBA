@@ -100,14 +100,11 @@ s32 ArmInstruction::offset()
     return offset;
 }
 
-u8 ArmInstruction::bits4To7()
+u16 ArmInstruction::instruction()
 {
-    u8 bits4to7 = ((this->encoding) >> 4) & 0xF;
-    return bits4to7;
-}
-
-u8 ArmInstruction::bits20To27()
-{
-    u8 bits20to27 = ((this->encoding) >> 20) & 0xFF;
-    return bits20to27;
+    u8 b20to27 = ((this->encoding) >> 20) & 0xFF;
+    u8 b4to7 = ((this->encoding) >> 4) & 0xF;
+    u16 combined = ((b20to27 << 4) | b4to7) & 0xFFF;
+    
+    return combined;
 }
