@@ -829,21 +829,29 @@ u8 Arm::opB(ArmInstruction& ins, u8 condition)
 	if (condition) {
 		R15 = R15 + (ins.offset() << 2);
 	}
+
 	return 1;
 }
 
 u8 Arm::opBL(ArmInstruction& ins, u8 condition)
 {
 	if (condition) {
-		LR = R15;
+		LR = R15 - 4;
 		R15 = R15 + (ins.offset() << 2);
 	}
+
 	return 1;
 }
 
-u8 Arm::opBX(ArmInstruction& ins, u8 condition, RegisterID rn)
+u8 Arm::opBX(ArmInstruction& ins, u8 condition, RegisterID rm)
 {
+	u32 reg_rm = getRegister(rm);
+	if (condition) {
+		(reg_rm & 0x1) == 1 ? setFlag(T) : clearFlag(T);
+		R15 = reg_rm & 0xFFFFFFFE;
+	}
 
 	return 1;
 }
+
 

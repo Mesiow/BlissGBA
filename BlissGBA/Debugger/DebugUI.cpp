@@ -67,9 +67,26 @@ void DebugUI::renderRegisters()
             ImGui::SameLine();
             ImGui::Checkbox("Overflow", &overflow);
             ImGui::SameLine();
+            ImGui::NewLine();
         }
 
-        ImGui::NewLine();
+        {
+            ImGui::NewLine();
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+            ImGui::Text("State");
+            ImGui::PopStyleColor();
+            
+            bool arm = (cpu->getState() == State::ARM);
+            if (arm) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("ARM");
+                ImGui::PopStyleColor();
+            }
+            
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+            ImGui::Text("THUMB");
+            ImGui::PopStyleColor();
+        }
         renderButtons();
 
         ImGui::End();
