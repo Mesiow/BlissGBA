@@ -30,11 +30,6 @@ struct DebugUI {
 	bool showPPUWindow;
 	bool vsync;
 
-	bool sign;
-	bool zero;
-	bool carry;
-	bool overflow;
-
 	sf::RenderWindow* window;
 	MemoryBus* mbus;
 	Arm* cpu;

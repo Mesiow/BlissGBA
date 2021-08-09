@@ -21,7 +21,7 @@ u8 Arm::clock()
 		executeArmIns(ins);
 	}
 	else if (state == State::THUMB) {
-		u32 encoding = thumbpipeline[0];
+		u16 encoding = thumbpipeline[0];
 		thumbpipeline[0] = thumbpipeline[1];
 		thumbpipeline[1] = fetchU16();
 
@@ -39,14 +39,13 @@ void Arm::reset()
 		registers[i].value = 0x00000000;
 	}
 
-	LR = 0x00000000;
+	LR = 0x08000000; //R14
 	R15 = 0x08000000;
-	SP = 0x03007F00;
+	SP = 0x03007F00; //R13
 	CPSR = 0x0000001F;
 	SPSR = 0x00000000;
 
-	armpipeline[0] = fetchU32();
-	armpipeline[1] = fetchU32();
+	fillPipeline();
 }
 
 void Arm::setFlag(u32 flagBits, bool condition)
@@ -120,6 +119,36 @@ void Arm::clearFlag(u32 flagBits)
 	if (flagBits & N) {
 		CPSR &= ~(N);
 	}
+}
+
+void Arm::fillPipeline()
+{
+	u32 first_instr = (mbus->readU8(R15)) | (mbus->readU8(R15 + 1) << 8) |
+		(mbus->readU8(R15 + 2) << 16) | (mbus->readU8(R15 + 3) << 24);
+
+	u32 second_instr = (mbus->readU8(R15 + 4)) | (mbus->readU8(R15 + 5) << 8) |
+		(mbus->readU8(R15 + 6) << 16) | (mbus->readU8(R15 + 7) << 24);
+
+	//Fill pipeline at boot with first 2 instructions
+	armpipeline[0] = first_instr;
+	armpipeline[1] = second_instr;
+}
+
+void Arm::flushPipeline() 
+{
+	armpipeline[0] = 0x0;
+	armpipeline[1] = 0x0;
+
+	u32 first_instr = (mbus->readU8(R15)) | (mbus->readU8(R15 + 1) << 8) |
+		(mbus->readU8(R15 + 2) << 16) | (mbus->readU8(R15 + 3) << 24);
+
+	u32 second_instr = (mbus->readU8(R15 + 4)) | (mbus->readU8(R15 + 5) << 8) |
+		(mbus->readU8(R15 + 6) << 16) | (mbus->readU8(R15 + 7) << 24);
+
+	armpipeline[0] = first_instr;
+	armpipeline[1] = second_instr;
+
+	R15 += 4;
 }
 
 u8 Arm::getFlag(u32 flag)
@@ -828,6 +857,7 @@ u8 Arm::opB(ArmInstruction& ins, u8 condition)
 {
 	if (condition) {
 		R15 = R15 + (ins.offset() << 2);
+		flushPipeline();
 	}
 
 	return 1;
@@ -838,6 +868,7 @@ u8 Arm::opBL(ArmInstruction& ins, u8 condition)
 	if (condition) {
 		LR = R15 - 4;
 		R15 = R15 + (ins.offset() << 2);
+		flushPipeline();
 	}
 
 	return 1;
@@ -849,6 +880,7 @@ u8 Arm::opBX(ArmInstruction& ins, u8 condition, RegisterID rm)
 	if (condition) {
 		(reg_rm & 0x1) == 1 ? setFlag(T) : clearFlag(T);
 		R15 = reg_rm & 0xFFFFFFFE;
+		flushPipeline();
 	}
 
 	return 1;

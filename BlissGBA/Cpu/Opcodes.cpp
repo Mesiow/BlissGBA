@@ -1,4 +1,7 @@
 #include "Arm.h"
+#include "../Memory/MemoryBus.h"
+
+
 
 void Arm::mapArmOpcodes()
 {

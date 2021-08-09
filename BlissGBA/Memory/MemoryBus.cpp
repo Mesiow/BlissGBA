@@ -6,6 +6,7 @@ MemoryBus::MemoryBus()
 	displayMem.zero();
 
 	genMem.loadBios("roms/gba_bios.bin");
+	loadGamePak("test_roms/gang.gba");
 }
 
 void MemoryBus::loadGamePak(const std::string& file)
@@ -64,7 +65,15 @@ void MemoryBus::writeU32(u32 address, u16 value)
 
 u8 MemoryBus::readU8(u32 address)
 {
-	return u8();
+	if (address < GENERAL_MEM_END) {
+		return genMem.readU8(address);
+	}
+	else if (address >= GENERAL_MEM_END && address <= DISPLAY_MEM_END) {
+		return displayMem.readU8(address);
+	}
+	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
+		return pak.readU8(address);
+	}
 }
 
 u16 MemoryBus::readU16(u32 address)

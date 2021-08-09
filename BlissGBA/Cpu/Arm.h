@@ -84,6 +84,9 @@ public:
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);
 
+	void fillPipeline();
+	void flushPipeline();
+
 	u8 getFlag(u32 flag);
 	u8 carryFrom(u32 op1, u32 op2);
 	u8 borrowFrom(u32 op1, u32 op2);

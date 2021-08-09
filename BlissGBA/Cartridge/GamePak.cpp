@@ -51,6 +51,14 @@ void GamePak::load(const std::string& fileName)
 	}
 }
 
+u8 GamePak::readU8(u32 address)
+{
+	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {
+		u32 addr = address - GAMEPAK_WS0_START_ADDR;
+		return gamepakWS0[addr];
+	}
+}
+
 void GamePak::parseHeader(u32 size)
 {
 	std::string sizeStr = std::to_string(size);

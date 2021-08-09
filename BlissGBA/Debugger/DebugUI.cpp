@@ -59,6 +59,11 @@ void DebugUI::renderRegisters()
             ImGui::Text("Flags");
             ImGui::PopStyleColor();
 
+            bool zero = cpu->getFlag(Z);
+            bool sign = cpu->getFlag(N);
+            bool carry = cpu->getFlag(C);
+            bool overflow = cpu->getFlag(V);
+
             ImGui::Checkbox("Zero ", &zero);
             ImGui::SameLine();
             ImGui::Checkbox("Sign ", &sign);
@@ -82,10 +87,22 @@ void DebugUI::renderRegisters()
                 ImGui::Text("ARM");
                 ImGui::PopStyleColor();
             }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("ARM");
+                ImGui::PopStyleColor();
+            }
             
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
-            ImGui::Text("THUMB");
-            ImGui::PopStyleColor();
+            if (!arm) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("THUMB");
+                ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("THUMB");
+                ImGui::PopStyleColor();
+            }
         }
         renderButtons();
 
@@ -105,7 +122,7 @@ void DebugUI::renderButtons()
     }
     ImGui::SameLine();
     if (ImGui::Button("Step")) {
-
+        cpu->clock();
     }
     ImGui::SameLine();
     if (ImGui::Button("Pause")) {
