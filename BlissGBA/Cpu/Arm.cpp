@@ -139,16 +139,12 @@ void Arm::flushPipeline()
 	armpipeline[0] = 0x0;
 	armpipeline[1] = 0x0;
 
-	u32 first_instr = (mbus->readU8(R15)) | (mbus->readU8(R15 + 1) << 8) |
-		(mbus->readU8(R15 + 2) << 16) | (mbus->readU8(R15 + 3) << 24);
-
-	u32 second_instr = (mbus->readU8(R15 + 4)) | (mbus->readU8(R15 + 5) << 8) |
-		(mbus->readU8(R15 + 6) << 16) | (mbus->readU8(R15 + 7) << 24);
+	u32 first_instr = readU32();
+	R15 += 4;
+	u32 second_instr = readU32();
 
 	armpipeline[0] = first_instr;
 	armpipeline[1] = second_instr;
-
-	R15 += 4;
 }
 
 u8 Arm::getFlag(u32 flag)
