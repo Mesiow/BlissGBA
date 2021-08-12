@@ -14,11 +14,12 @@ u8 Arm::clock()
 	if (state == State::ARM) {
 		u32 encoding = armpipeline[0];
 		armpipeline[0] = armpipeline[1];
-		armpipeline[1] = fetchU32();
 
 		ArmInstruction ins;
 		ins.encoding = encoding;
 		executeArmIns(ins);
+
+		armpipeline[1] = fetchU32();
 	}
 	else if (state == State::THUMB) {
 		u16 encoding = thumbpipeline[0];
@@ -45,7 +46,8 @@ void Arm::reset()
 	CPSR = 0x0000001F;
 	SPSR = 0x00000000;
 
-	fillPipeline();
+	//fillPipeline();
+	flushPipeline();
 }
 
 void Arm::setFlag(u32 flagBits, bool condition)
@@ -136,15 +138,8 @@ void Arm::fillPipeline()
 
 void Arm::flushPipeline() 
 {
-	armpipeline[0] = 0x0;
-	armpipeline[1] = 0x0;
-
-	u32 first_instr = readU32();
-	R15 += 4;
-	u32 second_instr = readU32();
-
-	armpipeline[0] = first_instr;
-	armpipeline[1] = second_instr;
+	armpipeline[0] = fetchU32();
+	armpipeline[1] = fetchU32();
 }
 
 u8 Arm::getFlag(u32 flag)
@@ -852,7 +847,7 @@ u8 Arm::opMVN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn)
 u8 Arm::opB(ArmInstruction& ins, u8 condition)
 {
 	if (condition) {
-		R15 = R15 + (ins.offset() << 2);
+		R15 = (R15 + (ins.offset() << 2));
 		flushPipeline();
 	}
 
