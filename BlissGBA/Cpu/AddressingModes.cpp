@@ -63,10 +63,12 @@ u32 AddressingMode1::imm(ArmInstruction& ins, u8& shiftedBit)
 	u8 rotate = ins.rotate();
 	u32 imm = ins.imm();
 
-	if (rotate == 0)
+	if (rotate == 0) {
+		shiftedBit = cpu.getFlag(C);
 		return imm;
+	}
 
-	imm = cpu.ror(imm, rotate);
+	imm = cpu.ror(imm, rotate * 2);
 	shiftedBit = (imm >> 31) & 0x1;
 
 	return imm;

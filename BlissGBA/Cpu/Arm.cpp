@@ -14,10 +14,10 @@ u8 Arm::clock()
 	if (state == State::ARM) {
 		u32 encoding = armpipeline[0];
 		armpipeline[0] = armpipeline[1];
-
+		
 		ArmInstruction ins;
 		ins.encoding = encoding;
-		executeArmIns(ins);
+		cycles = executeArmIns(ins);
 
 		armpipeline[1] = fetchU32();
 	}
@@ -28,7 +28,7 @@ u8 Arm::clock()
 
 		ThumbInstruction ins;
 		ins.encoding = encoding;
-		executeThumbIns(ins);
+		cycles = executeThumbIns(ins);
 	}
 	return cycles;
 }
@@ -46,8 +46,10 @@ void Arm::reset()
 	CPSR = 0x0000001F;
 	SPSR = 0x00000000;
 
+	//flushPipeline();
 	//fillPipeline();
-	flushPipeline();
+	armpipeline[0] = fetchU32();
+	armpipeline[1] = fetchU32();
 }
 
 void Arm::setFlag(u32 flagBits, bool condition)
@@ -139,7 +141,7 @@ void Arm::fillPipeline()
 void Arm::flushPipeline() 
 {
 	armpipeline[0] = fetchU32();
-	armpipeline[1] = fetchU32();
+	armpipeline[1] = readU32();
 }
 
 u8 Arm::getFlag(u32 flag)
@@ -373,7 +375,7 @@ u32 Arm::ror(u32 value, u8 shift)
 	u32 rotatedOut = getNthBits(value, 0, shift);
 	u32 rotatedIn = getNthBits(value, shift, 31);
 
-	u32 result = rotatedIn | (rotatedOut << (31 - shift));
+	u32 result = ((rotatedIn) | (rotatedOut << (32 - shift)));
 	return result;
 }
 
@@ -865,12 +867,12 @@ u8 Arm::opBL(ArmInstruction& ins, u8 condition)
 	return 1;
 }
 
-u8 Arm::opBX(ArmInstruction& ins, u8 condition, RegisterID rm)
+u8 Arm::opBX(ArmInstruction& ins, u8 condition, RegisterID rn)
 {
-	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
 	if (condition) {
-		(reg_rm & 0x1) == 1 ? setFlag(T) : clearFlag(T);
-		R15 = reg_rm & 0xFFFFFFFE;
+		(reg_rn & 0x1) == 1 ? setFlag(T) : clearFlag(T);
+		R15 = reg_rn & 0xFFFFFFFE;
 		flushPipeline();
 	}
 

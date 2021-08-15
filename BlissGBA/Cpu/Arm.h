@@ -148,9 +148,9 @@ private:
 	//Branches
 	u8 opB(ArmInstruction& ins, u8 condition);
 	u8 opBL(ArmInstruction& ins, u8 condition);
-	u8 opBX(ArmInstruction& ins, u8 condition, RegisterID rm);
+	u8 opBX(ArmInstruction& ins, u8 condition, RegisterID rn);
 
-private:
+public:
 	State state;
 	/*
 		in THUMB mode only R0-R7 (Lo registers) may be accessed freely,
