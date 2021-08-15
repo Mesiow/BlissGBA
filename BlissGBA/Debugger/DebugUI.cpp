@@ -8,10 +8,12 @@ DebugUI::DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm* cpu)
 	:window(window), mbus(mbus), cpu(cpu)
 {
     showRegisterWindow = true;
-    showBiosMemory = false;
-    showGamePakMemory = false;
-    showCartWindow = false;
+    showBiosMemory = true;
+    showGamePakMemory = true;
+    showCartWindow = true;
     showPPUWindow = false;
+    showPipeline = true;
+    showDisplay = true;
     vsync = false;
 }
 
@@ -20,6 +22,8 @@ void DebugUI::render()
     renderMenuBar();
 	renderRegisters();
     renderCartInfo();
+    renderPipeline();
+    renderDisplay();
 
     if (showBiosMemory) {
         biosMemory.DrawWindow("Bios Memory", mbus->getBiosMemory(), BIOS_SIZE);
@@ -35,6 +39,8 @@ void DebugUI::renderRegisters()
 {
     if (showRegisterWindow) {
         ImGui::Begin("General");
+        ImGui::SetWindowFontScale(1.2);
+
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
         ImGui::Text("Registers");
         ImGui::PopStyleColor();
@@ -173,6 +179,7 @@ void DebugUI::renderMenuBar()
         if (ImGui::BeginMenu("Debug")) {
             ImGui::MenuItem("General Debug Info", nullptr, &showRegisterWindow);
             ImGui::MenuItem("Show Cart Info", nullptr, &showCartWindow);
+            ImGui::MenuItem("Show Pipeline", nullptr, &showPipeline);
             ImGui::MenuItem("Show PPU registers", nullptr, &showPPUWindow);
             ImGui::MenuItem("Show Bios memory", nullptr, &showBiosMemory);
             ImGui::MenuItem("Show GamePak memory", nullptr, &showGamePakMemory);
@@ -194,10 +201,39 @@ void DebugUI::renderCartInfo()
 {
     if (showCartWindow) {
         ImGui::Begin("Cartridge Info");
+        ImGui::SetWindowFontScale(1.2);
 
         ImGui::Text("Game Title: %s", mbus->pak.title.c_str());
         ImGui::Text("ROM Size: %s", mbus->pak.romSize.c_str());
 
+        ImGui::End();
+    }
+}
+
+void DebugUI::renderPipeline()
+{
+    if (showPipeline) {
+        u32 first_ins = cpu->armpipeline[0];
+        u32 second_ins = cpu->armpipeline[1];
+
+        ImGui::Begin("Pipeline");
+        ImGui::SetWindowFontScale(1.2);
+        
+        ImGui::Text("0 -> 0x%08X", first_ins);
+        ImGui::Text("1 -> 0x%08X", second_ins);
+
+        ImGui::End();
+    }
+}
+
+void DebugUI::renderDisplay()
+{
+    if (showDisplay) {
+        ImGui::Begin("Display");
+
+        sf::Sprite sprite;
+        sprite.setColor(sf::Color::White);
+        ImGui::Image(0, ImGui::GetContentRegionAvail());
         ImGui::End();
     }
 }

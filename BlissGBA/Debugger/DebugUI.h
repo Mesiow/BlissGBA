@@ -3,6 +3,7 @@
 #include "imgui_memory_editor.h"
 #include <SFML/Graphics.hpp>
 #include <string>
+#include <sstream>
 #include <filesystem>
 #include "../Cpu/Arm.h"
 #include "../Memory/MemoryBus.h"
@@ -15,6 +16,8 @@ struct DebugUI {
 	void renderButtons();
 	void renderMenuBar();
 	void renderCartInfo();
+	void renderPipeline();
+	void renderDisplay();
 	void update();
 	void handleButtonPresses();
 	void handleEvents(sf::Event& ev);
@@ -28,6 +31,8 @@ struct DebugUI {
 	bool showGamePakMemory;
 	bool showCartWindow;
 	bool showPPUWindow;
+	bool showPipeline;
+	bool showDisplay;
 	bool vsync;
 
 	sf::RenderWindow* window;
