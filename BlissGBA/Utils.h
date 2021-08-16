@@ -16,7 +16,7 @@ using s64 = int64_t;
 
 u32 setBit(u32 val, u8 bitToSet);
 u32 resetBit(u32 val, u8 bitToReset);
-u8 testBit(u8 val, u8 bitToTest);
+u8 testBit(u32 val, u8 bitToTest);
 
 //Return value within bit range of from - to
 u32 getNthBits(u32 value, u8 from, u8 to);

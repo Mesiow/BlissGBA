@@ -14,7 +14,7 @@ u32 resetBit(u32 val, u8 bitToReset)
 	return val;
 }
 
-u8 testBit(u8 val, u8 bitToTest)
+u8 testBit(u32 val, u8 bitToTest)
 {
 	u32 mask = (1 << bitToTest);
 	return ((val & mask) > 0 ? 1 : 0);
