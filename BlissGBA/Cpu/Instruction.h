@@ -28,7 +28,12 @@ struct ArmInstruction {
 	u8 l(); //link bit for branching instructions
 	s32 offset(); //sign extended offset in branch instruction
 	u16 instruction(); //12bit number (bits 20-27 and 4-7 combined) 
-	                   //that tells us which instruction we are executing
+	                   //that allows us to decode which instruction we are executing
+	u8 bits8to11();
+
+	//Halfword and signed data transfer bits
+	u8 P(); u8 U(); u8 W(); u8 L();
+	u8 S(); u8 H();
 
 	u32 encoding;
 };

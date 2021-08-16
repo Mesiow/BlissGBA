@@ -108,3 +108,45 @@ u16 ArmInstruction::instruction()
     
     return combined;
 }
+
+u8 ArmInstruction::bits8to11()
+{
+    u8 b8to11 = ((this->encoding) >> 8) & 0xF;
+    return b8to11;
+}
+
+u8 ArmInstruction::P()
+{
+    u8 P = ((this->encoding) >> 24) & 0x1;
+    return P;
+}
+
+u8 ArmInstruction::U()
+{
+    u8 U = ((this->encoding) >> 23) & 0x1;
+    return U;
+}
+
+u8 ArmInstruction::W()
+{
+    u8 W = ((this->encoding) >> 21) & 0x1;
+    return W;
+}
+
+u8 ArmInstruction::L()
+{
+    u8 L = ((this->encoding) >> 20) & 0x1;
+    return L;
+}
+
+u8 ArmInstruction::S()
+{
+    u8 S = ((this->encoding) >> 6) & 0x1;
+    return S;
+}
+
+u8 ArmInstruction::H()
+{
+    u8 H = ((this->encoding) >> 5) & 0x1;
+    return H;
+}
