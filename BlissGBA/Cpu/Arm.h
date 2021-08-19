@@ -4,7 +4,8 @@
 #include <array>
 #include <functional>
 
-#define b(x) std::bind(x, this, std::placeholders::_1)
+using namespace std::placeholders;
+#define b(x) std::bind(x, this, _1)
 
 /*
 	The ARM7TDMI is a 32bit RISC (Reduced Instruction Set Computer) CPU, 
@@ -120,6 +121,17 @@ public:
 
 	u8 executeArmIns(ArmInstruction& ins);
 	u8 executeThumbIns(ThumbInstruction& ins);
+	u8 executeHalfwordDataTransfer(ArmInstruction &ins, u16 instruction, 
+		u8 cond, RegisterID rd, RegisterID rn);
+
+	u8 executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate);
+	u8 executeDataProcessingImmFlags(ArmInstruction& ins);
+	u8 executeDataProcessingImm(ArmInstruction& ins);
+	u8 executeDataProcessingImmShiftFlags(ArmInstruction& ins);
+	u8 executeDataProcessingImmShift(ArmInstruction& ins);
+	u8 executeDataProcessingRegShiftFlags(ArmInstruction& ins);
+	u8 executeDataProcessingRegShift(ArmInstruction& ins);
+	u8 handleUndefinedIns(ArmInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -128,27 +140,45 @@ private:
 	//Arm Instructions
 
 	//Data processing
-	u8 opMOV(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opADD(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opAND(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opEOR(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opSUB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opRSB(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opADC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opSBC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opRSC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opTST(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opTEQ(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opCMP(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opCMN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opORR(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opBIC(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
-	u8 opMVN(ArmInstruction& ins, u8 condition, RegisterID rd, RegisterID rn);
+	u8 opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opADD(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opAND(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opEOR(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opSUB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opRSB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opADC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opSBC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opRSC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opTST(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opTEQ(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opCMP(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opCMN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opORR(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opBIC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
+	u8 opMVN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
+		bool flags, bool immediate);
 
 	//Branches
-	u8 opB(ArmInstruction& ins, u8 condition);
-	u8 opBL(ArmInstruction& ins, u8 condition);
-	u8 opBX(ArmInstruction& ins, u8 condition, RegisterID rn);
+	u8 opB(ArmInstruction& ins);
+	u8 opBL(ArmInstruction& ins);
+	u8 opBX(ArmInstruction& ins);
+
+	u8 opSWI(ArmInstruction& ins);
 
 public:
 	State state;
@@ -168,7 +198,7 @@ public:
 
 	AddressingMode1 addrMode1;
 
-	std::array<std::function<u8(ArmInstruction&)>, 0xF> armlut;
+	std::array<std::function<u8(ArmInstruction&)>, 4096> armlut;
 	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;
 
 	u32 armpipeline[2];
