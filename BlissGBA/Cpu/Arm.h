@@ -133,6 +133,10 @@ public:
 	u8 executeDataProcessingRegShift(ArmInstruction& ins);
 	u8 handleUndefinedIns(ArmInstruction& ins);
 
+	u8 executeMiscLoadAndStore(ArmInstruction& ins);
+	u8 executeMiscLoadStoreImm(ArmInstruction& ins);
+	u8 executeMiscLoadStoreReg(ArmInstruction& ins);
+
 private:
 	void mapArmOpcodes();
 	void mapThumbOpcodes();
@@ -197,6 +201,7 @@ public:
 	u32 SPSR;
 
 	AddressingMode1 addrMode1;
+	AddressingMode3 addrMode3;
 
 	std::array<std::function<u8(ArmInstruction&)>, 4096> armlut;
 	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;

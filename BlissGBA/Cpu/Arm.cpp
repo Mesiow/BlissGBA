@@ -48,8 +48,6 @@ void Arm::reset()
 	CPSR = 0x0000001F;
 	SPSR = 0x00000000;
 
-	//flushPipeline();
-	//fillPipeline();
 	armpipeline[0] = fetchU32();
 	armpipeline[1] = fetchU32();
 }
@@ -399,6 +397,8 @@ u8 Arm::executeArmIns(ArmInstruction& ins)
 	
 	u16 instruction = ins.instruction();
 	cycles = armlut[instruction](ins);
+
+	return 1;
 }
 
 u8 Arm::executeThumbIns(ThumbInstruction& ins)
@@ -492,6 +492,32 @@ u8 Arm::handleUndefinedIns(ArmInstruction& ins)
 	printf("ARM undefined or unimplemented instruction 0x%08X at PC: 0x%08X", ins.encoding, R15 - 8);
 
 	return 0;
+}
+
+u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins)
+{
+	RegisterID rd = ins.rd();
+	RegisterID rn = ins.rn();
+
+
+	return 1;
+}
+
+u8 Arm::executeMiscLoadStoreImm(ArmInstruction& ins)
+{
+	u8 P = ins.P();
+	u8 immH = ins.immedH();
+	u8 immL = ins.immedL();
+
+	u32 address = addrMode3.immOffset(ins);
+
+
+	return 1;
+}
+
+u8 Arm::executeMiscLoadStoreReg(ArmInstruction& ins)
+{
+	return u8();
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
