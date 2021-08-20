@@ -8,6 +8,7 @@ AddressingMode::AddressingMode(Arm& cpu)
 
 }
 
+
 AddressingMode1::AddressingMode1(Arm& cpu)
 	:AddressingMode(cpu)
 {
@@ -81,4 +82,18 @@ u8 AddressingMode1::isRegisterShift(ArmInstruction& ins)
 	return bit4;
 }
 
+AddressingMode3::AddressingMode3(Arm& cpu)
+	:AddressingMode(cpu)
+{
 
+}
+
+u32 AddressingMode3::immOffset(ArmInstruction& ins)
+{
+	return u32();
+}
+
+u32 AddressingMode3::registerOffset(ArmInstruction& ins)
+{
+	return u32();
+}
