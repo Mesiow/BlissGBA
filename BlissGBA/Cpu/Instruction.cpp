@@ -150,3 +150,15 @@ u8 ArmInstruction::H()
     u8 H = ((this->encoding) >> 5) & 0x1;
     return H;
 }
+
+u8 ArmInstruction::immedH()
+{
+    u8 immH = ((this->encoding) >> 8) & 0xF;
+    return immH;
+}
+
+u8 ArmInstruction::immedL()
+{
+    u8 immL = (this->encoding) & 0xF;
+    return immL;
+}

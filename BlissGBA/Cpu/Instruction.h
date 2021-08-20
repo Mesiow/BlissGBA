@@ -34,6 +34,7 @@ struct ArmInstruction {
 	//Halfword and signed data transfer bits
 	u8 P(); u8 U(); u8 W(); u8 L();
 	u8 S(); u8 H();
+	u8 immedH(); u8 immedL();
 
 	u32 encoding;
 };
