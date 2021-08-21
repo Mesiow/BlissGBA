@@ -88,12 +88,88 @@ AddressingMode3::AddressingMode3(Arm& cpu)
 
 }
 
-u32 AddressingMode3::immOffset(ArmInstruction& ins)
+AddrMode3Result AddressingMode3::immOffsetIndex(ArmInstruction& ins)
 {
-	return u32();
+	RegisterID rn = ins.rn();
+	u32 rn_reg = cpu.getRegister(rn);
+
+	u8 P = ins.P();
+	u8 W = ins.W();
+	u8 U = ins.U();
+	u8 immH = ins.immedH();
+	u8 immL = ins.immedL();
+
+	AddrMode3Result result;
+	u32 address;
+	u8 offset_8 = (immH << 4) | immL;
+	if (P == 0x1) {
+		//Pre-indexed addressing (mem address is written back to the base register)
+		if (W == 0x1) {
+			address = ((U == 0x1) ? rn_reg + offset_8 : rn_reg - offset_8);
+			result.type = AddrMode3Type::PREINDEXED;
+			result.address = address;
+		}
+		//Offset addressing (the base register is unchanged)
+		else {
+			address = ((U == 0x1) ? rn_reg + offset_8 : rn_reg - offset_8);
+			result.type = AddrMode3Type::OFFSET;
+			result.address = address;
+		}
+	}
+	else {
+		if (W == 0x0) {
+			//Post-indexed addressing (The base reg value is used for the mem address,
+			//and the offset is applied to the base reg value and written back to the base reg)
+			address = rn_reg;
+			result.rn = ((U == 0x1) ? rn_reg + offset_8 : rn_reg - offset_8);
+			result.type = AddrMode3Type::POSTINDEX;
+			result.address = address;
+		}
+		//If W == 1 (unpredictable behavior)
+	}
+
+	return result;
 }
 
-u32 AddressingMode3::registerOffset(ArmInstruction& ins)
+AddrMode3Result AddressingMode3::registerOffsetIndex(ArmInstruction& ins)
 {
-	return u32();
+	RegisterID rn = ins.rn();
+	RegisterID rm = ins.rm();
+
+	u32 rn_reg = cpu.getRegister(rn);
+	u32 rm_reg = cpu.getRegister(rm);
+
+	u8 P = ins.P();
+	u8 W = ins.W();
+	u8 U = ins.U();
+
+	AddrMode3Result result;
+	u32 address;
+	if (P == 0x1) {
+		//Pre-indexed addressing (mem address is written back to the base register)
+		if (W == 0x1) {
+			address = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
+			result.type = AddrMode3Type::PREINDEXED;
+			result.address = address;
+		}
+		//Offset addressing (the base register is unchanged)
+		else {
+			address = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
+			result.type = AddrMode3Type::OFFSET;
+			result.address = address;
+		}
+	}
+	else {
+		//Post-indexed addressing (The base reg value is used for the mem address,
+		//and the offset is applied to the base reg value and written back to the base reg)
+		if (W == 0x0) {
+			address = rn_reg;
+			result.rn = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
+			result.type = AddrMode3Type::POSTINDEX;
+			result.address = address;
+		}
+		//If W == 1 (unpredictable behavior)
+	}
+
+	return result;
 }

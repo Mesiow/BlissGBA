@@ -2,7 +2,7 @@
 #include "../Memory/MemoryBus.h"
 
 Arm::Arm(MemoryBus *mbus)
-	:addrMode1(*this)
+	:addrMode1(*this), addrMode3(*this)
 {
 	this->mbus = mbus;
 	reset();
@@ -505,12 +505,26 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins)
 
 u8 Arm::executeMiscLoadStoreImm(ArmInstruction& ins)
 {
-	u8 P = ins.P();
-	u8 immH = ins.immedH();
-	u8 immL = ins.immedL();
+	AddrMode3Result result = addrMode3.immOffsetIndex(ins);
 
-	u32 address = addrMode3.immOffset(ins);
+	RegisterID rn = ins.rn();
+	u32 reg_rn = getRegister(rn);
 
+	switch (result.type) {
+		case AddrMode3Type::PREINDEXED:
+			reg_rn = result.address;
+			writeRegister(rn, reg_rn);
+			break;
+
+		case AddrMode3Type::OFFSET: 
+			
+			break;
+
+		case AddrMode3Type::POSTINDEX:
+			reg_rn = result.rn;
+			writeRegister(rn, reg_rn);
+			break;
+	}
 
 	return 1;
 }
