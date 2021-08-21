@@ -22,12 +22,15 @@ struct DebugUI {
 	void handleButtonPresses();
 	void handleEvents(sf::Event& ev);
 
-	static MemoryEditor mainMemory;
 	static MemoryEditor biosMemory;
+	static MemoryEditor vramEditor;
+	static MemoryEditor ioEditor;
 	static MemoryEditor gamepakMemory;
 
 	bool showRegisterWindow;
 	bool showBiosMemory;
+	bool showVRAM;
+	bool showIO;
 	bool showGamePakMemory;
 	bool showCartWindow;
 	bool showPPUWindow;

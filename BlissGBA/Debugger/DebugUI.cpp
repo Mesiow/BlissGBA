@@ -1,15 +1,18 @@
 #include "DebugUI.h"
 
-MemoryEditor DebugUI::mainMemory;
 MemoryEditor DebugUI::biosMemory;
+MemoryEditor DebugUI::vramEditor;
+MemoryEditor DebugUI::ioEditor;
 MemoryEditor DebugUI::gamepakMemory;
 
 DebugUI::DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm* cpu)
 	:window(window), mbus(mbus), cpu(cpu)
 {
     showRegisterWindow = true;
-    showBiosMemory = true;
-    showGamePakMemory = true;
+    showBiosMemory = false;
+    showVRAM = true;
+    showIO = true;
+    showGamePakMemory = false;
     showCartWindow = true;
     showPPUWindow = false;
     showPipeline = true;
@@ -27,6 +30,12 @@ void DebugUI::render()
 
     if (showBiosMemory) {
         biosMemory.DrawWindow("Bios Memory", mbus->getBiosMemory(), BIOS_SIZE);
+    }
+    if (showVRAM) {
+        vramEditor.DrawWindow("VRAM", mbus->getVRAM(), VRAM_SIZE);
+    }
+    if (showIO) {
+        ioEditor.DrawWindow("IO Registers", mbus->getIO(), IO_SIZE);
     }
     if (showGamePakMemory) {
         if (mbus->getGamePakMemory() != nullptr) {
