@@ -53,14 +53,13 @@ public:
 	bool isAlignedU16(u32 address);
 	bool isAlignedU32(u32 address);
 
-	u8* getBiosMemory() { return genMem.getBios(); }
+	u8* getBiosMemory() { return genMem.bios;}
+	u8* getVRAM() { return displayMem.vram; }
+	u8* getIO() { return genMem.io; }
 	u8* getGamePakMemory() { return pak.getGamePakWS0(); }
 
-private:
 	GeneralMemory genMem;
 	DisplayMemory displayMem;
 
-public:
 	GamePak pak;
-
 };

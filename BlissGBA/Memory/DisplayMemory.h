@@ -16,7 +16,6 @@ public:
 	u16 readU16(u32 address);
 	u32 readU32(u32 address);
 
-private:
 	u8 bgpalette[BG_OBJ_PALETTE_SIZE];
 	u8 vram[VRAM_SIZE];
 	u8 oam[OAM_SIZE];

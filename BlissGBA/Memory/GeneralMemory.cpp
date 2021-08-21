@@ -51,6 +51,7 @@ void GeneralMemory::writeU16(u32 address, u16 value)
 
 void GeneralMemory::writeU32(u32 address, u16 value)
 {
+	//TODO: write u32 value to IO
 }
 
 u8 GeneralMemory::readU8(u32 address)
