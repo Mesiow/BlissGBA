@@ -45,7 +45,7 @@ void MemoryBus::writeU16(u32 address, u16 value)
 	}
 }
 
-void MemoryBus::writeU32(u32 address, u16 value)
+void MemoryBus::writeU32(u32 address, u32 value)
 {
 	if (!isAlignedU32(address)) {
 		std::cerr << "--Unaligned memory write U32 attempted--" << std::endl;
