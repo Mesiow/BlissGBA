@@ -47,11 +47,28 @@ void GeneralMemory::writeU8(u32 address, u8 value)
 
 void GeneralMemory::writeU16(u32 address, u16 value)
 {
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	writeU8(address, lo);
+	writeU8(address + 1, hi);
 }
 
-void GeneralMemory::writeU32(u32 address, u16 value)
+void GeneralMemory::writeU32(u32 address, u32 value)
 {
-	//TODO: write u32 value to IO
+	u8 upper2, upper1;
+	u8 lower2, lower1;
+
+	lower1 = value & 0xFF;
+	lower2 = (value >> 8) & 0xFF;
+	upper1 = (value >> 16) & 0xFF;
+	upper2 = (value >> 24) & 0xFF;
+
+	writeU8(address, lower1);
+	writeU8(address + 1, lower2);
+	writeU8(address + 2, upper1);
+	writeU8(address + 3, upper2);
 }
 
 u8 GeneralMemory::readU8(u32 address)
