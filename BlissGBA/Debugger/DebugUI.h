@@ -1,16 +1,23 @@
 #pragma once
 #include "imgui.h"
 #include "imgui_memory_editor.h"
+#include "imgui-SFML.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <sstream>
 #include <filesystem>
-#include "../Cpu/Arm.h"
-#include "../Memory/MemoryBus.h"
 #include "tinyfiledialogs.h"
+#include "../Memory/MemoryBus.h"
+#include "../Cpu/Arm.h"
+#include "../Ppu/Ppu.h"
+
+class Emulator;
+class MemoryBus;
+class Arm;
+class Ppu;
 
 struct DebugUI {
-	DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm *cpu);
+	DebugUI(sf::RenderWindow *window, Emulator *emu);
 	void render();
 	void renderRegisters();
 	void renderButtons();
@@ -27,6 +34,7 @@ struct DebugUI {
 	static MemoryEditor ioEditor;
 	static MemoryEditor gamepakMemory;
 
+	bool* running = nullptr;
 	bool showRegisterWindow;
 	bool showBiosMemory;
 	bool showVRAM;
@@ -39,6 +47,9 @@ struct DebugUI {
 	bool vsync;
 
 	sf::RenderWindow* window;
+
+	Emulator* emu;
 	MemoryBus* mbus;
 	Arm* cpu;
+	Ppu* ppu;
 };

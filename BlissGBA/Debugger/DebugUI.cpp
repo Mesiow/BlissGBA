@@ -1,13 +1,19 @@
 #include "DebugUI.h"
+#include "../Core/Emulator.h"
+
 
 MemoryEditor DebugUI::biosMemory;
 MemoryEditor DebugUI::vramEditor;
 MemoryEditor DebugUI::ioEditor;
 MemoryEditor DebugUI::gamepakMemory;
 
-DebugUI::DebugUI(sf::RenderWindow *window, MemoryBus *mbus, Arm* cpu)
-	:window(window), mbus(mbus), cpu(cpu)
+DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
+	:window(window), emu(emu)
 {
+    mbus = &emu->mbus;
+    cpu = &emu->cpu;
+    ppu = &emu->ppu;
+
     showRegisterWindow = true;
     showBiosMemory = false;
     showVRAM = true;
@@ -133,7 +139,7 @@ void DebugUI::renderButtons()
     ImGui::PopStyleColor();
  
     if (ImGui::Button("Run")) {
-
+        *running = true;
     }
     ImGui::SameLine();
     if (ImGui::Button("Step")) {
@@ -141,11 +147,11 @@ void DebugUI::renderButtons()
     }
     ImGui::SameLine();
     if (ImGui::Button("Pause")) {
-
+        *running = false;
     }
     ImGui::SameLine();
     if (ImGui::Button("Reset")) {
-
+        emu->reset();
     }
 }
 
@@ -240,9 +246,7 @@ void DebugUI::renderDisplay()
     if (showDisplay) {
         ImGui::Begin("Display");
 
-        sf::Sprite sprite;
-        sprite.setColor(sf::Color::White);
-        ImGui::Image(0, ImGui::GetContentRegionAvail());
+        ImGui::Image(ppu->mode3.frame);
         ImGui::End();
     }
 }
