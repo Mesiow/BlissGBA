@@ -20,3 +20,4 @@ u8 testBit(u32 val, u8 bitToTest);
 
 //Return value within bit range of from - to
 u32 getNthBits(u32 value, u8 from, u8 to);
+u32 signExtend32(s32 value, u8 start);

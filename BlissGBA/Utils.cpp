@@ -29,3 +29,9 @@ u32 getNthBits(u32 value, u8 from, u8 to)
 	u32 result = value & mask;
 	return result;
 }
+
+u32 signExtend32(s32 value, u8 start)
+{
+	u32 res = ((value) << (32 - start)) >> (32 - start);
+	return res;
+}
