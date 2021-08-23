@@ -4,8 +4,7 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "Memory\MemoryBus.h"
-#include "Debugger\DebugUI.h"
+#include "Core\Emulator.h"
 
 int main(int arc, char* argv[]) {
     sf::RenderWindow window(sf::VideoMode(240 * 4, 160 * 4), "BlissGBA");
@@ -16,9 +15,7 @@ int main(int arc, char* argv[]) {
 
     ImGui::SFML::Init(window);
 
-    MemoryBus mbus;
-    Arm cpu(&mbus);
-    DebugUI debug(&window, &mbus, &cpu);
+    Emulator emu(&window);
 
     sf::Clock deltaClock;
     while (window.isOpen()) {
@@ -33,9 +30,12 @@ int main(int arc, char* argv[]) {
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
+        emu.run();
+
         window.clear(sf::Color(179, 216, 229, 255));
-        
-        debug.render();
+
+        emu.render();
+
         ImGui::SFML::Render(window);
 
         window.display();
