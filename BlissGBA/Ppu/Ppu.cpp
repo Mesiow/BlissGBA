@@ -21,20 +21,23 @@ void Ppu::update(s32 cycles)
 
 	//Bitmap mode 3
 	if (mode == BGMode::THREE) {
-		for (s32 y = 0; y < SCREEN_HEIGHT; y++) {
-			for (s32 x = 0; x < SCREEN_WIDTH; x++) {
-				//2 bytes associated to each pixel(defining one of the 32768 colors)
-				u16 pixel = readU16(VRAM_START + ((y * SCREEN_WIDTH + x) * mode3.bpp));
+		if (liney >= SCREEN_HEIGHT) liney = 0;
 
-				u8 red = getU8Color((pixel & 0x1F));
-				u8 green = getU8Color((pixel >> 5) & 0x1F);
-				u8 blue = getU8Color((pixel >> 10) & 0x1F);
+		for (u32 x = 0; x < SCREEN_WIDTH; x++) {
+			//2 bytes associated to each pixel(defining one of the 32768 colors)
+			u16 pixel = readU16(VRAM_START_ADDR + ((liney * SCREEN_WIDTH + x) * mode3.bpp));
 
-				const sf::Color color = sf::Color(red, green, blue, 255);
-				mode3.pixels.setPixel(x, y, color);
-			}
+			u8 red = getU8Color((pixel & 0x1F));
+			u8 green = getU8Color((pixel >> 5) & 0x1F);
+			u8 blue = getU8Color((pixel >> 10) & 0x1F);
+
+			const sf::Color color = sf::Color(red, green, blue, 255);
+			mode3.pixels.setPixel(x, liney, color);
 		}
+		liney++;
 	}
+
+	
 }
 
 void Ppu::render(sf::RenderTarget& target)

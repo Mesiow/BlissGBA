@@ -7,7 +7,7 @@ class MemoryBus;
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 160
 
-#define VRAM_START 0x06000000
+//#define VRAM_START 0x06000000
 #define BM_MODE3_SIZE 0x12BFF
 
 //LCD Registers
@@ -51,5 +51,6 @@ public:
 	BitmapMode3 mode3;
 
 	u32 scanlineCounter = 0;
+	u16 liney = 0;
 	MemoryBus* mbus;
 };
