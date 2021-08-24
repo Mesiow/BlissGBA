@@ -121,8 +121,6 @@ public:
 
 	u8 executeArmIns(ArmInstruction& ins);
 	u8 executeThumbIns(ThumbInstruction& ins);
-	u8 executeHalfwordDataTransfer(ArmInstruction &ins, u16 instruction, 
-		u8 cond, RegisterID rd, RegisterID rn);
 
 	u8 executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate);
 	u8 executeDataProcessingImmFlags(ArmInstruction& ins);
@@ -133,7 +131,7 @@ public:
 	u8 executeDataProcessingRegShift(ArmInstruction& ins);
 	u8 handleUndefinedIns(ArmInstruction& ins);
 
-	u8 executeMiscLoadAndStore(ArmInstruction& ins);
+	u8 executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result);
 	u8 executeMiscLoadStoreImm(ArmInstruction& ins);
 	u8 executeMiscLoadStoreReg(ArmInstruction& ins);
 
@@ -181,8 +179,13 @@ private:
 	u8 opB(ArmInstruction& ins);
 	u8 opBL(ArmInstruction& ins);
 	u8 opBX(ArmInstruction& ins);
-
 	u8 opSWI(ArmInstruction& ins);
+
+	//Misc Load/Stores
+	u8 opSTRH(ArmInstruction &ins, RegisterID rd, u32 address);
+	u8 opLDRH(ArmInstruction& ins, RegisterID rd, u32 address);
+	u8 opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address);
+	u8 opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address);
 
 public:
 	State state;

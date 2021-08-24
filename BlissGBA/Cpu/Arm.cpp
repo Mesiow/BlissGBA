@@ -28,7 +28,7 @@ u8 Arm::clock()
 
 		ThumbInstruction ins;
 		ins.encoding = encoding;
-		cycles = executeThumbIns(ins);
+		executeThumbIns(ins);
 	}
 	return cycles;
 }
@@ -406,24 +406,6 @@ u8 Arm::executeThumbIns(ThumbInstruction& ins)
 	return 1;
 }
 
-u8 Arm::executeHalfwordDataTransfer(ArmInstruction& ins, u16 instruction, u8 cond, RegisterID rd, RegisterID rn)
-{
-	RegisterID rm = ins.rm();
-	if (cond) {
-		u8 bit22 = testBit(instruction, 6);
-		u8 SH = (ins.S() << 1) | ins.H();
-		//Register offset
-		if (bit22 == 0x0) {
-
-		}
-		//Immediate offset
-		else {
-
-		}
-	}
-	return u8();
-}
-
 u8 Arm::executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate)
 {
 	RegisterID rd = ins.rd();
@@ -447,6 +429,8 @@ u8 Arm::executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate)
 		case 0b1110: return opBIC(ins, rd, rn, flags, immediate); break;
 		case 0b1111: return opMVN(ins, rd, rn, flags, immediate); break;
 	}
+
+	return 1;
 }
 
 u8 Arm::executeDataProcessingImmFlags(ArmInstruction& ins)
@@ -488,17 +472,61 @@ u8 Arm::executeDataProcessingRegShift(ArmInstruction& ins)
 u8 Arm::handleUndefinedIns(ArmInstruction& ins)
 {
 	u16 lutIndex = ins.instruction();
-	printf("LUT Index: %d", lutIndex);
-	printf("ARM undefined or unimplemented instruction 0x%08X at PC: 0x%08X", ins.encoding, R15 - 8);
+	printf("LUT Index: %d ", lutIndex);
+	printf("ARM undefined or unimplemented instruction 0x%08X at PC: 0x%08X\n", ins.encoding, R15 - 8);
 
 	return 0;
 }
 
-u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins)
+u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result)
 {
-	RegisterID rd = ins.rd();
 	RegisterID rn = ins.rn();
+	RegisterID rd = ins.rd();
 
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	bool load = (ins.L() == 0x1);
+	u8 SH = (ins.S() << 1) | ins.H();
+
+	switch (result.type) {
+		case AddrMode3Type::PREINDEXED:
+			reg_rn = result.address;
+			writeRegister(rn, reg_rn);
+			break;
+		
+		case AddrMode3Type::POSTINDEX:
+			reg_rn = result.rn;
+			writeRegister(rn, reg_rn);
+			break;
+	}
+
+	bool useImmediateOffset = (result.type == AddrMode3Type::OFFSET);
+	u32 address = result.address; //imm offset (no writeback to register rn)
+	
+	switch (SH) {
+		case 0b00: /*SWP*/ break;
+		case 0b01: //Unsigned halfwords
+		{
+			if (!load) (useImmediateOffset) ? opSTRH(ins, rd, address) : opSTRH(ins, rd, reg_rn);
+			else (useImmediateOffset) ? opLDRH(ins, rd, address) : opLDRH(ins, rd, reg_rn);
+		}
+		break;
+
+		case 0b10: //Signed byte
+		{
+			if (!load) /*STRH*/;
+			else (useImmediateOffset) ? opLDRSB(ins, rd, address) : opLDRSB(ins, rd, reg_rn);
+		}
+		break;
+
+		case 0b11: //Signed halfword
+		{
+			if (!load) /*STRH*/;
+			else (useImmediateOffset) ? opLDRSH(ins, rd, address) : opLDRSH(ins, rd, reg_rn);
+		}
+		break;
+	}
 
 	return 1;
 }
@@ -507,31 +535,18 @@ u8 Arm::executeMiscLoadStoreImm(ArmInstruction& ins)
 {
 	AddrMode3Result result = addrMode3.immOffsetIndex(ins);
 
-	RegisterID rn = ins.rn();
-	u32 reg_rn = getRegister(rn);
-
-	switch (result.type) {
-		case AddrMode3Type::PREINDEXED:
-			reg_rn = result.address;
-			writeRegister(rn, reg_rn);
-			break;
-
-		case AddrMode3Type::OFFSET: 
-			
-			break;
-
-		case AddrMode3Type::POSTINDEX:
-			reg_rn = result.rn;
-			writeRegister(rn, reg_rn);
-			break;
-	}
+	executeMiscLoadAndStore(ins, result);
 
 	return 1;
 }
 
 u8 Arm::executeMiscLoadStoreReg(ArmInstruction& ins)
 {
-	return u8();
+	AddrMode3Result result = addrMode3.registerOffsetIndex(ins);
+
+	executeMiscLoadAndStore(ins, result);
+
+	return 1;
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
@@ -811,7 +826,7 @@ u8 Arm::opCMP(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool borrow = borrowFrom(reg_rn, shifter_op);
 	bool overflow = overflowFromSub(reg_rn, shifter_op);
 
-	setCC(result, !borrow, overflow);
+	setCC(result, borrow, overflow);
 
 	return 1;
 }
@@ -898,7 +913,7 @@ u8 Arm::opMVN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 
 u8 Arm::opB(ArmInstruction& ins)
 {
-	R15 = (R15 + (ins.offset() << 2));
+	R15 = (R15 + (signExtend32(ins.offset(), 24) << 2));
 	flushPipeline();
 
 	return 1;
@@ -907,7 +922,7 @@ u8 Arm::opB(ArmInstruction& ins)
 u8 Arm::opBL(ArmInstruction& ins)
 {
 	LR = R15 - 4;
-	R15 = R15 + (ins.offset() << 2);
+	R15 = (R15 + (ins.offset() << 2));
 	flushPipeline();
 
 	return 1;
@@ -929,6 +944,42 @@ u8 Arm::opSWI(ArmInstruction& ins)
 {
 	
 	return 1;
+}
+
+
+u8 Arm::opSTRH(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	u32 reg_rd = getRegister(rd);
+	mbus->writeU16(address, reg_rd & 0xFFFF);
+
+	return 1;
+}
+
+
+u8 Arm::opLDRH(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	u32 reg_rd = getRegister(rd);
+	
+	u16 value = mbus->readU16(address);
+	writeRegister(rd, value);
+
+	return 1;
+}
+
+u8 Arm::opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	u32 reg_rd = getRegister(rd);
+
+	s8 value = (s8)mbus->readU8(address);
+	value = signExtend32(value, 8);
+	writeRegister(rd, value);
+
+	return 1;
+}
+
+u8 Arm::opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	return u8();
 }
 
 
