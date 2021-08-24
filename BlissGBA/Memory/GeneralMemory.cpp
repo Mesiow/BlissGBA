@@ -81,7 +81,17 @@ u8 GeneralMemory::readU8(u32 address)
 
 u16 GeneralMemory::readU16(u32 address)
 {
-	return u16();
+	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		u32 addr = address - IO_START_ADDR;
+
+		u8 lo, hi;
+		lo = io[addr];
+		hi = io[addr + 1];
+
+		u16 value = (hi << 8) | lo;
+
+		return value;
+	}
 }
 
 u32 GeneralMemory::readU32(u32 address)

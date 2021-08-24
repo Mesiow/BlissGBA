@@ -78,7 +78,15 @@ u8 MemoryBus::readU8(u32 address)
 
 u16 MemoryBus::readU16(u32 address)
 {
-	return u16();
+	if (address < GENERAL_MEM_END) {
+		return genMem.readU16(address);
+	}
+	else if (address >= GENERAL_MEM_END && address <= DISPLAY_MEM_END) {
+		return displayMem.readU16(address);
+	}
+	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
+		//return pak.readU16(address);
+	}
 }
 
 u32 MemoryBus::readU32(u32 address)

@@ -5,6 +5,9 @@
 #define VRAM_SIZE 0x18000
 #define OAM_SIZE 0x400
 
+#define VRAM_START 0x06000000
+#define VRAM_END 0x06017FFF
+
 class DisplayMemory {
 public:
 	void zero();
