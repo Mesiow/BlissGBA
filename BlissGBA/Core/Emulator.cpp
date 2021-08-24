@@ -1,7 +1,7 @@
 #include "Emulator.h"
 
 Emulator::Emulator(sf::RenderWindow *window)
-	:mbus(), ppu(), cpu(&mbus), debug(window, this)
+	:mbus(), ppu(&mbus), cpu(&mbus), debug(window, this)
 {
 	showDebugger = true;
 	running = false;
@@ -15,6 +15,8 @@ void Emulator::run()
 		while (cycles_this_frame < maxCycles) {
 			u8 cycle = cpu.clock();
 			cycle *= 4;
+			cycles_this_frame += cycle;
+
 			//emulate timers
 			ppu.update(cycles_this_frame);
 			//emulate interrupts
