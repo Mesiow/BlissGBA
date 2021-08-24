@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Cartridge\GamePak.cpp" />
+    <ClCompile Include="Core\Emulator.cpp" />
     <ClCompile Include="Cpu\AddressingModes.cpp" />
     <ClCompile Include="Cpu\Arm.cpp" />
     <ClCompile Include="Cpu\Instruction.cpp" />
@@ -163,10 +164,12 @@
     <ClCompile Include="Memory\DisplayMemory.cpp" />
     <ClCompile Include="Memory\GeneralMemory.cpp" />
     <ClCompile Include="Memory\MemoryBus.cpp" />
+    <ClCompile Include="Ppu\Ppu.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cartridge\GamePak.h" />
+    <ClInclude Include="Core\Emulator.h" />
     <ClInclude Include="Cpu\AddressingModes.h" />
     <ClInclude Include="Cpu\Arm.h" />
     <ClInclude Include="Cpu\Instruction.h" />
@@ -174,6 +177,7 @@
     <ClInclude Include="Memory\DisplayMemory.h" />
     <ClInclude Include="Memory\GeneralMemory.h" />
     <ClInclude Include="Memory\MemoryBus.h" />
+    <ClInclude Include="Ppu\Ppu.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

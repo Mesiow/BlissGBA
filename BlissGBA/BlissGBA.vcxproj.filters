@@ -66,6 +66,12 @@
     <ClCompile Include="Debugger\tinyfiledialogs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Emulator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ppu\Ppu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils.h">
@@ -93,6 +99,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Cartridge\GamePak.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Emulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ppu\Ppu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
