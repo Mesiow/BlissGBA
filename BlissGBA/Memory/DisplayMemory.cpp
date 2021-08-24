@@ -9,8 +9,8 @@ void DisplayMemory::zero()
 
 void DisplayMemory::writeU8(u32 address, u8 value)
 {
-	if (address >= VRAM_START && address <= VRAM_END) {
-		u32 addr = address - VRAM_START;
+	if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
+		u32 addr = address - VRAM_START_ADDR;
 		vram[addr] = value;
 	}
 }
@@ -31,16 +31,16 @@ void DisplayMemory::writeU32(u32 address, u16 value)
 
 u8 DisplayMemory::readU8(u32 address)
 {
-	if (address >= VRAM_START && address <= VRAM_END) {
-		u32 addr = address - VRAM_START;
+	if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
+		u32 addr = address - VRAM_START_ADDR;
 		return vram[addr];
 	}
 }
 
 u16 DisplayMemory::readU16(u32 address)
 {
-	if (address >= VRAM_START && address <= VRAM_END) {
-		u32 addr = address - VRAM_START;
+	if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
+		u32 addr = address - VRAM_START_ADDR;
 
 		u8 lo, hi;
 		lo = vram[addr];
