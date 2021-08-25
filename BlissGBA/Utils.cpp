@@ -35,3 +35,9 @@ u32 signExtend32(s32 value, u8 start)
 	u32 res = ((value) << (32 - start)) >> (32 - start);
 	return res;
 }
+
+u16 signExtend16(s16 value, u8 start)
+{
+	u16 res = ((value << (16 - start)) >> (16 - start));
+	return res;
+}
