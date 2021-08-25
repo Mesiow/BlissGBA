@@ -512,22 +512,28 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result)
 		case 0b00: /*SWP*/ break;
 		case 0b01: //Unsigned halfwords
 		{
-			if (!load) (useImmediateOffset) ? opSTRH(ins, rd, address) : opSTRH(ins, rd, reg_rn);
-			else (useImmediateOffset) ? opLDRH(ins, rd, address) : opLDRH(ins, rd, reg_rn);
+			if (!load) {
+				(useImmediateOffset == true) ? opSTRH(ins, rd, address) 
+					: opSTRH(ins, rd, reg_rn); 
+			}
+			else {
+				(useImmediateOffset == true) ? opLDRH(ins, rd, address) 
+					: opLDRH(ins, rd, reg_rn); 
+			}
 		}
 		break;
 
 		case 0b10: //Signed byte
 		{
 			if (!load) /*STRH*/;
-			else (useImmediateOffset) ? opLDRSB(ins, rd, address) : opLDRSB(ins, rd, reg_rn);
+			else (useImmediateOffset == true) ? opLDRSB(ins, rd, address) : opLDRSB(ins, rd, reg_rn);
 		}
 		break;
 
 		case 0b11: //Signed halfword
 		{
 			if (!load) /*STRH*/;
-			else (useImmediateOffset) ? opLDRSH(ins, rd, address) : opLDRSH(ins, rd, reg_rn);
+			else { (useImmediateOffset == true) ? opLDRSH(ins, rd, address) : opLDRSH(ins, rd, reg_rn); }
 		}
 		break;
 	}
