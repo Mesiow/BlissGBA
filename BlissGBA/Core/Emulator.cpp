@@ -1,11 +1,13 @@
 #include "Emulator.h"
 
-Emulator::Emulator(sf::RenderWindow *window)
+Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	:mbus(), ppu(&mbus), cpu(&mbus), debug(window, this)
 {
+	this->displayScaleFactor = displayScaleFactor;
 	showDebugger = true;
 	running = false;
 	debug.running = &running;
+	debug.showDebugger = &showDebugger;
 }
 
 void Emulator::run()
@@ -25,12 +27,20 @@ void Emulator::run()
 	}
 }
 
-void Emulator::render()
+void Emulator::render(sf::RenderTarget &target)
 {
 	if(showDebugger) debug.render();
+	else {
+		ppu.render(target);
+	}
 }
 
 void Emulator::reset()
 {
 
+}
+
+void Emulator::handleEvents(sf::Event& ev)
+{
+	debug.handleEvents(ev);
 }

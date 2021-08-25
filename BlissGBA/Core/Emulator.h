@@ -4,10 +4,12 @@
 
 class Emulator {
 public:
-	Emulator(sf::RenderWindow *window);
+	Emulator(sf::RenderWindow *window, float displayScaleFactor);
 	void run();
-	void render();
+	void render(sf::RenderTarget &target);
 	void reset();
+
+	void handleEvents(sf::Event& ev);
 
 	MemoryBus mbus;
 	Ppu ppu;
@@ -18,4 +20,5 @@ public:
 	bool running;
 	const int scanlinesPerFrame = 228;
 	const int maxCycles = (1232 * scanlinesPerFrame); //1232 cycles per scanline (308 dots * 4 cpu cycles)
+	float displayScaleFactor;
 };
