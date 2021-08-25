@@ -20,6 +20,7 @@ public:
 	void load(const std::string& fileName);
 
 	u8 readU8(u32 address);
+	u16 readU16(u32 address);
 	u8* getGamePakWS0() { return &gamepakWS0[0]; }
 
 private:

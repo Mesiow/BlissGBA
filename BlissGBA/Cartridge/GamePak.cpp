@@ -59,6 +59,21 @@ u8 GamePak::readU8(u32 address)
 	}
 }
 
+u16 GamePak::readU16(u32 address)
+{
+	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {
+		u32 addr = address - GAMEPAK_WS0_START_ADDR;
+
+		u8 lo, hi;
+		lo = gamepakWS0[addr];
+		hi = gamepakWS0[addr + 1];
+
+		u16 value = (hi << 8) | lo;
+
+		return value;
+	}
+}
+
 void GamePak::parseHeader(u32 size)
 {
 	std::string sizeStr = std::to_string(size);
