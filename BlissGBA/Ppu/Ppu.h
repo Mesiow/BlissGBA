@@ -40,6 +40,7 @@ public:
 	void bufferPixels();
 
 	void setBGMode(u16 lcdControl);
+	void setScaleFactor(float scaleFactor);
 
 	//Extend 5 bit color val into 8 bits
 	u8 getU8Color(u8 color);

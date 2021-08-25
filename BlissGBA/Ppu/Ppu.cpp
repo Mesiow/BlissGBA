@@ -64,6 +64,11 @@ void Ppu::setBGMode(u16 lcdControl)
 	}
 }
 
+void Ppu::setScaleFactor(float scaleFactor)
+{
+	mode3.frame.setScale(scaleFactor, scaleFactor);
+}
+
 u8 Ppu::getU8Color(u8 color)
 {
 	u8 new_color = color << 3;
