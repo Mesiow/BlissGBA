@@ -7,7 +7,9 @@
 #include "Core\Emulator.h"
 
 int main(int arc, char* argv[]) {
-    sf::RenderWindow window(sf::VideoMode(240 * 4, 160 * 4), "BlissGBA");
+
+    float displayScaleFactor = 4;
+    sf::RenderWindow window(sf::VideoMode(240 * displayScaleFactor, 160 * displayScaleFactor), "BlissGBA");
 
     sf::Image icon;
     icon.loadFromFile("icon.png");
@@ -15,7 +17,7 @@ int main(int arc, char* argv[]) {
 
     ImGui::SFML::Init(window);
 
-    Emulator emu(&window);
+    Emulator emu(&window, displayScaleFactor);
 
     sf::Clock deltaClock;
     while (window.isOpen()) {
@@ -23,6 +25,7 @@ int main(int arc, char* argv[]) {
         while (window.pollEvent(event)) {
             ImGui::SFML::ProcessEvent(event);
      
+            emu.handleEvents(event);
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
@@ -34,7 +37,7 @@ int main(int arc, char* argv[]) {
 
         window.clear(sf::Color(179, 216, 229, 255));
 
-        emu.render();
+        emu.render(window);
 
         ImGui::SFML::Render(window);
 
