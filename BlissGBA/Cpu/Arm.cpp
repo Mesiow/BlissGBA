@@ -525,15 +525,27 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result)
 
 		case 0b10: //Signed byte
 		{
-			if (!load) /*STRH*/;
-			else (useImmediateOffset == true) ? opLDRSB(ins, rd, address) : opLDRSB(ins, rd, reg_rn);
+			if (!load) {
+				(useImmediateOffset == true) ? opSTRH(ins, rd, address)
+					: opSTRH(ins, rd, reg_rn);
+			}
+			else { 
+				(useImmediateOffset == true) ? opLDRSB(ins, rd, address) 
+					: opLDRSB(ins, rd, reg_rn); 
+			}
 		}
 		break;
 
 		case 0b11: //Signed halfword
 		{
-			if (!load) /*STRH*/;
-			else { (useImmediateOffset == true) ? opLDRSH(ins, rd, address) : opLDRSH(ins, rd, reg_rn); }
+			if (!load) {
+				(useImmediateOffset == true) ? opSTRH(ins, rd, address)
+					: opSTRH(ins, rd, reg_rn);
+			}
+			else {
+				(useImmediateOffset == true) ? opLDRSH(ins, rd, address) 
+					: opLDRSH(ins, rd, reg_rn); 
+			}
 		}
 		break;
 	}
@@ -968,8 +980,6 @@ u8 Arm::opSTRH(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRH(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u32 reg_rd = getRegister(rd);
-	
 	u16 value = mbus->readU16(address);
 	writeRegister(rd, value);
 
@@ -978,8 +988,6 @@ u8 Arm::opLDRH(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u32 reg_rd = getRegister(rd);
-
 	s8 value = (s8)mbus->readU8(address);
 	value = signExtend32(value, 8);
 	writeRegister(rd, value);
@@ -989,7 +997,11 @@ u8 Arm::opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	return u8();
+	s16 value = (s16)mbus->readU16(address);
+	value = signExtend32(value, 16);
+	writeRegister(rd, value);
+
+	return 1;
 }
 
 
