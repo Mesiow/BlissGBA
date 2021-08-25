@@ -29,12 +29,15 @@ struct DebugUI {
 	void handleButtonPresses();
 	void handleEvents(sf::Event& ev);
 
+	void onDebugUIToggle();
+
 	static MemoryEditor biosMemory;
 	static MemoryEditor vramEditor;
 	static MemoryEditor ioEditor;
 	static MemoryEditor gamepakMemory;
 
 	bool* running = nullptr;
+	bool *showDebugger = nullptr;
 	bool showRegisterWindow;
 	bool showBiosMemory;
 	bool showVRAM;
@@ -45,6 +48,7 @@ struct DebugUI {
 	bool showPipeline;
 	bool showDisplay;
 	bool vsync;
+	bool showKeys[2];
 
 	sf::RenderWindow* window;
 

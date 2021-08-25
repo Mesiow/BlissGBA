@@ -24,12 +24,15 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showPipeline = true;
     showDisplay = true;
     vsync = false;
+
+    //shift and h
+    showKeys[0] = false; showKeys[1] = false;
 }
 
 void DebugUI::render()
 {
     renderMenuBar();
-	renderRegisters();
+    renderRegisters();
     renderCartInfo();
     renderPipeline();
     renderDisplay();
@@ -178,7 +181,9 @@ void DebugUI::renderMenuBar()
 
         if (ImGui::BeginMenu("Emulation")) {
             //bool cartInserted = Memory::cart.mapper != Mappers::NoCart;
-
+            if (ImGui::MenuItem("Show Debug Display (shift + h)", nullptr, showDebugger)) {
+                onDebugUIToggle();
+            }
             //if (ImGui::MenuItem("Trace", nullptr) && cartInserted) // Make sure not to run without cart
             //    gba.step();
             //if (ImGui::MenuItem("Run", nullptr, &running)) // Same here
@@ -257,8 +262,34 @@ void DebugUI::update()
 
 void DebugUI::handleButtonPresses()
 {
+    
 }
 
 void DebugUI::handleEvents(sf::Event& ev)
 {
+    if (ev.type == sf::Event::KeyPressed) {
+        if (ev.key.code == sf::Keyboard::LShift) showKeys[0] = true;
+        if (ev.key.code == sf::Keyboard::H) showKeys[1] = true;
+
+        bool shift, h;
+        shift = showKeys[0];
+        h = showKeys[1];
+
+        if (shift && h) {
+            *showDebugger = !*showDebugger;
+            onDebugUIToggle();
+        }
+    }
+    else if (ev.type == sf::Event::KeyReleased) {
+        if (ev.key.code == sf::Keyboard::LShift) showKeys[0] = false;
+        if (ev.key.code == sf::Keyboard::H) showKeys[1] = false;
+    }
+}
+
+void DebugUI::onDebugUIToggle()
+{
+    if (*showDebugger == false)
+        ppu->setScaleFactor(emu->displayScaleFactor);
+    else
+        ppu->setScaleFactor(emu->displayScaleFactor / 2.0f);
 }
