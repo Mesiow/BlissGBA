@@ -330,6 +330,10 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit)
 			break;
 
 		case 0b11: {
+			if (amount == 0) {
+				rrx(value, shiftedBit);
+				return value;
+			}
 			value = ror(value, amount);
 			//Save last carried out bit
 			shiftedBit = (value >> 31) & 0x1;
