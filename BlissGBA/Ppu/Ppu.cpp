@@ -81,6 +81,7 @@ void Ppu::updateLCDStatus()
 			writeU16(DISPSTAT, lcd_stat);
 		}
 		else {
+			hblankCounter = 0;
 			lcd_stat = resetBit(lcd_stat, 1);
 			writeU16(DISPSTAT, lcd_stat);
 		}
@@ -92,6 +93,11 @@ void Ppu::updateLCDStatus()
 			lcd_stat = setBit(lcd_stat, 0);
 			writeU16(DISPSTAT, lcd_stat);
 		}
+		else {
+			vblankCounter = 0;
+			lcd_stat = resetBit(lcd_stat, 0);
+			writeU16(DISPSTAT, lcd_stat);
+		}
 	}
 
 	currentScanline = vcount & 0xFF;
@@ -100,7 +106,7 @@ void Ppu::updateLCDStatus()
 void Ppu::updateCurrentScanline()
 {
 	currentScanline++;
-	if (currentScanline >= SCREEN_HEIGHT) {
+	if (currentScanline > SCREEN_HEIGHT) {
 		currentScanline = 0;
 	}
 	vcount = currentScanline & 0xFF;
