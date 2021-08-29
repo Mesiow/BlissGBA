@@ -9,7 +9,8 @@
 int main(int arc, char* argv[]) {
 
     float displayScaleFactor = 4;
-    sf::RenderWindow window(sf::VideoMode(240 * displayScaleFactor, 160 * displayScaleFactor), "BlissGBA");
+    std::string title = "BlissGBA";
+    sf::RenderWindow window(sf::VideoMode(240 * displayScaleFactor, 160 * displayScaleFactor), title);
 
     sf::Image icon;
     icon.loadFromFile("icon.png");
@@ -20,6 +21,10 @@ int main(int arc, char* argv[]) {
     Emulator emu(&window, displayScaleFactor);
 
     sf::Clock deltaClock;
+    sf::Time prevTime = deltaClock.getElapsedTime();
+    sf::Time currentTime;
+    float lastTime = 0;
+    float fps;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -31,7 +36,11 @@ int main(int arc, char* argv[]) {
             }
         }
 
-        ImGui::SFML::Update(window, deltaClock.restart());
+        currentTime = deltaClock.getElapsedTime();
+        fps = 1.0f / (currentTime.asSeconds() - prevTime.asSeconds());
+        window.setTitle(title + " FPS: " + std::to_string(floor(fps)));
+        
+        ImGui::SFML::Update(window, currentTime);
 
         emu.run();
 
@@ -42,6 +51,8 @@ int main(int arc, char* argv[]) {
         ImGui::SFML::Render(window);
 
         window.display();
+
+        prevTime = currentTime;
     }
 
     ImGui::SFML::Shutdown();
