@@ -23,15 +23,12 @@ public:
 	u16 readU16(u32 address);
 	u8* getGamePakWS0() { return &gamepakWS0[0]; }
 
-private:
 	void parseHeader(u32 size);
 	void zeroMemory();
 
-public:
 	std::string title;
 	std::string romSize;
 
-private:
 	u8* gamepakWS0;
 	u8* gamepakWS1;
 	u8* gamepakWS2;
