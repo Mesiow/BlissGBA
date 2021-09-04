@@ -7,6 +7,8 @@
 
 #define VRAM_START_ADDR 0x06000000
 #define VRAM_END_ADDR 0x06017FFF
+#define PRAM_START_ADDR 0x05000000
+#define PRAM_END_ADDR 0x050003FF
 
 class DisplayMemory {
 public:
@@ -19,7 +21,7 @@ public:
 	u16 readU16(u32 address);
 	u32 readU32(u32 address);
 
-	u8 bgpalette[BG_OBJ_PALETTE_SIZE];
+	u8 pram[BG_OBJ_PALETTE_SIZE];
 	u8 vram[VRAM_SIZE];
 	u8 oam[OAM_SIZE];
 };
