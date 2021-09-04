@@ -15,8 +15,6 @@ Ppu::Ppu(MemoryBus *mbus)
 void Ppu::update(s32 cycles)
 {
 	cycleCounter += cycles;
-	hblankCounter += cycles;
-	vblankCounter += cycles;
 
 	updateLCDStatus();
 
@@ -24,6 +22,8 @@ void Ppu::update(s32 cycles)
 	setBGMode(lcd_control);
 
 	renderBitmapModes();
+
+	updateCurrentScanline();
 }
 
 void Ppu::render(sf::RenderTarget& target)
@@ -33,72 +33,55 @@ void Ppu::render(sf::RenderTarget& target)
 
 void Ppu::renderBitmapModes()
 {
-	//if(cycleCounter)
 	u16 lcd_stat = readU16(DISPSTAT);
 	bool vblank = testBit(lcd_stat, 0);
 	bool hblank = testBit(lcd_stat, 1);
-	
 
-	//Bitmap mode 3
-	if (mode == BGMode::THREE) {
-		//else Draw scanline at the start of HBLANK
-
+	if (currentScanline < SCREEN_HEIGHT) {
+		//Render scanline at start of hblank
 		if (hblank) {
-			for (u32 x = 0; x < SCREEN_WIDTH; x++) {
-				//2 bytes associated to each pixel(defining one of the 32768 colors)
-				u32 index = ((currentScanline * SCREEN_WIDTH + x) * mode3.bpp);
-				u16 pixel = readU16(VRAM_START_ADDR + index);
-
-				u8 red = getU8Color((pixel & 0x1F));
-				u8 green = getU8Color((pixel >> 5) & 0x1F);
-				u8 blue = getU8Color((pixel >> 10) & 0x1F);
-
-				const sf::Color color = sf::Color(red, green, blue, 255);
-				mode3.pixels.setPixel(x, currentScanline, color);
+			if (mode == BGMode::THREE) {
+				renderBitmapMode3();
 			}
-			updateCurrentScanline();
+			else if (mode == BGMode::FOUR) {
+				renderBitmapMode4();
+			}
 		}
-		
 	}
+}
+
+void Ppu::renderBitmapMode3()
+{
+	for (u32 x = 0; x < SCREEN_WIDTH; x++) {
+		//2 bytes associated to each pixel(defining one of the 32768 colors)
+		u32 index = ((currentScanline * SCREEN_WIDTH + x) * mode3.bpp);
+		u16 pixel = readU16(VRAM_START_ADDR + index);
+
+		u8 red = getU8Color((pixel & 0x1F));
+		u8 green = getU8Color((pixel >> 5) & 0x1F);
+		u8 blue = getU8Color((pixel >> 10) & 0x1F);
+
+		const sf::Color color = sf::Color(red, green, blue, 255);
+		mode3.pixels.setPixel(x, currentScanline, color);
+	}
+	
+}
+
+void Ppu::renderBitmapMode4()
+{
+
 }
 
 void Ppu::bufferPixels()
 {
-	mode3.framebuffer.update(mode3.pixels);
+	if(mode == BGMode::THREE)
+		mode3.framebuffer.update(mode3.pixels);
 }
 
 void Ppu::updateLCDStatus()
 {
 	u16 lcd_stat = readU16(DISPSTAT);
 	vcount = readU16(VCOUNT);
-	bool vblank = testBit(lcd_stat, 0);
-	bool hblank = testBit(lcd_stat, 1);
-
-	if (!hblank) {
-		//toggle hblank
-		if (hblankCounter >= HBLANK_START && hblankCounter < (HBLANK_START + HBLANK_CYCLES)) {
-			lcd_stat = setBit(lcd_stat, 1);
-			writeU16(DISPSTAT, lcd_stat);
-		}
-		else {
-			hblankCounter = 0;
-			lcd_stat = resetBit(lcd_stat, 1);
-			writeU16(DISPSTAT, lcd_stat);
-		}
-	}
-
-	if (!vblank) {
-		//toggle vblank
-		if (vblankCounter >= VBLANK_START && vblankCounter < (VBLANK_START + VBLANK_CYCLES)) {
-			lcd_stat = setBit(lcd_stat, 0);
-			writeU16(DISPSTAT, lcd_stat);
-		}
-		else {
-			vblankCounter = 0;
-			lcd_stat = resetBit(lcd_stat, 0);
-			writeU16(DISPSTAT, lcd_stat);
-		}
-	}
 
 	currentScanline = vcount & 0xFF;
 }
@@ -106,8 +89,14 @@ void Ppu::updateLCDStatus()
 void Ppu::updateCurrentScanline()
 {
 	currentScanline++;
-	if (currentScanline > SCREEN_HEIGHT) {
+	setHBlankFlag(1);
+
+	if (currentScanline == SCREEN_HEIGHT) {
+		setVBlankFlag(1);
+	}
+	else if (currentScanline == 228) { //End of vblank
 		currentScanline = 0;
+		setVBlankFlag(0);
 	}
 	vcount = currentScanline & 0xFF;
 	writeU16(VCOUNT, vcount);
@@ -125,6 +114,22 @@ void Ppu::setBGMode(u16 lcdControl)
 		case 0x4: mode = BGMode::FOUR; break;
 		case 0x5: mode = BGMode::FIVE; break;
 	}
+}
+
+void Ppu::setHBlankFlag(bool value)
+{
+	u16 lcd_stat = readU16(DISPSTAT);
+	(value == true) ? lcd_stat = setBit(lcd_stat, 1) : lcd_stat = resetBit(lcd_stat, 1);
+
+	writeU16(DISPSTAT, lcd_stat);
+}
+
+void Ppu::setVBlankFlag(bool value)
+{
+	u16 lcd_stat = readU16(DISPSTAT);
+	(value == true) ? lcd_stat = setBit(lcd_stat, 0) : lcd_stat = resetBit(lcd_stat, 0);
+
+	writeU16(DISPSTAT, lcd_stat);
 }
 
 void Ppu::setScaleFactor(float scaleFactor)

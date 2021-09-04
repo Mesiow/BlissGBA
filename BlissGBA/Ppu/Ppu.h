@@ -51,12 +51,16 @@ public:
 	void update(s32 cycles);
 	void render(sf::RenderTarget& target);
 	void renderBitmapModes();
+	void renderBitmapMode3();
+	void renderBitmapMode4();
 	void bufferPixels();
 
 	void updateLCDStatus();
 	void updateCurrentScanline();
 
 	void setBGMode(u16 lcdControl);
+	void setHBlankFlag(bool value);
+	void setVBlankFlag(bool value);
 	void setScaleFactor(float scaleFactor);
 
 	void writeU8(u32 address, u8 value);
