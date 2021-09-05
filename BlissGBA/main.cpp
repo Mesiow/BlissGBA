@@ -18,7 +18,7 @@ int main(int arc, char* argv[]) {
 
     ImGui::SFML::Init(window);
 
-    Emulator emu(&window, displayScaleFactor);
+    Emulator *emu = new Emulator(&window, displayScaleFactor);
 
     sf::Clock deltaClock;
     sf::Time prevTime = deltaClock.getElapsedTime();
@@ -30,7 +30,7 @@ int main(int arc, char* argv[]) {
         while (window.pollEvent(event)) {
             ImGui::SFML::ProcessEvent(event);
      
-            emu.handleEvents(event);
+            emu->handleEvents(event);
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
@@ -42,11 +42,11 @@ int main(int arc, char* argv[]) {
         
         ImGui::SFML::Update(window, currentTime);
 
-        emu.run();
+        emu->run();
 
         window.clear(sf::Color(179, 216, 229, 255));
 
-        emu.render(window);
+        emu->render(window);
 
         ImGui::SFML::Render(window);
 
@@ -55,7 +55,8 @@ int main(int arc, char* argv[]) {
         prevTime = currentTime;
     }
 
+    delete emu;
     ImGui::SFML::Shutdown();
-
+    
     return 0;
 }
