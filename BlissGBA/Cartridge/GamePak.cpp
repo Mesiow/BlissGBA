@@ -51,6 +51,18 @@ void GamePak::load(const std::string& fileName)
 	}
 }
 
+void GamePak::writeU8(u32 address, u8 value)
+{
+}
+
+void GamePak::writeU16(u32 address, u16 value)
+{
+}
+
+void GamePak::writeU32(u32 address, u32 value)
+{
+}
+
 u8 GamePak::readU8(u32 address)
 {
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {

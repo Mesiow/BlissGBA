@@ -18,6 +18,9 @@ public:
 	GamePak();
 	~GamePak();
 	void load(const std::string& fileName);
+	void writeU8(u32 address, u8 value);
+	void writeU16(u32 address, u16 value);
+	void writeU32(u32 address, u32 value);
 
 	u8 readU8(u32 address);
 	u16 readU16(u32 address);
