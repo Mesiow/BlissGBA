@@ -5,7 +5,6 @@ Arm::Arm(MemoryBus *mbus)
 	:addrMode1(*this), addrMode3(*this)
 {
 	this->mbus = mbus;
-	reset();
 }
 
 u8 Arm::clock()
@@ -331,7 +330,7 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit)
 
 		case 0b11: {
 			if (amount == 0) {
-				rrx(value, shiftedBit);
+				value = rrx(value, shiftedBit);
 				return value;
 			}
 			value = ror(value, amount);

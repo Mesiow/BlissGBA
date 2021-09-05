@@ -186,6 +186,7 @@ private:
 	u8 opLDRH(ArmInstruction& ins, RegisterID rd, u32 address);
 	u8 opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address);
 	u8 opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address);
+	u8 opSWP(ArmInstruction& ins, RegisterID rd);
 
 public:
 	State state;
@@ -212,6 +213,6 @@ public:
 	u32 armpipeline[2];
 	u16 thumbpipeline[2];
 
-	u32 cycles;
+	u32 cycles = 0;
 	MemoryBus* mbus;
 };
