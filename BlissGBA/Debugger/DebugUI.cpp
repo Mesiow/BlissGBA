@@ -175,7 +175,7 @@ void DebugUI::renderMenuBar()
             if (file != nullptr) {  // Check if file dialog was canceled
                 std::string path = std::filesystem::path(file).string();
                 mbus->loadGamePak(path);
-                //gba/core.reset();
+                emu->reset();
             }
         }
 
@@ -220,13 +220,14 @@ void DebugUI::renderMenuBar()
 void DebugUI::renderCartInfo()
 {
     if (showCartWindow) {
-        ImGui::Begin("Cartridge Info");
-        ImGui::SetWindowFontScale(1.2);
+        if (ImGui::Begin("Cartridge Info")) {
+            ImGui::SetWindowFontScale(1.2);
 
-        ImGui::Text("Game Title: %s", mbus->pak.title.c_str());
-        ImGui::Text("ROM Size: %s", mbus->pak.romSize.c_str());
+            ImGui::Text("Game Title: %s", mbus->pak.title.c_str());
+            ImGui::Text("ROM Size: %s", mbus->pak.romSize.c_str());
 
-        ImGui::End();
+            ImGui::End();
+        }
     }
 }
 
@@ -236,23 +237,29 @@ void DebugUI::renderPipeline()
         u32 first_ins = cpu->armpipeline[0];
         u32 second_ins = cpu->armpipeline[1];
 
-        ImGui::Begin("Pipeline");
-        ImGui::SetWindowFontScale(1.2);
-        
-        ImGui::Text("0 -> 0x%08X", first_ins);
-        ImGui::Text("1 -> 0x%08X", second_ins);
+        if (ImGui::Begin("Pipeline")) {
+            ImGui::SetWindowFontScale(1.2);
 
-        ImGui::End();
+            ImGui::Text("0 -> 0x%08X", first_ins);
+            ImGui::Text("1 -> 0x%08X", second_ins);
+
+            ImGui::End();
+        }
     }
 }
 
 void DebugUI::renderDisplay()
 {
     if (showDisplay) {
-        ImGui::Begin("Display");
+        if (ImGui::Begin("Display")) {
 
-        ImGui::Image(ppu->mode3.frame);
-        ImGui::End();
+            if (ppu->mode == BGMode::THREE)
+                ImGui::Image(ppu->mode3.frame);
+            else if (ppu->mode == BGMode::FOUR)
+                ImGui::Image(ppu->mode4.frame);
+
+            ImGui::End();
+        }
     }
 }
 
