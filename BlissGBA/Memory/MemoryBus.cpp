@@ -6,7 +6,6 @@ MemoryBus::MemoryBus()
 	displayMem.zero();
 
 	genMem.loadBios("roms/gba_bios.bin");
-	loadGamePak("test_roms/panda.gba");
 }
 
 void MemoryBus::loadGamePak(const std::string& file)
@@ -23,7 +22,7 @@ void MemoryBus::writeU8(u32 address, u8 value)
 		displayMem.writeU8(address, value);
 	}
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
-		//cartridge.writeU8(address, value);
+		pak.writeU8(address, value);
 	}
 }
 
@@ -41,7 +40,7 @@ void MemoryBus::writeU16(u32 address, u16 value)
 		displayMem.writeU16(address, value);
 	}
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
-		//cartridge.writeU16(address, value);
+		pak.writeU16(address, value);
 	}
 }
 
@@ -59,7 +58,7 @@ void MemoryBus::writeU32(u32 address, u32 value)
 		displayMem.writeU32(address, value);
 	}
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
-		//cartridge.writeU32(address, value);
+		pak.writeU32(address, value);
 	}
 }
 
