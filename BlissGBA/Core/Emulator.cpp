@@ -16,7 +16,7 @@ void Emulator::run()
 		s32 cycles_this_frame = 0;
 		while (cycles_this_frame < maxCycles) {
 			u8 cycle = cpu.clock();
-			cycle *= 4;
+			cycle *= 1;
 			cycles_this_frame += cycle;
 
 			//emulate timers
@@ -37,7 +37,9 @@ void Emulator::render(sf::RenderTarget &target)
 
 void Emulator::reset()
 {
-
+	cpu.reset();
+	//ppu.reset();
+	//apu.reset();
 }
 
 void Emulator::handleEvents(sf::Event& ev)
