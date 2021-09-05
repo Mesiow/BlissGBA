@@ -8,13 +8,19 @@ Ppu::Ppu(MemoryBus *mbus)
 	mode3.framebuffer.loadFromImage(mode3.pixels);
 	mode3.frame = sf::Sprite(mode3.framebuffer);
 
+	mode4.pixels.create(SCREEN_HEIGHT, SCREEN_HEIGHT, sf::Color::Black);
+	mode4.framebuffer.loadFromImage(mode4.pixels);
+	mode4.frame = sf::Sprite(mode4.framebuffer);
+
 	float scaleFactor = 2;
 	mode3.frame.setScale(scaleFactor, scaleFactor);
+	mode4.frame.setScale(scaleFactor, scaleFactor);
 }
 
 void Ppu::update(s32 cycles)
 {
 	cycleCounter += cycles;
+	hblankCounter += cycles;
 
 	updateLCDStatus();
 
@@ -69,13 +75,27 @@ void Ppu::renderBitmapMode3()
 
 void Ppu::renderBitmapMode4()
 {
+	for (u32 x = 0; x < SCREEN_WIDTH; x++) {
+		u32 index = ((currentScanline * SCREEN_WIDTH + x) * mode4.bpp);
+		u8 paletteIndex = readU8(VRAM_START_ADDR + index);
 
+		u16 palette = readU16(PRAM_START_ADDR + paletteIndex);
+
+		u8 red = getU8Color((palette & 0x1F));
+		u8 green = getU8Color((palette >> 5) & 0x1F);
+		u8 blue = getU8Color((palette >> 10) & 0x1F);
+
+		const sf::Color color = sf::Color(red, green, blue, 255);
+		mode4.pixels.setPixel(x, currentScanline, color);
+	}
 }
 
 void Ppu::bufferPixels()
 {
-	if(mode == BGMode::THREE)
+	if (mode == BGMode::THREE)
 		mode3.framebuffer.update(mode3.pixels);
+	else if (mode == BGMode::FOUR)
+		mode4.framebuffer.update(mode4.pixels);
 }
 
 void Ppu::updateLCDStatus()

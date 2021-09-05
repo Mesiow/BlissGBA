@@ -40,7 +40,7 @@ struct BitmapMode3 {
 
 struct BitmapMode4 {
 	static constexpr u8 bpp = 1;
-	u8 pixels[SCREEN_WIDTH * SCREEN_HEIGHT * bpp];
+	sf::Image pixels;
 	sf::Texture framebuffer;
 	sf::Sprite frame;
 };
