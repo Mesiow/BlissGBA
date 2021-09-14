@@ -28,11 +28,19 @@ void Arm::mapArmOpcodes()
 		else if (((i & 0b1001) == 0b1001) && ((i >> 9) == 0) && (((i >> 6) & 0x1) == 0)) {
 			armlut[i] = b(&Arm::executeMiscLoadStoreReg);
 		}
+		//LDM
+		else if (((i >> 9) == 0b100) && (((i >> 4) & 0x1) == 0x1)) {
+			armlut[i] = b(&Arm::executeLDM);
+		}
+		//STM
+		else if(((i >> 9) == 0b100) && (((i >> 4) & 0x1) == 0x0)){
+			armlut[i] = b(&Arm::executeSTM);
+		}
 		else if ((((i >> 7) & 0x1F) == 0b00110) && ((i >> 4) & 0x3) == 0b00){
 			armlut[i] = b(&Arm::handleUndefinedIns);
 		}
 		//Addressing Mode 1 immediate with flags(S bit)
-		else if (((i >> 9) == 0b001) && ((i >> 4) & 0x1) == 1) {
+		else if (((i >> 9) == 0b001) && ((i >> 4) & 0x1) == 0x1) {
 			armlut[i] = b(&Arm::executeDataProcessingImmFlags);
 		}
 		//Addressing Mode 1 immediate
