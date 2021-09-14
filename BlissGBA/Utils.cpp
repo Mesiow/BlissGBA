@@ -41,3 +41,14 @@ u16 signExtend16(s16 value, u8 start)
 	u16 res = ((value << (16 - start)) >> (16 - start));
 	return res;
 }
+
+u8 numSetBitsU16(u16 value)
+{
+	u8 count = 0;
+	for (int i = 0; i < 16; i++) {
+		u16 mask = (1 << i);
+		if (value & mask)
+			count++;
+	}
+	return count;
+}

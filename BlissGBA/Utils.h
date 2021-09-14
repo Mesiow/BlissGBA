@@ -22,3 +22,6 @@ u8 testBit(u32 val, u8 bitToTest);
 u32 getNthBits(u32 value, u8 from, u8 to);
 u32 signExtend32(s32 value, u8 start);
 u16 signExtend16(s16 value, u8 start);
+
+//Return the number of bits set
+u8 numSetBitsU16(u16 value);
