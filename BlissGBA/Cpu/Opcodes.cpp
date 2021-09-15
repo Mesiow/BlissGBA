@@ -21,6 +21,13 @@ void Arm::mapArmOpcodes()
 		else if (i == 0b000100100001) {
 			armlut[i] = b(&Arm::opBX);
 		}
+		//Addressing Mode 2 Load and Store Word or Unsigned Byte
+		else if ((i >> 9) == 0b010) {
+			armlut[i] = b(&Arm::executeLoadStoreImm);
+		}
+		else if ((i >> 9) == 0b011) {
+			armlut[i] = b(&Arm::executeLoadStoreShift);
+		}
 		//Addressing Mode 3 Misc Loads and Stores
 		else if (((i & 0b1001) == 0b1001) && ((i >> 9) == 0) && (((i >> 6) & 0x1) == 0x1)) {
 			armlut[i] = b(&Arm::executeMiscLoadStoreImm);
