@@ -77,6 +77,11 @@ u8 MemoryBus::readU8(u32 address)
 
 u16 MemoryBus::readU16(u32 address)
 {
+	if (!isAlignedU16(address)) {
+		std::cerr << "--Unaligned memory read U16 attempted--" << std::endl;
+		return;
+	}
+
 	if (address < GENERAL_MEM_END) {
 		return genMem.readU16(address);
 	}
@@ -90,7 +95,20 @@ u16 MemoryBus::readU16(u32 address)
 
 u32 MemoryBus::readU32(u32 address)
 {
-	return u32();
+	if (!isAlignedU32(address)) {
+		std::cerr << "--Unaligned memory read U32 attempted--" << std::endl;
+		return;
+	}
+
+	if (address < GENERAL_MEM_END) {
+		return genMem.readU32(address);
+	}
+	else if (address >= GENERAL_MEM_END && address <= DISPLAY_MEM_END) {
+		return displayMem.readU32(address);
+	}
+	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
+		return pak.readU32(address);
+	}
 }
 
 bool MemoryBus::isAlignedU16(u32 address)
