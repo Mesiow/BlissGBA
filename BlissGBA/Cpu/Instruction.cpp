@@ -115,6 +115,12 @@ u8 ArmInstruction::bits8to11()
     return b8to11;
 }
 
+u16 ArmInstruction::offset12()
+{
+    u16 offset = (this->encoding) & 0xFFF;
+    return offset;
+}
+
 u8 ArmInstruction::P()
 {
     u8 P = ((this->encoding) >> 24) & 0x1;
@@ -151,6 +157,12 @@ u8 ArmInstruction::H()
     return H;
 }
 
+u8 ArmInstruction::B()
+{
+    u8 B = ((this->encoding) >> 22) & 0x1;
+    return B;
+}
+
 u8 ArmInstruction::immedH()
 {
     u8 immH = ((this->encoding) >> 8) & 0xF;
@@ -161,4 +173,16 @@ u8 ArmInstruction::immedL()
 {
     u8 immL = (this->encoding) & 0xF;
     return immL;
+}
+
+u8 ArmInstruction::S_LSM()
+{
+    u8 S = ((this->encoding) >> 22) & 0x1;
+    return S;
+}
+
+u16 ArmInstruction::registerList()
+{
+    u16 reg_list = (this->encoding) & 0xFF;
+    return reg_list;
 }

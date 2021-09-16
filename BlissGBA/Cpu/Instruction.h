@@ -30,11 +30,14 @@ struct ArmInstruction {
 	u16 instruction(); //12bit number (bits 20-27 and 4-7 combined) 
 	                   //that allows us to decode which instruction we are executing
 	u8 bits8to11();
+	u16 offset12();
 
-	//Halfword and signed data transfer bits
+	//Load/Store/Misc
 	u8 P(); u8 U(); u8 W(); u8 L();
-	u8 S(); u8 H();
+	u8 S(); u8 H(); u8 B();
 	u8 immedH(); u8 immedL();
+	u8 S_LSM(); //S bit for load/store multiple
+	u16 registerList();
 
 	u32 encoding;
 };
