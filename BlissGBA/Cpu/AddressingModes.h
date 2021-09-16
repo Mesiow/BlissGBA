@@ -15,27 +15,42 @@ struct AddressingMode1 : public AddressingMode{
 	u8 isRegisterShift(ArmInstruction& ins);
 };
 
-struct AddressingMode2 : public AddressingMode{
-
-};
-
-
-
-enum class AddrMode3Type : u8 {
+enum class AddrModeLoadStoreType : u8 {
 	PREINDEXED = 0,
 	OFFSET,
 	POSTINDEX
 };
 
-struct AddrMode3Result {
-	AddrMode3Type type;
+struct AddrModeLoadStoreResult {
+	AddrModeLoadStoreType type;
 	u32 address;
 	u32 rn;
+};
+
+struct AddressingMode2 : public AddressingMode{
+	AddressingMode2(Arm& cpu);
+	AddrModeLoadStoreResult immOffsetIndex(ArmInstruction& ins);
+	AddrModeLoadStoreResult scaledRegisterOffsetIndex(ArmInstruction& ins);
 };
 
 //(Misc Loads and Stores)
 struct AddressingMode3 : public AddressingMode{
 	AddressingMode3(Arm& cpu);
-	AddrMode3Result immOffsetIndex(ArmInstruction& ins);
-	AddrMode3Result registerOffsetIndex(ArmInstruction& ins);
+	AddrModeLoadStoreResult immOffsetIndex(ArmInstruction& ins);
+	AddrModeLoadStoreResult registerOffsetIndex(ArmInstruction& ins);
+};
+
+struct AddrMode4Result {
+	u32 startAddress;
+	u32 endAddress;
+	u32 rn;
+};
+
+//(Load and Store Multiple)
+struct AddressingMode4 : public AddressingMode {
+	AddressingMode4(Arm& cpu);
+	AddrMode4Result incrementAfter(ArmInstruction& ins);
+	AddrMode4Result incrementBefore(ArmInstruction& ins);
+	AddrMode4Result decrementAfter(ArmInstruction& ins);
+	AddrMode4Result decrementBefore(ArmInstruction& ins);
 };

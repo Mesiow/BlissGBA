@@ -84,13 +84,72 @@ u8 AddressingMode1::isRegisterShift(ArmInstruction& ins)
 	return bit4;
 }
 
+AddressingMode2::AddressingMode2(Arm& cpu)
+	:AddressingMode(cpu)
+{
+
+}
+
+AddrModeLoadStoreResult AddressingMode2::immOffsetIndex(ArmInstruction& ins)
+{
+	RegisterID rn = ins.rn();
+	u32 rn_reg = cpu.getRegister(rn);
+
+	u8 P = ins.P();
+	u8 W = ins.W();
+	u8 U = ins.U();
+
+	u16 offset_12 = ins.offset12();
+	AddrModeLoadStoreResult result;
+	u32 address;
+	if (P == 0x1) {
+		//Pre-indexed addressing (mem address is written back to the base register)
+		if (W == 0x1) {
+			address = ((U == 0x1) ? rn_reg + offset_12 : rn_reg - offset_12);
+			result.type = AddrModeLoadStoreType::PREINDEXED;
+			result.address = address;
+		}
+		//Offset addressing (the base register is unchanged)
+		else {
+			address = ((U == 0x1) ? rn_reg + offset_12 : rn_reg - offset_12);
+			result.type = AddrModeLoadStoreType::OFFSET;
+			result.address = address;
+		}
+	}
+	else {
+		//Post-indexed addressing (The base reg value is used for the mem address,
+		//and the offset is applied to the base reg value and written back to the base reg)
+		if (W == 0x0) {
+			//LDR, LDRB, STR or STRB (normal memory access performed)
+			address = rn_reg;
+			result.rn = ((U == 0x1) ? rn_reg + offset_12 : rn_reg - offset_12);
+			result.type = AddrModeLoadStoreType::POSTINDEX;
+			result.address = address;
+		}
+		else {
+			//LDRBT, LDRT, STRBT or STRT (unprivileged (User mode) memory access performed))
+		}
+	}
+
+	return result;
+}
+
+
+AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstruction& ins)
+{
+	//if LSL 0, then regular register offset
+
+	return AddrModeLoadStoreResult();
+}
+
+
 AddressingMode3::AddressingMode3(Arm& cpu)
 	:AddressingMode(cpu)
 {
 
 }
 
-AddrMode3Result AddressingMode3::immOffsetIndex(ArmInstruction& ins)
+AddrModeLoadStoreResult AddressingMode3::immOffsetIndex(ArmInstruction& ins)
 {
 	RegisterID rn = ins.rn();
 	u32 rn_reg = cpu.getRegister(rn);
@@ -101,20 +160,20 @@ AddrMode3Result AddressingMode3::immOffsetIndex(ArmInstruction& ins)
 	u8 immH = ins.immedH();
 	u8 immL = ins.immedL();
 
-	AddrMode3Result result;
+	AddrModeLoadStoreResult result;
 	u32 address;
 	u8 offset_8 = (immH << 4) | immL;
 	if (P == 0x1) {
 		//Pre-indexed addressing (mem address is written back to the base register)
 		if (W == 0x1) {
 			address = ((U == 0x1) ? rn_reg + offset_8 : rn_reg - offset_8);
-			result.type = AddrMode3Type::PREINDEXED;
+			result.type = AddrModeLoadStoreType::PREINDEXED;
 			result.address = address;
 		}
 		//Offset addressing (the base register is unchanged)
 		else {
 			address = ((U == 0x1) ? rn_reg + offset_8 : rn_reg - offset_8);
-			result.type = AddrMode3Type::OFFSET;
+			result.type = AddrModeLoadStoreType::OFFSET;
 			result.address = address;
 		}
 	}
@@ -124,7 +183,7 @@ AddrMode3Result AddressingMode3::immOffsetIndex(ArmInstruction& ins)
 			//and the offset is applied to the base reg value and written back to the base reg)
 			address = rn_reg;
 			result.rn = ((U == 0x1) ? rn_reg + offset_8 : rn_reg - offset_8);
-			result.type = AddrMode3Type::POSTINDEX;
+			result.type = AddrModeLoadStoreType::POSTINDEX;
 			result.address = address;
 		}
 		//If W == 1 (unpredictable behavior)
@@ -133,7 +192,7 @@ AddrMode3Result AddressingMode3::immOffsetIndex(ArmInstruction& ins)
 	return result;
 }
 
-AddrMode3Result AddressingMode3::registerOffsetIndex(ArmInstruction& ins)
+AddrModeLoadStoreResult AddressingMode3::registerOffsetIndex(ArmInstruction& ins)
 {
 	RegisterID rn = ins.rn();
 	RegisterID rm = ins.rm();
@@ -145,19 +204,19 @@ AddrMode3Result AddressingMode3::registerOffsetIndex(ArmInstruction& ins)
 	u8 W = ins.W();
 	u8 U = ins.U();
 
-	AddrMode3Result result;
+	AddrModeLoadStoreResult result;
 	u32 address;
 	if (P == 0x1) {
 		//Pre-indexed addressing (mem address is written back to the base register)
 		if (W == 0x1) {
 			address = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
-			result.type = AddrMode3Type::PREINDEXED;
+			result.type = AddrModeLoadStoreType::PREINDEXED;
 			result.address = address;
 		}
 		//Offset addressing (the base register is unchanged)
 		else {
 			address = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
-			result.type = AddrMode3Type::OFFSET;
+			result.type = AddrModeLoadStoreType::OFFSET;
 			result.address = address;
 		}
 	}
@@ -167,7 +226,7 @@ AddrMode3Result AddressingMode3::registerOffsetIndex(ArmInstruction& ins)
 		if (W == 0x0) {
 			address = rn_reg;
 			result.rn = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
-			result.type = AddrMode3Type::POSTINDEX;
+			result.type = AddrModeLoadStoreType::POSTINDEX;
 			result.address = address;
 		}
 		//If W == 1 (unpredictable behavior)
@@ -175,3 +234,50 @@ AddrMode3Result AddressingMode3::registerOffsetIndex(ArmInstruction& ins)
 
 	return result;
 }
+
+AddressingMode4::AddressingMode4(Arm& cpu)
+	:AddressingMode(cpu)
+{
+
+}
+
+AddrMode4Result AddressingMode4::incrementAfter(ArmInstruction& ins)
+{
+	AddrMode4Result result;
+
+	u8 W = ins.W();
+	RegisterID rn = ins.rn();
+	u32 reg_rn = cpu.getRegister(rn);
+	u16 reg_list = ins.registerList();
+
+	u32 start_address = reg_rn;
+	u32 end_address = start_address + ((numSetBitsU16(reg_list) * 4) - 4);
+
+	result.startAddress = start_address;
+	result.endAddress = end_address;
+
+	//if W == 1, base register rn is updated after the transfer
+	if (W == 0x1) {
+		reg_rn = reg_rn + (numSetBitsU16(reg_list) * 4);
+		result.rn = reg_rn;
+	}
+
+	return result;
+}
+
+AddrMode4Result AddressingMode4::incrementBefore(ArmInstruction& ins)
+{
+	return AddrMode4Result();
+}
+
+AddrMode4Result AddressingMode4::decrementAfter(ArmInstruction& ins)
+{
+	return AddrMode4Result();
+}
+
+AddrMode4Result AddressingMode4::decrementBefore(ArmInstruction& ins)
+{
+	return AddrMode4Result();
+}
+
+
