@@ -24,6 +24,7 @@ public:
 
 	u8 readU8(u32 address);
 	u16 readU16(u32 address);
+	u32 readU32(u32 address);
 	u8* getGamePakWS0() { return &gamepakWS0[0]; }
 
 	void parseHeader(u32 size);

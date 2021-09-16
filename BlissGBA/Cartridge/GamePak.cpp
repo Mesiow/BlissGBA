@@ -76,11 +76,21 @@ u16 GamePak::readU16(u32 address)
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {
 		u32 addr = address - GAMEPAK_WS0_START_ADDR;
 
-		u8 lo, hi;
-		lo = gamepakWS0[addr];
-		hi = gamepakWS0[addr + 1];
+		u16 value = (readU8(addr + 1) << 8) | readU8(addr);
 
-		u16 value = (hi << 8) | lo;
+		return value;
+	}
+}
+
+u32 GamePak::readU32(u32 address)
+{
+	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {
+		u32 addr = address - GAMEPAK_WS0_START_ADDR;
+
+		u32 value = (readU8(addr)) |
+			(readU8(addr + 1) << 8) |
+			(readU8(addr + 2) << 16) |
+			(readU8(addr + 3) << 24);
 
 		return value;
 	}
