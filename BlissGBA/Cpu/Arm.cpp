@@ -2,8 +2,10 @@
 #include "../Memory/MemoryBus.h"
 
 Arm::Arm(MemoryBus *mbus)
-	:addrMode1(*this), addrMode3(*this)
+	:addrMode1(*this), addrMode2(*this),
+	addrMode3(*this), addrMode4(*this)
 {
+	mapArmOpcodes();
 	this->mbus = mbus;
 }
 
@@ -34,8 +36,6 @@ u8 Arm::clock()
 
 void Arm::reset()
 {
-	mapArmOpcodes();
-
 	cycles = 0;
 	for (s32 i = 0; i < 0xD; i++) {
 		registers[i].value = 0x00000000;
@@ -481,7 +481,72 @@ u8 Arm::handleUndefinedIns(ArmInstruction& ins)
 	return 0;
 }
 
-u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result)
+u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
+{
+	RegisterID rn = ins.rn();
+	RegisterID rd = ins.rd();
+
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	bool byte = (ins.B() == 0x1); //true == byte, false == word (transfer quantity)
+	bool load = (ins.L() == 0x1); //load or store
+
+	switch (result.type) {
+		case AddrModeLoadStoreType::PREINDEXED:
+			reg_rn = result.address;
+			writeRegister(rn, reg_rn);
+			break;
+
+		case AddrModeLoadStoreType::POSTINDEX:
+			reg_rn = result.rn;
+			writeRegister(rn, reg_rn);
+			break;
+	}
+
+	bool useImmediateOffset = (result.type == AddrModeLoadStoreType::OFFSET);
+	u32 address = result.address; //imm offset (no writeback to register rn)
+
+	if (load) {
+		//LDR, LDRB
+		if (byte) {
+			(useImmediateOffset == true) ? opLDRB(ins, rd, address) : opLDRB(ins, rd, reg_rn);
+		}
+		else {
+			(useImmediateOffset == true) ? opLDR(ins, rd, address) : opLDR(ins, rd, reg_rn);
+		}
+	}
+	else {
+		//STR, STRB
+		if (byte) {
+			(useImmediateOffset == true) ? opSTRB(ins, rd, address) : opSTRB(ins, rd, reg_rn);
+		}
+		else {
+			(useImmediateOffset == true) ? opSTR(ins, rd, address) : opSTR(ins, rd, reg_rn);
+		}
+	}
+
+
+	return 1;
+}
+
+u8 Arm::executeLoadStoreImm(ArmInstruction& ins)
+{
+	AddrModeLoadStoreResult result = addrMode2.immOffsetIndex(ins);
+	executeLoadStore(ins, result);
+
+	return 1;
+}
+
+u8 Arm::executeLoadStoreShift(ArmInstruction& ins)
+{
+	AddrModeLoadStoreResult result = addrMode2.scaledRegisterOffsetIndex(ins);
+	executeLoadStore(ins, result);
+
+	return 1;
+}
+
+u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrModeLoadStoreResult &result)
 {
 	RegisterID rn = ins.rn();
 	RegisterID rd = ins.rd();
@@ -493,18 +558,18 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result)
 	u8 SH = (ins.S() << 1) | ins.H();
 
 	switch (result.type) {
-		case AddrMode3Type::PREINDEXED:
+		case AddrModeLoadStoreType::PREINDEXED:
 			reg_rn = result.address;
 			writeRegister(rn, reg_rn);
 			break;
 		
-		case AddrMode3Type::POSTINDEX:
+		case AddrModeLoadStoreType::POSTINDEX:
 			reg_rn = result.rn;
 			writeRegister(rn, reg_rn);
 			break;
 	}
 
-	bool useImmediateOffset = (result.type == AddrMode3Type::OFFSET);
+	bool useImmediateOffset = (result.type == AddrModeLoadStoreType::OFFSET);
 	u32 address = result.address; //imm offset (no writeback to register rn)
 	
 	switch (SH) {
@@ -554,8 +619,7 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result)
 
 u8 Arm::executeMiscLoadStoreImm(ArmInstruction& ins)
 {
-	AddrMode3Result result = addrMode3.immOffsetIndex(ins);
-
+	AddrModeLoadStoreResult result = addrMode3.immOffsetIndex(ins);
 	executeMiscLoadAndStore(ins, result);
 
 	return 1;
@@ -563,10 +627,28 @@ u8 Arm::executeMiscLoadStoreImm(ArmInstruction& ins)
 
 u8 Arm::executeMiscLoadStoreReg(ArmInstruction& ins)
 {
-	AddrMode3Result result = addrMode3.registerOffsetIndex(ins);
-
+	AddrModeLoadStoreResult result = addrMode3.registerOffsetIndex(ins);
 	executeMiscLoadAndStore(ins, result);
 
+	return 1;
+}
+
+u8 Arm::executeLDM(ArmInstruction& ins)
+{
+	u8 PU = (ins.P() << 1) | ins.U();
+	AddrMode4Result result;
+	switch (PU) {
+		case 0b01: result = addrMode4.incrementAfter(ins); break;
+		case 0b11: result = addrMode4.incrementBefore(ins); break;
+		case 0b00: result = addrMode4.decrementAfter(ins); break;
+		case 0b10: result = addrMode4.decrementBefore(ins); break;
+	}
+
+	return 1;
+}
+
+u8 Arm::executeSTM(ArmInstruction& ins)
+{
 	return 1;
 }
 
@@ -999,6 +1081,38 @@ u8 Arm::opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address)
 	s16 value = (s16)mbus->readU16(address);
 	value = signExtend32(value, 16);
 	writeRegister(rd, value);
+
+	return 1;
+}
+
+u8 Arm::opLDRB(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	u8 value = mbus->readU8(address);
+	writeRegister(rd, value);
+
+	return 1;
+}
+
+u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	u32 value = mbus->readU32(address);
+	writeRegister(rd, value);
+
+	return 1;
+}
+
+u8 Arm::opSTRB(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	u32 reg_rd = getRegister(rd);
+	mbus->writeU8(address, reg_rd & 0xFF);
+
+	return 1;
+}
+
+u8 Arm::opSTR(ArmInstruction& ins, RegisterID rd, u32 address)
+{
+	u32 reg_rd = getRegister(rd);
+	mbus->writeU32(address, reg_rd);
 
 	return 1;
 }

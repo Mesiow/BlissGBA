@@ -131,9 +131,17 @@ public:
 	u8 executeDataProcessingRegShift(ArmInstruction& ins);
 	u8 handleUndefinedIns(ArmInstruction& ins);
 
-	u8 executeMiscLoadAndStore(ArmInstruction& ins, AddrMode3Result &result);
+	u8 executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result);
+	u8 executeLoadStoreImm(ArmInstruction& ins);
+	u8 executeLoadStoreShift(ArmInstruction& ins);
+
+	u8 executeMiscLoadAndStore(ArmInstruction& ins, AddrModeLoadStoreResult &result);
 	u8 executeMiscLoadStoreImm(ArmInstruction& ins);
 	u8 executeMiscLoadStoreReg(ArmInstruction& ins);
+
+	//Load/Store Multiple
+	u8 executeLDM(ArmInstruction& ins);
+	u8 executeSTM(ArmInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -188,6 +196,12 @@ private:
 	u8 opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address);
 	u8 opSWP(ArmInstruction& ins, RegisterID rd);
 
+	//Load/Stores
+	u8 opLDRB(ArmInstruction& ins, RegisterID rd, u32 address);
+	u8 opLDR(ArmInstruction& ins, RegisterID rd, u32 address);
+	u8 opSTRB(ArmInstruction& ins, RegisterID rd, u32 address);
+	u8 opSTR(ArmInstruction& ins, RegisterID rd, u32 address);
+
 public:
 	State state;
 	/*
@@ -205,7 +219,9 @@ public:
 	u32 SPSR;
 
 	AddressingMode1 addrMode1;
+	AddressingMode2 addrMode2;
 	AddressingMode3 addrMode3;
+	AddressingMode4 addrMode4;
 
 	std::array<std::function<u8(ArmInstruction&)>, 4096> armlut;
 	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;
