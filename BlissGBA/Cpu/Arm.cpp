@@ -763,7 +763,7 @@ u8 Arm::opSUB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	overflow = overflowFromSub(reg_rn, shifter_op);
 	
 	if (flags) {
-		setCC(reg_rd, !borrow, overflow);
+		setCC(reg_rd, borrow, overflow);
 	}
 
 	return 1;
@@ -1025,7 +1025,7 @@ u8 Arm::opB(ArmInstruction& ins)
 u8 Arm::opBL(ArmInstruction& ins)
 {
 	LR = R15 - 4;
-	R15 = (R15 + (ins.offset() << 2));
+	R15 = (R15 + (signExtend32(ins.offset(), 24) << 2));
 	flushPipeline();
 
 	return 1;
