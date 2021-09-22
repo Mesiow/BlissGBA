@@ -6,6 +6,7 @@ MemoryEditor DebugUI::biosMemory;
 MemoryEditor DebugUI::vramEditor;
 MemoryEditor DebugUI::ioEditor;
 MemoryEditor DebugUI::gamepakMemory;
+Logger DebugUI::logger;
 
 DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
 	:window(window), emu(emu)
@@ -14,6 +15,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     cpu = &emu->cpu;
     ppu = &emu->ppu;
 
+    runToAddr = false;
     showRegisterWindow = true;
     showBiosMemory = false;
     showVRAM = true;
@@ -24,9 +26,11 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showPipeline = true;
     showDisplay = true;
     vsync = false;
+    showLoggerSetup = false;
 
     //shift and h
     showKeys[0] = false; showKeys[1] = false;
+    memset(addressBufferText, 0, sizeof(addressBufferText));
 }
 
 void DebugUI::render()
@@ -35,6 +39,8 @@ void DebugUI::render()
     renderRegisters();
     renderCartInfo();
     renderPipeline();
+    renderEmuButtons();
+    renderLogSetup();
     renderDisplay();
 
     if (showBiosMemory) {
@@ -128,33 +134,8 @@ void DebugUI::renderRegisters()
                 ImGui::PopStyleColor();
             }
         }
-        renderButtons();
 
         ImGui::End();
-    }
-}
-
-void DebugUI::renderButtons()
-{
-    ImGui::NewLine();
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
-    ImGui::Text("Emulation");
-    ImGui::PopStyleColor();
- 
-    if (ImGui::Button("Run")) {
-        *running = true;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Step")) {
-        cpu->clock();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Pause")) {
-        *running = false;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Reset")) {
-        emu->reset();
     }
 }
 
@@ -184,6 +165,8 @@ void DebugUI::renderMenuBar()
             if (ImGui::MenuItem("Show Debug Display (shift + h)", nullptr, showDebugger)) {
                 onDebugUIToggle();
             }
+            ImGui::MenuItem("Logging", nullptr, &showLoggerSetup);
+              
             //if (ImGui::MenuItem("Trace", nullptr) && cartInserted) // Make sure not to run without cart
             //    gba.step();
             //if (ImGui::MenuItem("Run", nullptr, &running)) // Same here
@@ -263,8 +246,84 @@ void DebugUI::renderDisplay()
     }
 }
 
+void DebugUI::renderEmuButtons()
+{
+    ImGui::Begin("Emulation");
+
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+    ImGui::Text("Emulation");
+    ImGui::PopStyleColor();
+
+    if (ImGui::Button("Run")) {
+        *running = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Step")) {
+        cpu->clock();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Pause")) {
+        *running = false;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset")) {
+        emu->reset();
+    }
+    
+    ImGui::NewLine();
+
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+    ImGui::Text("Run until address");
+    ImGui::PopStyleColor();
+
+    ImGui::InputText("##Label", addressBufferText, sizeof(addressBufferText));
+    ImGui::SameLine();
+    if (ImGui::Button("Run until")) {
+        std::string parse(addressBufferText);
+        parse.erase(0, 2);
+
+        //convert hex string to int
+        std::stringstream ss;
+        ss << std::hex << parse;
+        ss >> addressToRunTo;
+
+        printf("Running to address: %d\n", addressToRunTo);
+        *running = true;
+        runToAddr = true;
+    }
+
+    ImGui::End();
+}
+
+void DebugUI::renderLogSetup()
+{
+    if (showLoggerSetup) {
+        ImGui::Begin("Logger");
+
+        ImGui::InputText("File Name", logFileName, sizeof(logFileName));
+        if (ImGui::Button("Enable")) {
+            logger.createAndOpenFile(std::string(logFileName));
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Disable")) {
+            logFileName[0] = '\0';
+            logger.closeFile();
+        }
+
+        ImGui::End();
+    }
+}
+
 void DebugUI::update()
 {
+    //Running emulation until specific address is hit
+    if (runToAddr && *running) {
+        if ((emu->cpu.R15 - 8) == addressToRunTo) {
+            printf("Hit address!\n");
+            *running = false;
+            runToAddr = false;
+        }
+    }
 }
 
 void DebugUI::handleButtonPresses()

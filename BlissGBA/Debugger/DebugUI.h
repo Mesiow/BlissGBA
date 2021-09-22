@@ -10,6 +10,7 @@
 #include "../Memory/MemoryBus.h"
 #include "../Cpu/Arm.h"
 #include "../Ppu/Ppu.h"
+#include "Logger.h"
 
 class Emulator;
 class MemoryBus;
@@ -20,24 +21,30 @@ struct DebugUI {
 	DebugUI(sf::RenderWindow *window, Emulator *emu);
 	void render();
 	void renderRegisters();
-	void renderButtons();
 	void renderMenuBar();
 	void renderCartInfo();
 	void renderPipeline();
 	void renderDisplay();
+	void renderEmuButtons();
+	void renderLogSetup();
 	void update();
 	void handleButtonPresses();
 	void handleEvents(sf::Event& ev);
 
 	void onDebugUIToggle();
+	void onToggleLogging();
 
 	static MemoryEditor biosMemory;
 	static MemoryEditor vramEditor;
 	static MemoryEditor ioEditor;
 	static MemoryEditor gamepakMemory;
 
+	static Logger logger;
+	char logFileName[50];
+
 	bool* running = nullptr;
 	bool *showDebugger = nullptr;
+	bool runToAddr;
 	bool showRegisterWindow;
 	bool showBiosMemory;
 	bool showVRAM;
@@ -48,7 +55,12 @@ struct DebugUI {
 	bool showPipeline;
 	bool showDisplay;
 	bool vsync;
+	bool showLoggerSetup;
 	bool showKeys[2];
+	
+
+	u32 addressToRunTo;
+	char addressBufferText[11];
 
 	sf::RenderWindow* window;
 
