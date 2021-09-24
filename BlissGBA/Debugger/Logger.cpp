@@ -1,4 +1,11 @@
 #include "Logger.h"
+#include "../Cpu/Arm.h"
+
+Logger::Logger(Arm& cpu)
+	:cpu(cpu)
+{
+
+}
 
 void Logger::createAndOpenFile(const std::string& fileName)
 {
@@ -18,7 +25,18 @@ void Logger::createAndOpenFile(const std::string& fileName)
 void Logger::writeFile()
 {
 	if (file.is_open()) {
-		//write data(registers, cpu state) to file
+		u32 opcode = cpu.currentExecutingOpcode;
+		file << "Opcode: " + intToHexString(opcode) + " ";
+
+		for (int i = 0; i < NUM_REGISTERS; i++) {
+			file << "R" + std::to_string(i) + ": "
+				+ intToHexString(cpu.registers[i].value) + " ";
+		}
+		file << "R13: " + intToHexString(cpu.SP) + " ";
+		file << "R14: " + intToHexString(cpu.LR) + " ";
+		file << "R15: " + intToHexString(cpu.R15) + " ";
+		file << "CPSR: " + intToHexString(cpu.CPSR) + " ";
+		file << "SPSR: " + intToHexString(cpu.SPSR) + "\n";
 	}
 }
 
@@ -27,4 +45,17 @@ void Logger::closeFile()
 	if (file.is_open()) {
 		file.close();
 	}
+}
+
+std::string Logger::intToHexString(u32 value)
+{
+	std::stringstream ss;
+	ss << std::hex << value;
+	std::string lower = ss.str();
+	for (int i = 0; i < lower.length(); i++) {
+		lower[i] = toupper(lower[i]);
+	}
+	std::string res = "0x" + lower;
+
+	return res;
 }
