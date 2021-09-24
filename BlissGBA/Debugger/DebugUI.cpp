@@ -6,10 +6,9 @@ MemoryEditor DebugUI::biosMemory;
 MemoryEditor DebugUI::vramEditor;
 MemoryEditor DebugUI::ioEditor;
 MemoryEditor DebugUI::gamepakMemory;
-Logger DebugUI::logger;
 
 DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
-	:window(window), emu(emu)
+	:window(window), emu(emu), logger(emu->cpu)
 {
     mbus = &emu->mbus;
     cpu = &emu->cpu;
@@ -26,7 +25,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showPipeline = true;
     showDisplay = true;
     vsync = false;
-    showLoggerSetup = false;
+    showLoggerSetup = true;
 
     //shift and h
     showKeys[0] = false; showKeys[1] = false;
@@ -260,6 +259,10 @@ void DebugUI::renderEmuButtons()
     ImGui::SameLine();
     if (ImGui::Button("Step")) {
         cpu->clock();
+
+        if (logger.isActive()) {
+            logger.writeFile();
+        }
     }
     ImGui::SameLine();
     if (ImGui::Button("Pause")) {
@@ -323,6 +326,10 @@ void DebugUI::update()
             *running = false;
             runToAddr = false;
         }
+    }
+
+    if (logger.isActive() && *running) {
+        logger.writeFile();
     }
 }
 

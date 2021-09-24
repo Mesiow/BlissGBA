@@ -32,14 +32,13 @@ struct DebugUI {
 	void handleEvents(sf::Event& ev);
 
 	void onDebugUIToggle();
-	void onToggleLogging();
 
 	static MemoryEditor biosMemory;
 	static MemoryEditor vramEditor;
 	static MemoryEditor ioEditor;
 	static MemoryEditor gamepakMemory;
 
-	static Logger logger;
+	Logger logger;
 	char logFileName[50];
 
 	bool* running = nullptr;
