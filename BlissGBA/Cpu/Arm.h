@@ -230,5 +230,6 @@ public:
 	u16 thumbpipeline[2];
 
 	u32 cycles = 0;
+	u32 currentExecutingOpcode;
 	MemoryBus* mbus;
 };

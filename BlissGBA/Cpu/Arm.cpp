@@ -13,11 +13,11 @@ u8 Arm::clock()
 {
 	state = getState();
 	if (state == State::ARM) {
-		u32 encoding = armpipeline[0];
+		currentExecutingOpcode = armpipeline[0];
 		armpipeline[0] = armpipeline[1];
 		
 		ArmInstruction ins;
-		ins.encoding = encoding;
+		ins.encoding = currentExecutingOpcode;
 		executeArmIns(ins);
 
 		armpipeline[1] = fetchU32();
@@ -661,6 +661,9 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 	
+	if (rd.id == 0xF) {
+		flushPipeline();
+	}
 	reg_rd = shifter_op;
 	writeRegister(rd, reg_rd);
 
@@ -1016,7 +1019,11 @@ u8 Arm::opMVN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 
 u8 Arm::opB(ArmInstruction& ins)
 {
-	R15 = (R15 + (signExtend32(ins.offset(), 24) << 2));
+	s32 offset = ins.offset();
+	offset = signExtend32(offset, 24);
+	offset <<= 2;
+
+	R15 += offset;
 	flushPipeline();
 
 	return 1;
@@ -1025,7 +1032,12 @@ u8 Arm::opB(ArmInstruction& ins)
 u8 Arm::opBL(ArmInstruction& ins)
 {
 	LR = R15 - 4;
-	R15 = (R15 + (signExtend32(ins.offset(), 24) << 2));
+	
+	s32 offset = ins.offset();
+	offset = signExtend32(offset, 24);
+	offset <<= 2;
+
+	R15 += offset;
 	flushPipeline();
 
 	return 1;
@@ -1033,11 +1045,11 @@ u8 Arm::opBL(ArmInstruction& ins)
 
 u8 Arm::opBX(ArmInstruction& ins)
 {
-	RegisterID rn = ins.rn();
-	u32 reg_rn = getRegister(rn);
+	RegisterID rm = ins.rm();
+	u32 reg_rm = getRegister(rm);
 	
-	(reg_rn & 0x1) == 1 ? setFlag(T) : clearFlag(T);
-	R15 = reg_rn & 0xFFFFFFFE;
+	(reg_rm & 0x1) == 1 ? setFlag(T) : clearFlag(T);
+	R15 = reg_rm & 0xFFFFFFFE;
 	flushPipeline();
 
 	return 1;
