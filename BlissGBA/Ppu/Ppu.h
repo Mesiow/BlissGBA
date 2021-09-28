@@ -50,6 +50,7 @@ public:
 	Ppu(MemoryBus *mbus);
 	void update(s32 cycles);
 	void render(sf::RenderTarget& target);
+	void reset();
 	void renderBitmapModes();
 	void renderBitmapMode3();
 	void renderBitmapMode4();
@@ -77,7 +78,7 @@ public:
 	BitmapMode4 mode4;
 
 	u32 cycleCounter = 0;
-	u32 hblankCounter = 0;
+	//u32 hblankCounter = 0;
 	u32 vblankCounter = 0;
 	u16 vcount = 0;
 	u16 currentScanline = 0;

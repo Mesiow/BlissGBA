@@ -159,6 +159,7 @@
     <ClCompile Include="Debugger\imgui\imgui_draw.cpp" />
     <ClCompile Include="Debugger\imgui\imgui_tables.cpp" />
     <ClCompile Include="Debugger\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Debugger\Logger.cpp" />
     <ClCompile Include="Debugger\tinyfiledialogs.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\DisplayMemory.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="Cpu\Arm.h" />
     <ClInclude Include="Cpu\Instruction.h" />
     <ClInclude Include="Debugger\DebugUI.h" />
+    <ClInclude Include="Debugger\Logger.h" />
     <ClInclude Include="Memory\DisplayMemory.h" />
     <ClInclude Include="Memory\GeneralMemory.h" />
     <ClInclude Include="Memory\MemoryBus.h" />

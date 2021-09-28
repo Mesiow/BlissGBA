@@ -4,23 +4,12 @@
 Ppu::Ppu(MemoryBus *mbus)
 	:mbus(mbus)
 {
-	mode3.pixels.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
-	mode3.framebuffer.loadFromImage(mode3.pixels);
-	mode3.frame = sf::Sprite(mode3.framebuffer);
-
-	mode4.pixels.create(SCREEN_HEIGHT, SCREEN_HEIGHT, sf::Color::Black);
-	mode4.framebuffer.loadFromImage(mode4.pixels);
-	mode4.frame = sf::Sprite(mode4.framebuffer);
-
-	float scaleFactor = 2;
-	mode3.frame.setScale(scaleFactor, scaleFactor);
-	mode4.frame.setScale(scaleFactor, scaleFactor);
+	reset();
 }
 
 void Ppu::update(s32 cycles)
 {
 	cycleCounter += cycles;
-	hblankCounter += cycles;
 
 	updateLCDStatus();
 
@@ -34,7 +23,25 @@ void Ppu::update(s32 cycles)
 
 void Ppu::render(sf::RenderTarget& target)
 {
-	target.draw(mode3.frame);
+	if (mode == BGMode::THREE)
+		target.draw(mode3.frame);
+	else if (mode == BGMode::FOUR)
+		target.draw(mode4.frame);
+}
+
+void Ppu::reset()
+{
+	mode3.pixels.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
+	mode3.framebuffer.loadFromImage(mode3.pixels);
+	mode3.frame = sf::Sprite(mode3.framebuffer);
+
+	mode4.pixels.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
+	mode4.framebuffer.loadFromImage(mode4.pixels);
+	mode4.frame = sf::Sprite(mode4.framebuffer);
+
+	float scaleFactor = 2;
+	mode3.frame.setScale(scaleFactor, scaleFactor);
+	mode4.frame.setScale(scaleFactor, scaleFactor);
 }
 
 void Ppu::renderBitmapModes()
