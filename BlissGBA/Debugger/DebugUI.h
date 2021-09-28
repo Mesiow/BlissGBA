@@ -44,6 +44,7 @@ struct DebugUI {
 	bool* running = nullptr;
 	bool *showDebugger = nullptr;
 	bool runToAddr;
+	bool runToOpcode;
 	bool showRegisterWindow;
 	bool showBiosMemory;
 	bool showVRAM;
@@ -60,6 +61,8 @@ struct DebugUI {
 
 	u32 addressToRunTo;
 	char addressBufferText[11];
+	u32 opcodeToRunTo;
+	char opcodeBufferText[9];
 
 	sf::RenderWindow* window;
 

@@ -15,6 +15,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     ppu = &emu->ppu;
 
     runToAddr = false;
+    runToOpcode = false;
     showRegisterWindow = true;
     showBiosMemory = false;
     showVRAM = true;
@@ -30,6 +31,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     //shift and h
     showKeys[0] = false; showKeys[1] = false;
     memset(addressBufferText, 0, sizeof(addressBufferText));
+    memset(opcodeBufferText, 0, sizeof(opcodeBufferText));
 }
 
 void DebugUI::render()
@@ -273,26 +275,47 @@ void DebugUI::renderEmuButtons()
         emu->reset();
     }
     
+    //ImGui::NewLine();
+
+    //ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+    //ImGui::Text("Run until address");
+    //ImGui::PopStyleColor();
+
+    //ImGui::InputText("##Label", addressBufferText, sizeof(addressBufferText));
+    //ImGui::SameLine();
+    //if (ImGui::Button("Run until")) {
+    //    std::string parse(addressBufferText);
+    //    parse.erase(0, 2);
+
+    //    //convert hex string to int
+    //    std::stringstream ss;
+    //    ss << std::hex << parse;
+    //    ss >> addressToRunTo;
+
+    //    printf("Running to address: 0x%08X\n", addressToRunTo);
+    //    *running = true;
+    //    runToAddr = true;
+    //}
+
     ImGui::NewLine();
 
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
-    ImGui::Text("Run until address");
+    ImGui::Text("Run until opcode");
     ImGui::PopStyleColor();
 
-    ImGui::InputText("##Label", addressBufferText, sizeof(addressBufferText));
+    ImGui::InputText("##Label", opcodeBufferText, sizeof(opcodeBufferText));
     ImGui::SameLine();
     if (ImGui::Button("Run until")) {
-        std::string parse(addressBufferText);
-        parse.erase(0, 2);
+        std::string parse(opcodeBufferText);
 
         //convert hex string to int
         std::stringstream ss;
         ss << std::hex << parse;
-        ss >> addressToRunTo;
+        ss >> opcodeToRunTo;
 
-        printf("Running to address: %d\n", addressToRunTo);
+        printf("Running to opcode: 0x%08X\n", opcodeToRunTo);
         *running = true;
-        runToAddr = true;
+        runToOpcode = true;
     }
 
     ImGui::End();
@@ -325,6 +348,14 @@ void DebugUI::update()
             printf("Hit address!\n");
             *running = false;
             runToAddr = false;
+        }
+    }
+    
+    if (runToOpcode && *running) {
+        if (emu->cpu.currentExecutingOpcode == opcodeToRunTo) {
+            printf("Hit opcode!\n");
+            *running = false;
+            runToOpcode = false;
         }
     }
 
