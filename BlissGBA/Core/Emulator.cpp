@@ -5,6 +5,7 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 {
 	this->displayScaleFactor = displayScaleFactor;
 	showDebugger = true;
+	debuggerRunning = true;
 	running = false;
 	debug.running = &running;
 	debug.showDebugger = &showDebugger;
@@ -22,6 +23,9 @@ void Emulator::run()
 			//emulate timers
 			ppu.update(cycles_this_frame);
 			//emulate interrupts
+
+			if(debuggerRunning)
+				debug.update();
 		}
 		ppu.bufferPixels();
 	}
@@ -38,11 +42,11 @@ void Emulator::render(sf::RenderTarget &target)
 void Emulator::reset()
 {
 	cpu.reset();
-	//ppu.reset();
-	//apu.reset();
+	ppu.reset();
 }
 
 void Emulator::handleEvents(sf::Event& ev)
 {
-	debug.handleEvents(ev);
+	if(debuggerRunning)
+		debug.handleEvents(ev);
 }

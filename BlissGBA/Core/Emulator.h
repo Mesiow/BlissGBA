@@ -7,6 +7,7 @@ public:
 	Emulator(sf::RenderWindow *window, float displayScaleFactor);
 	void run();
 	void render(sf::RenderTarget &target);
+	void update();
 	void reset();
 
 	void handleEvents(sf::Event& ev);
@@ -16,6 +17,7 @@ public:
 	Arm cpu;
 	DebugUI debug;
 
+	bool debuggerRunning;
 	bool showDebugger; //if false, emulator will render full screen
 	bool running;
 	const int scanlinesPerFrame = 228;
