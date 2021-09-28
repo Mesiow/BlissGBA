@@ -46,13 +46,12 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 
 		if (shiftAmount == 0) {
 			shiftedBit = cpu.getFlag(C);
-			return rm_reg;
-			/*u32 r15 = cpu.getRegister(RegisterID{ R15_ID });
+			
+			u32 r15 = cpu.R15;
 			if ((rm_reg == r15) || (rn_reg == r15)) {
 				rm_reg = r15;
 			}
-			else
-				rm_reg = cpu.rrx(rm_reg, shiftedBit);*/
+			return rm_reg;
 		}
 		else {
 			rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit);
@@ -137,9 +136,68 @@ AddrModeLoadStoreResult AddressingMode2::immOffsetIndex(ArmInstruction& ins)
 
 AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstruction& ins)
 {
-	//if LSL 0, then regular register offset
+	RegisterID rm = ins.rm();
+	RegisterID rn = ins.rn();
+	u32 rm_reg = cpu.getRegister(rm);
+	u32 rn_reg = cpu.getRegister(rn);
 
-	return AddrModeLoadStoreResult();
+	u8 P = ins.P();
+	u8 W = ins.W();
+	u8 U = ins.U();
+
+
+	//if LSL 0, then regular register offset/index addressing mode
+	//else, then it's scaled register offset/index
+
+	bool scaledRegOffset = true;
+	if (((ins.encoding >> 4) & 0xFF) == 0x0) { //Register offset
+		scaledRegOffset = false;
+	}
+
+	AddrModeLoadStoreResult result;
+	u32 address;
+	if (P == 0x1) {
+		if (scaledRegOffset) {
+			u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut);
+			address = ((U == 0x1) ? rn_reg + index : rn_reg - index);
+		}
+		else {
+			address = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
+		}
+
+		//Pre-indexed addressing (mem address is written back to the base register)
+		if (W == 0x1) {
+			result.type = AddrModeLoadStoreType::PREINDEXED;
+			result.address = address;
+		}
+		//Offset addressing (the base register is unchanged)
+		else {
+			result.type = AddrModeLoadStoreType::OFFSET;
+			result.address = address;
+		}
+	}
+	else {
+		//Post-indexed addressing (The base reg value is used for the mem address,
+		//and the offset is applied to the base reg value and written back to the base reg)
+		if (W == 0x0) {
+			//LDR, LDRB, STR or STRB (normal memory access performed)
+			address = rn_reg;
+			if (scaledRegOffset) {
+				u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut);
+				result.rn = ((U == 0x1) ? rn_reg + index : rn_reg - index);
+			}
+			else {
+				result.rn = ((U == 0x1) ? rn_reg + rm_reg : rn_reg - rm_reg);
+			}
+			result.type = AddrModeLoadStoreType::POSTINDEX;
+			result.address = address;
+		}
+		else {
+			//LDRBT, LDRT, STRBT or STRT (unprivileged (User mode) memory access performed))
+		}
+	}
+
+	return result;
 }
 
 

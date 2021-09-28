@@ -21,10 +21,12 @@ enum class AddrModeLoadStoreType : u8 {
 	POSTINDEX
 };
 
+//Struct used for Addr Mode 2 and 3
 struct AddrModeLoadStoreResult {
 	AddrModeLoadStoreType type;
 	u32 address;
 	u32 rn;
+	u8 shifterCarryOut;
 };
 
 struct AddressingMode2 : public AddressingMode{
