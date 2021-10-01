@@ -186,3 +186,15 @@ u16 ArmInstruction::registerList()
     u16 reg_list = (this->encoding) & 0xFF;
     return reg_list;
 }
+
+u8 ArmInstruction::R()
+{
+    u8 R = ((this->encoding) >> 22) & 0x1;
+    return R;
+}
+
+u8 ArmInstruction::fieldMask()
+{
+    u8 fm = ((this->encoding) >> 16) & 0xF;
+    return fm;
+}

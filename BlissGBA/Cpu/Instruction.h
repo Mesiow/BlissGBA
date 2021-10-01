@@ -39,6 +39,10 @@ struct ArmInstruction {
 	u8 S_LSM(); //S bit for load/store multiple
 	u16 registerList();
 
+	//Status reg access decoding
+	u8 R();
+	u8 fieldMask();
+
 	u32 encoding;
 };
 
