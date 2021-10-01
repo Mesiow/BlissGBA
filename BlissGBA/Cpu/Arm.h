@@ -15,10 +15,15 @@ using namespace std::placeholders;
 //Current Program Status Register (CPSR) bits
 //Mode bits M0 - M4
 #define M0 (1 << 0)
+#define M0_BIT 0
 #define M1 (1 << 1)
+#define M1_BIT 1
 #define M2 (1 << 2)
+#define M2_BIT 2
 #define M3 (1 << 3)
+#define M3_BIT 3
 #define M4 (1 << 4)
+#define M4_BIT 4
 
 //State bit (0 = ARM, 1 = THUMB) 
 //Do not change manually
@@ -47,7 +52,13 @@ using namespace std::placeholders;
 
 //Sign flag (0 = Not signed, 1 = Signed)
 #define N (1 << 31)
-#define N_BIT
+#define N_BIT 31
+
+//Control bits mask (0 - 7)
+#define CONTROL_BITS (M0 | M1 | M2 | M3 | M4 | T | F | I)
+
+//Flags field bit mask
+#define FLAG_FIELD_BITS (V | C | Z | N)
 
 //Program counter register format (R15)
 
@@ -84,6 +95,8 @@ public:
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);
+	void setFlagSPSR(u32 flagBits);
+	void clearFlagSPSR(u32 flagBits);
 
 	void fillPipeline();
 	void flushPipeline();
@@ -143,6 +156,10 @@ public:
 	u8 executeLDM(ArmInstruction& ins);
 	u8 executeSTM(ArmInstruction& ins);
 
+	//Status Register
+	u8 executeMSRImm(ArmInstruction& ins);
+	u8 executeMSRReg(ArmInstruction& ins);
+
 private:
 	void mapArmOpcodes();
 	void mapThumbOpcodes();
@@ -201,6 +218,9 @@ private:
 	u8 opLDR(ArmInstruction& ins, RegisterID rd, u32 address);
 	u8 opSTRB(ArmInstruction& ins, RegisterID rd, u32 address);
 	u8 opSTR(ArmInstruction& ins, RegisterID rd, u32 address);
+
+	//Status Register access instructions
+	u8 opMSR(ArmInstruction& ins, u32 value);
 
 public:
 	State state;

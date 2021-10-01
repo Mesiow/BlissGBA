@@ -124,6 +124,72 @@ void Arm::clearFlag(u32 flagBits)
 	}
 }
 
+void Arm::setFlagSPSR(u32 flagBits)
+{
+	//M0 - M4
+	for (s32 i = 0; i < 5; i++) {
+		u8 mi = (1 << i);
+		if (flagBits & mi) {
+			SPSR |= mi;
+		}
+	}
+
+	if (flagBits & T) {
+		SPSR |= T;
+	}
+	if (flagBits & F) {
+		SPSR |= F;
+	}
+	if (flagBits & I) {
+		SPSR |= I;
+	}
+	if (flagBits & V) {
+		SPSR |= V;
+	}
+	if (flagBits & C) {
+		SPSR |= C;
+	}
+	if (flagBits & Z) {
+		SPSR |= Z;
+	}
+	if (flagBits & N) {
+		SPSR |= N;
+	}
+}
+
+void Arm::clearFlagSPSR(u32 flagBits)
+{
+	//M0 - M4
+	for (s32 i = 0; i < 5; i++) {
+		u8 mi = (1 << i);
+		if (flagBits & mi) {
+			SPSR &= ~(mi);
+		}
+	}
+
+	if (flagBits & T) {
+		SPSR &= ~(T);
+	}
+	if (flagBits & F) {
+		SPSR &= ~(F);
+	}
+	if (flagBits & I) {
+		SPSR &= ~(I);
+	}
+	if (flagBits & V) {
+		SPSR &= ~(V);
+	}
+	if (flagBits & C) {
+		SPSR &= ~(C);
+	}
+	if (flagBits & Z) {
+		SPSR &= ~(Z);
+	}
+	if (flagBits & N) {
+		SPSR &= ~(N);
+	}
+}
+
 void Arm::fillPipeline()
 {
 	u32 first_instr = (mbus->readU8(R15)) | (mbus->readU8(R15 + 1) << 8) |
@@ -652,6 +718,26 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	return 1;
 }
 
+u8 Arm::executeMSRImm(ArmInstruction& ins)
+{
+	u8 immediate = ins.imm();
+	u8 rotate_imm = ins.rotate();
+	u32 operand = ror(immediate, (rotate_imm * 2));
+
+	opMSR(ins, operand);
+
+	return 1;
+}
+
+u8 Arm::executeMSRReg(ArmInstruction& ins)
+{
+	RegisterID rm = ins.rm();
+	u32 operand = getRegister(rm);
+	opMSR(ins, operand);
+
+	return 1;
+}
+
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool flags, bool immediate)
 {
@@ -1125,6 +1211,48 @@ u8 Arm::opSTR(ArmInstruction& ins, RegisterID rd, u32 address)
 {
 	u32 reg_rd = getRegister(rd);
 	mbus->writeU32(address, reg_rd);
+
+	return 1;
+}
+
+u8 Arm::opMSR(ArmInstruction& ins, u32 value)
+{
+	u8 R = ins.R();
+	u8 fm = ins.fieldMask();
+	bool cpsr_write = (R == 0x0);
+
+	if (cpsr_write) {
+		if ((fm & 0x1) == 0x1) {
+			u32 operand = value & 0xFF;
+			for (u32 i = 0; i <= 7; i++)
+				CPSR = resetBit(CPSR, i);
+
+			CPSR |= operand;
+		}
+		if (((fm >> 3) & 0x1) == 0x1) {
+			u32 operand = (value >> V_BIT) & 0xF;
+			for (u32 i = 28; i <= 31; i++)
+				CPSR = resetBit(CPSR, i);
+
+			CPSR |= (operand << V_BIT);
+		}
+	}
+	else { //spsr write
+		if ((fm & 0x1) == 0x1) {
+			u32 operand = value & 0xFF;
+			for (u32 i = 0; i <= 7; i++)
+				SPSR = resetBit(SPSR, i);
+
+			SPSR |= operand;
+		}
+		if (((fm >> 3) & 0x1) == 0x1) {
+			u32 operand = (value >> V_BIT) & 0xF;
+			for (u32 i = 28; i <= 31; i++)
+				SPSR = resetBit(SPSR, i);
+
+			SPSR |= (operand << V_BIT);
+		}
+	}
 
 	return 1;
 }
