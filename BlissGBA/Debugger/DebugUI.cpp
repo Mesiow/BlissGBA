@@ -94,6 +94,9 @@ void DebugUI::renderRegisters()
             bool sign = cpu->getFlag(N);
             bool carry = cpu->getFlag(C);
             bool overflow = cpu->getFlag(V);
+            bool state = cpu->getFlag(T);
+            bool fiq = cpu->getFlag(F);
+            bool irq = cpu->getFlag(I);
 
             ImGui::Checkbox("Zero ", &zero);
             ImGui::SameLine();
@@ -102,6 +105,13 @@ void DebugUI::renderRegisters()
             ImGui::Checkbox("Carry", &carry);
             ImGui::SameLine();
             ImGui::Checkbox("Overflow", &overflow);
+            ImGui::SameLine();
+            ImGui::NewLine();
+            ImGui::Checkbox("State(T)", &state);
+            ImGui::SameLine();
+            ImGui::Checkbox("FIQ", &fiq);
+            ImGui::SameLine();
+            ImGui::Checkbox("IRQ", &irq);
             ImGui::SameLine();
             ImGui::NewLine();
         }
