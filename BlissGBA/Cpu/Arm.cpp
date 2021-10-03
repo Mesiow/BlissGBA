@@ -25,11 +25,12 @@ u8 Arm::clock()
 	else if (state == State::THUMB) {
 		u16 encoding = thumbpipeline[0];
 		thumbpipeline[0] = thumbpipeline[1];
-		thumbpipeline[1] = fetchU16();
-
+		
 		ThumbInstruction ins;
 		ins.encoding = encoding;
 		executeThumbIns(ins);
+
+		thumbpipeline[1] = fetchU16();
 	}
 	return cycles;
 }
@@ -207,6 +208,12 @@ void Arm::flushPipeline()
 {
 	armpipeline[0] = fetchU32();
 	armpipeline[1] = readU32();
+}
+
+void Arm::flushThumbPipeline()
+{
+	thumbpipeline[0] = fetchU16();
+	thumbpipeline[1] = readU16();
 }
 
 u8 Arm::getFlag(u32 flag)
@@ -1136,7 +1143,13 @@ u8 Arm::opBX(ArmInstruction& ins)
 	
 	(reg_rm & 0x1) == 1 ? setFlag(T) : clearFlag(T);
 	R15 = reg_rm & 0xFFFFFFFE;
-	flushPipeline();
+
+	if (getFlag(T)) {
+		flushPipeline();
+	}
+	else {
+		flushThumbPipeline();
+	}
 
 	return 1;
 }

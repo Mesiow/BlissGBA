@@ -86,5 +86,87 @@ void Arm::mapArmOpcodes()
 
 void Arm::mapThumbOpcodes() 
 {
+	for (u32 i = 0; i < 256; i++) {
+		//Data processing register
+		if (((i >> 2) & 0x3F) == 0b010000) {
+
+		}
+		//Special Data processing
+		else if (((i >> 2) & 0x3F) == 0b010001) {
+
+		}
+		//Branch/Exchange
+		else if ((((i >> 2) & 0x3F) == 0b010001) && ((i & 0x3) == 0b11)) {
+
+		}
+		//Load from literal pool
+		else if (((i >> 3) & 0x1F) == 0b01001) {
+
+		}
+		//Load/Store register offset
+		else if (((i >> 4) & 0xF) == 0b0101) {
+
+		}
+		//Load/Store Word/Byte imm offset
+		else if (((i >> 5) & 0x7) == 0b011) {
+
+		}
+		//Load/Store halfword immediate offset
+		else if (((i >> 4) & 0xF) == 0b1000) {
+
+		}
+		//Load/Store to/from stack
+		else if (((i >> 4) & 0xF) == 0b1001) {
+
+		}
+		//Add to SP or PC
+		else if (((i >> 4) & 0xF) == 0b1010) {
+
+		}
+		//Misc
+		else if (((i >> 4) & 0xF) == 0b1011) {
+
+		}
+		//Load/Store multiple
+		else if (((i >> 4) & 0xF) == 0b1100) {
+
+		}
+		//Conditional branch
+		else if (((i >> 4) & 0xF) == 0b1101) {
+
+		}
+		//Undefined instruction
+		else if ((i & 0xFF) == 0b11011110) {
+
+		}
+		//SWI
+		else if ((i & 0xFF) == 0b11011111) {
+
+		}
+		//Unconditional branch
+		else if (((i >> 5) & 0x1F) == 0b11100) {
+
+		}
+		//BLX suffix
+		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x0)) {
+
+		}
+		//Undefined instruction
+		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x1)) {
+
+		}
+		//BL/BLX prefix
+		else if (((i >> 5) & 0x1F) == 0b11110) {
+
+		}
+		//BL suffix
+		else if (((i >> 5) & 0x1F) == 0b11111) {
+
+		}
+		//Undefined
+		else {
+			
+		}
+	}
 
 }

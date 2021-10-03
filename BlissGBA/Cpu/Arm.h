@@ -100,6 +100,7 @@ public:
 
 	void fillPipeline();
 	void flushPipeline();
+	void flushThumbPipeline();
 
 	u8 getFlag(u32 flag);
 	u8 carryFrom(u32 op1, u32 op2);
@@ -244,7 +245,7 @@ public:
 	AddressingMode4 addrMode4;
 
 	std::array<std::function<u8(ArmInstruction&)>, 4096> armlut;
-	std::array<std::function<u8(ThumbInstruction&)>, 0xF> thumblut;
+	std::array<std::function<u8(ThumbInstruction&)>, 256> thumblut;
 
 	u32 armpipeline[2];
 	u16 thumbpipeline[2];
