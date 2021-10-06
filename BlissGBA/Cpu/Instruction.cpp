@@ -198,3 +198,29 @@ u8 ArmInstruction::fieldMask()
     u8 fm = ((this->encoding) >> 16) & 0xF;
     return fm;
 }
+
+//Thumb
+
+u8 ThumbInstruction::cond()
+{
+    u8 cond = ((this->encoding) >> 8) & 0xF;
+    return cond;
+}
+
+u8 ThumbInstruction::instruction()
+{
+    u8 ins = ((this->encoding) >> 8) & 0xFF;
+    return ins;
+}
+
+s8 ThumbInstruction::signedImm8()
+{
+    s8 imm8 = (this->encoding) & 0xFF;
+    return imm8;
+}
+
+s16 ThumbInstruction::signedImm11()
+{
+    s16 imm11 = (this->encoding) & 0x7FF;
+    return imm11;
+}
