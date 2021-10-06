@@ -464,22 +464,22 @@ u32 Arm::rrx(u32 value, u8 &shiftedBit)
 	return value;
 }
 
-u8 Arm::executeArmIns(ArmInstruction& ins)
+void Arm::executeArmIns(ArmInstruction& ins)
 {
 	u8 cond = getConditionCode(ins.cond());
 	if (!cond) {
-		return 1;
+		cycles = 1;
+		return;
 	}
 	
 	u16 instruction = ins.instruction();
 	cycles = armlut[instruction](ins);
-
-	return 1;
 }
 
-u8 Arm::executeThumbIns(ThumbInstruction& ins)
+void Arm::executeThumbIns(ThumbInstruction& ins)
 {
-	return 1;
+	u16 instruction = ins.instruction();
+	cycles = thumblut[instruction](ins);
 }
 
 u8 Arm::executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate)
@@ -743,6 +743,11 @@ u8 Arm::executeMSRReg(ArmInstruction& ins)
 	opMSR(ins, operand);
 
 	return 1;
+}
+
+u8 Arm::executeThumbUnconditionalBranch(ThumbInstruction& ins)
+{
+	return u8();
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
@@ -1114,6 +1119,7 @@ u8 Arm::opB(ArmInstruction& ins)
 {
 	s32 offset = ins.offset();
 	offset = signExtend32(offset, 24);
+	//Aligns r15 for arm instruction reading
 	offset <<= 2;
 
 	R15 += offset;
@@ -1144,7 +1150,7 @@ u8 Arm::opBX(ArmInstruction& ins)
 	(reg_rm & 0x1) == 1 ? setFlag(T) : clearFlag(T);
 	R15 = reg_rm & 0xFFFFFFFE;
 
-	if (getFlag(T)) {
+	if (getFlag(T) == 0x0) {
 		flushPipeline();
 	}
 	else {
@@ -1266,6 +1272,38 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 			SPSR |= (operand << V_BIT);
 		}
 	}
+
+	return 1;
+}
+
+//Thumb instructions
+
+u8 Arm::thumbOpBCond(ThumbInstruction& ins)
+{
+	u8 cond = getConditionCode(ins.cond());
+	if (cond) {
+		s32 signed_imm8_offset = ins.signedImm8();
+		signed_imm8_offset = signExtend32(signed_imm8_offset, 8);
+		//Aligns r15 for thumb instruction reading
+		signed_imm8_offset <<= 1;
+
+		R15 += signed_imm8_offset;
+
+		flushThumbPipeline();
+	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpB(ThumbInstruction& ins)
+{
+	s32 signed_imm11_offset = ins.signedImm11();
+	signed_imm11_offset = signExtend32(signed_imm11_offset, 11);
+	signed_imm11_offset <<= 1;
+
+	R15 += signed_imm11_offset;
+
+	flushThumbPipeline();
 
 	return 1;
 }

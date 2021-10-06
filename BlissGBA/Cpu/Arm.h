@@ -133,9 +133,10 @@ public:
 	u32 ror(u32 value, u8 shift);
 	u32 rrx(u32 value, u8 &shiftedBit);
 
-	u8 executeArmIns(ArmInstruction& ins);
-	u8 executeThumbIns(ThumbInstruction& ins);
+	void executeArmIns(ArmInstruction& ins);
+	void executeThumbIns(ThumbInstruction& ins);
 
+	//Arm
 	u8 executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate);
 	u8 executeDataProcessingImmFlags(ArmInstruction& ins);
 	u8 executeDataProcessingImm(ArmInstruction& ins);
@@ -160,6 +161,9 @@ public:
 	//Status Register
 	u8 executeMSRImm(ArmInstruction& ins);
 	u8 executeMSRReg(ArmInstruction& ins);
+
+	//Thumb
+	u8 executeThumbUnconditionalBranch(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -222,6 +226,13 @@ private:
 
 	//Status Register access instructions
 	u8 opMSR(ArmInstruction& ins, u32 value);
+
+
+
+	//Thumb instructions
+
+	u8 thumbOpBCond(ThumbInstruction& ins);
+	u8 thumbOpB(ThumbInstruction& ins);
 
 public:
 	State state;
