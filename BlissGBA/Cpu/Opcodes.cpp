@@ -86,7 +86,7 @@ void Arm::mapArmOpcodes()
 
 void Arm::mapThumbOpcodes() 
 {
-	for (u32 i = 0; i < 256; i++) {
+	for (s32 i = 0; i < 256; i++) {
 		//Data processing register
 		if (((i >> 2) & 0x3F) == 0b010000) {
 
@@ -133,7 +133,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Conditional branch
 		else if (((i >> 4) & 0xF) == 0b1101) {
-
+			thumblut[i] = b(&Arm::thumbOpBCond);
 		}
 		//Undefined instruction
 		else if ((i & 0xFF) == 0b11011110) {
@@ -144,8 +144,12 @@ void Arm::mapThumbOpcodes()
 
 		}
 		//Unconditional branch
-		else if (((i >> 5) & 0x1F) == 0b11100) {
-
+		else if ((((i >> 5) & 0x1F) == 0b111) && 
+			((((i >> 3) & 0x3) == 0b00) || 
+			(((i >> 3) & 0x3) == 0b10) || 
+			(((i >> 3) & 0x3) == 0b11) ||
+			(((i >> 3) & 0x3) == 0b01))) {
+			thumblut[i] = b(&Arm::executeThumbUnconditionalBranch);
 		}
 		//BLX suffix
 		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x0)) {
