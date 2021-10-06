@@ -42,6 +42,12 @@ u16 signExtend16(s16 value, u8 start)
 	return res;
 }
 
+u8 signExtend8(s8 value, u8 start)
+{
+	u8 res = ((value << (8 - start)) >> (8 - start));
+	return res;
+}
+
 u8 numSetBitsU16(u16 value)
 {
 	u8 count = 0;
