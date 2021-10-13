@@ -747,7 +747,13 @@ u8 Arm::executeMSRReg(ArmInstruction& ins)
 
 u8 Arm::executeThumbUnconditionalBranch(ThumbInstruction& ins)
 {
-	return u8();
+	u8 H = ins.H();
+	if (H == 0b00)
+		thumbOpB(ins);
+	else
+		thumbOpBL(ins);
+
+	return 1;
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
@@ -1307,5 +1313,36 @@ u8 Arm::thumbOpB(ThumbInstruction& ins)
 
 	return 1;
 }
+
+u8 Arm::thumbOpBL(ThumbInstruction& ins)
+{
+	u8 H = ins.H();
+	switch (H) {
+		case 0b10:
+		{
+			s32 offset11 = ins.offset11();
+			offset11 = signExtend32(offset11, 11);
+			offset11 <<= 12;
+	
+			LR = R15 + offset11;
+		}
+		break;
+
+		case 0b11:
+		{
+			s32 offset11 = ins.offset11();
+			offset11 = signExtend32(offset11, 11);
+			offset11 <<= 1;
+
+			R15 = LR + offset11;
+			LR = (R15 + 4) | 0x1;
+		}
+		break;
+	}
+	flushThumbPipeline();
+
+	return 1;
+}
+
 
 

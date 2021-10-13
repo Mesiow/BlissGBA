@@ -233,6 +233,7 @@ private:
 
 	u8 thumbOpBCond(ThumbInstruction& ins);
 	u8 thumbOpB(ThumbInstruction& ins);
+	u8 thumbOpBL(ThumbInstruction& ins);
 
 public:
 	State state;
