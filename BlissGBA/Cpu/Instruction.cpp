@@ -224,3 +224,15 @@ s16 ThumbInstruction::signedImm11()
     s16 imm11 = (this->encoding) & 0x7FF;
     return imm11;
 }
+
+u16 ThumbInstruction::offset11()
+{
+    u16 off11 = (this->encoding) & 0x7FF;
+    return off11;
+}
+
+u8 ThumbInstruction::H()
+{
+    u8 H = ((this->encoding) >> 11) & 0x3;
+    return H;
+}

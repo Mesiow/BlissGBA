@@ -51,6 +51,8 @@ struct ThumbInstruction {
 	u8 instruction(); //8 bit number representing certain thumb instruction
 	s8 signedImm8();
 	s16 signedImm11();
+	u16 offset11();
+	u8 H();
 	u8 offset5(); //immediate value
 	u8 rs(); //source register
 	u8 rd(); //destination register
