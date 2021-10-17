@@ -101,11 +101,11 @@ void Arm::mapThumbOpcodes()
 		}
 		//Load from literal pool
 		else if (((i >> 3) & 0x1F) == 0b01001) {
-
+			thumblut[i] = b(&Arm::executeThumbLoadFromPool);
 		}
 		//Load/Store register offset
 		else if (((i >> 4) & 0xF) == 0b0101) {
-
+			thumblut[i] = b(&Arm::executeThumbLoadStoreRegisterOffset);
 		}
 		//Load/Store Word/Byte imm offset
 		else if (((i >> 5) & 0x7) == 0b011) {
