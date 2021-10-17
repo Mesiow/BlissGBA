@@ -756,6 +756,25 @@ u8 Arm::executeThumbUnconditionalBranch(ThumbInstruction& ins)
 	return 1;
 }
 
+u8 Arm::executeThumbLoadFromPool(ThumbInstruction& ins)
+{
+	thumbOpLDRPool(ins);
+
+	return 1;
+}
+
+u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
+{
+	u8 opcode = ins.opcode();
+	switch (opcode) {
+		case 0b100: 
+			thumbOpLDR(ins);
+			break;
+	}
+
+	return 1;
+}
+
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool flags, bool immediate)
 {
@@ -1340,6 +1359,39 @@ u8 Arm::thumbOpBL(ThumbInstruction& ins)
 		break;
 	}
 	flushThumbPipeline();
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDRPool(ThumbInstruction& ins)
+{
+	RegisterID rd = ins.rdUpper();
+	u8 imm8 = ins.imm8();
+
+	//lower 2 bits of PC are disregarded/shifted right to word align
+	u32 address = (R15 >> 2) + (imm8 * 4);
+	u32 value = mbus->readU32(address);
+
+	writeRegister(rd, value);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDR(ThumbInstruction& ins)
+{
+	RegisterID rd = ins.rdLower();
+	RegisterID rn = ins.rnMiddle();
+	RegisterID rm = ins.rmUpper();
+
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rm = getRegister(rm);
+	u32 address = reg_rn + reg_rm;
+
+	u32 value;
+	if ((address & 0x3) == 0b00) {
+		value = mbus->readU32(address);
+	}
+	writeRegister(rd, value);
 
 	return 1;
 }

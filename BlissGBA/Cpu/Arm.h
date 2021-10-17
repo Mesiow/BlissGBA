@@ -164,6 +164,8 @@ public:
 
 	//Thumb
 	u8 executeThumbUnconditionalBranch(ThumbInstruction& ins);
+	u8 executeThumbLoadFromPool(ThumbInstruction& ins);
+	u8 executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -234,6 +236,8 @@ private:
 	u8 thumbOpBCond(ThumbInstruction& ins);
 	u8 thumbOpB(ThumbInstruction& ins);
 	u8 thumbOpBL(ThumbInstruction& ins);
+	u8 thumbOpLDRPool(ThumbInstruction& ins);
+	u8 thumbOpLDR(ThumbInstruction& ins);
 
 public:
 	State state;
