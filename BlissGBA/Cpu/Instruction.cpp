@@ -231,8 +231,69 @@ u16 ThumbInstruction::offset11()
     return off11;
 }
 
+u8 ThumbInstruction::imm8()
+{
+    u8 imm8 = (this->encoding) & 0xFF;
+    return imm8;
+}
+
 u8 ThumbInstruction::H()
 {
     u8 H = ((this->encoding) >> 11) & 0x3;
     return H;
+}
+
+RegisterID ThumbInstruction::rdUpper()
+{
+    RegisterID rd;
+    rd.id = ((this->encoding) >> 8) & 0x7;
+    return rd;
+}
+
+RegisterID ThumbInstruction::rdLower()
+{
+    RegisterID rd;
+    rd.id = (this->encoding) & 0x7;
+    return rd;
+}
+
+RegisterID ThumbInstruction::rnUpper()
+{
+    RegisterID rn;
+    rn.id = ((this->encoding) >> 8) & 0x7;
+    return rn;
+}
+
+RegisterID ThumbInstruction::rnMiddle()
+{
+    RegisterID rn;
+    rn.id = ((this->encoding) >> 3) & 0x7;
+    return rn;
+}
+
+RegisterID ThumbInstruction::rnLower()
+{
+    RegisterID rn;
+    rn.id = (this->encoding) & 0x7;
+    return rn;
+}
+
+RegisterID ThumbInstruction::rmUpper()
+{
+    RegisterID rm;
+    rm.id = ((this->encoding) >> 6) & 0x7;
+    return rm;
+}
+
+RegisterID ThumbInstruction::rmLower()
+{
+    RegisterID rm;
+    rm.id = ((this->encoding) >> 3) & 0x7;
+    return rm;
+}
+
+u8 ThumbInstruction::opcode()
+{
+    u8 op = ((this->encoding) >> 9) & 0x7;
+    return op;
 }

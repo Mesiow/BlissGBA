@@ -52,10 +52,18 @@ struct ThumbInstruction {
 	s8 signedImm8();
 	s16 signedImm11();
 	u16 offset11();
+	u8 imm8();
 	u8 H();
 	u8 offset5(); //immediate value
 	u8 rs(); //source register
-	u8 rd(); //destination register
+	RegisterID rdUpper(); //destination register located at bits 8 - 10
+	RegisterID rdLower(); //destination register located at bits 0 - 2
+	RegisterID rnUpper(); //register located at bits 8 - 10
+	RegisterID rnMiddle(); //register located at bits 3 - 5
+	RegisterID rnLower(); //register located at bits 0 - 2
+	RegisterID rmUpper(); //register located at bits 6 - 8
+	RegisterID rmLower(); //register located at bits 3 - 5
+	u8 opcode(); //bits 9 - 11 for load/store register offset
 
 	u16 encoding;
 };
