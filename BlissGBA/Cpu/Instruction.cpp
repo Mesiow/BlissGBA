@@ -237,6 +237,12 @@ u8 ThumbInstruction::imm8()
     return imm8;
 }
 
+u8 ThumbInstruction::imm5()
+{
+    u8 imm5 = ((this->encoding) >> 6) & 0x1F;
+    return imm5;
+}
+
 u8 ThumbInstruction::H()
 {
     u8 H = ((this->encoding) >> 11) & 0x3;
@@ -292,8 +298,15 @@ RegisterID ThumbInstruction::rmLower()
     return rm;
 }
 
-u8 ThumbInstruction::opcode()
+
+u8 ThumbInstruction::opcode3()
 {
     u8 op = ((this->encoding) >> 9) & 0x7;
+    return op;
+}
+
+u8 ThumbInstruction::opcode2()
+{
+    u8 op = ((this->encoding) >> 11) & 0x3;
     return op;
 }
