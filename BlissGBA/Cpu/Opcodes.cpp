@@ -87,8 +87,24 @@ void Arm::mapArmOpcodes()
 void Arm::mapThumbOpcodes() 
 {
 	for (s32 i = 0; i < 256; i++) {
+		//Shift by immediate
+		if (((i >> 5) & 0x7) == 0b000) {
+			thumblut[i] = b(&Arm::executeThumbShiftByImm);
+		}
+		//Add/subtract register
+		else if (((i >> 2) & 0x3F) == 0b000110) {
+
+		}
+		//Add/subtract immediate
+		else if (((i >> 2) & 0x3F) == 0b000111) {
+
+		}
+		//Add/sub/cmp/mov immediate
+		else if (((i >> 5) & 0x7) == 0b001) {
+
+		}
 		//Data processing register
-		if (((i >> 2) & 0x3F) == 0b010000) {
+		else if (((i >> 2) & 0x3F) == 0b010000) {
 
 		}
 		//Special Data processing
