@@ -6,6 +6,8 @@ Arm::Arm(MemoryBus *mbus)
 	addrMode3(*this), addrMode4(*this)
 {
 	mapArmOpcodes();
+	mapThumbOpcodes();
+
 	this->mbus = mbus;
 }
 
@@ -330,8 +332,8 @@ void Arm::setCC(u32 rd, bool borrow, bool overflow,
 
 State Arm::getState()
 {
-	u8 st = ((CPSR & T) >> T_BIT);
-	return State(st);
+	State cs = (State)getFlag(T);
+	return cs;
 }
 
 u8 Arm::getConditionCode(u8 cond)
@@ -765,11 +767,21 @@ u8 Arm::executeThumbLoadFromPool(ThumbInstruction& ins)
 
 u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
 {
-	u8 opcode = ins.opcode();
+	u8 opcode = ins.opcode3();
 	switch (opcode) {
 		case 0b100: 
 			thumbOpLDR(ins);
 			break;
+	}
+
+	return 1;
+}
+
+u8 Arm::executeThumbShiftByImm(ThumbInstruction& ins)
+{
+	u8 opcode = ins.opcode2();
+	if (opcode == 0b00) {
+		thumbOpLSL(ins);
 	}
 
 	return 1;
@@ -1388,10 +1400,40 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins)
 	u32 address = reg_rn + reg_rm;
 
 	u32 value;
-	if ((address & 0x3) == 0b00) {
+	if ((address & 0x3) == 0b00) { //If the address is word aligned, read the value from memory
 		value = mbus->readU32(address);
+		writeRegister(rd, value);
 	}
-	writeRegister(rd, value);
+
+
+	return 1;
+}
+
+u8 Arm::thumbOpLSL(ThumbInstruction& ins)
+{
+	RegisterID rd = ins.rdLower();
+	RegisterID rm = ins.rmLower();
+	u8 imm5 = ins.imm5();
+
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rm = getRegister(rm);
+
+	//if zero, Simply load the register
+	if (imm5 == 0) {
+		//C flag unaffected
+		writeRegister(rd, reg_rm);
+	}
+	//imm5 > 0
+	else {
+		u8 shifter_carry_out = 0;
+		reg_rd = lsl(reg_rm, imm5, shifter_carry_out);
+
+		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
+		writeRegister(rd, reg_rd);
+	}
+	
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 
 	return 1;
 }
