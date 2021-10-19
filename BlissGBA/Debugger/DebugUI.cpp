@@ -228,17 +228,32 @@ void DebugUI::renderCartInfo()
 void DebugUI::renderPipeline()
 {
     if (showPipeline) {
-        u32 first_ins = cpu->armpipeline[0];
-        u32 second_ins = cpu->armpipeline[1];
+      
+       u32 first_ins = cpu->armpipeline[0];
+       u32 second_ins = cpu->armpipeline[1];
 
-        if (ImGui::Begin("Pipeline")) {
-            ImGui::SetWindowFontScale(1.2);
+       if (ImGui::Begin("Arm Pipeline")) {
+           ImGui::SetWindowFontScale(1.2);
 
-            ImGui::Text("0 -> 0x%08X", first_ins);
-            ImGui::Text("1 -> 0x%08X", second_ins);
+           ImGui::Text("0 -> 0x%08X", first_ins);
+           ImGui::Text("1 -> 0x%08X", second_ins);
 
-            ImGui::End();
-        }
+           ImGui::End();
+       }
+        
+       {
+           u16 first_ins = cpu->thumbpipeline[0];
+           u16 second_ins = cpu->thumbpipeline[1];
+
+           if (ImGui::Begin("Thumb Pipeline")) {
+               ImGui::SetWindowFontScale(1.2);
+
+               ImGui::Text("0 -> 0x%04X", first_ins);
+               ImGui::Text("1 -> 0x%04X", second_ins);
+
+               ImGui::End();
+           }
+       }
     }
 }
 
