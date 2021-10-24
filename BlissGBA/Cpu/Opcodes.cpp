@@ -22,11 +22,11 @@ void Arm::mapArmOpcodes()
 			armlut[i] = b(&Arm::opBX);
 		}
 		////MSR Immediate
-		else if (((i >> 7) == 0b00110) && ((i & 0xF) != 0b0000)) {
+		else if (((i >> 7) == 0b00110) && ((i & 0xF) != 0b0000) && !testBit(i, 4)) {
 			armlut[i] = b(&Arm::executeMSRImm);
 		}
 		//MSR Register
-		else if (((i >> 7) == 0b00010) && ((i & 0xF) == 0b0000)) {
+		else if (((i >> 7) == 0b00010) && ((i & 0xF) == 0b0000) && !testBit(i, 4)) {
 			armlut[i] = b(&Arm::executeMSRReg);
 		}
 		//Addressing Mode 2 Load and Store Word or Unsigned Byte
