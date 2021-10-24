@@ -26,7 +26,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showPipeline = true;
     showDisplay = true;
     vsync = false;
-    showLoggerSetup = true;
+    showLoggerSetup = false;
 
     //shift and h
     showKeys[0] = false; showKeys[1] = false;
