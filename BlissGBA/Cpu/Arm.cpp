@@ -22,7 +22,7 @@ u8 Arm::clock()
 		ins.encoding = currentExecutingArmOpcode;
 		executeArmIns(ins);
 
-		armpipeline[1] = fetchU32();
+		armpipeline[1] = fetchU32(); 
 	}
 	else if (state == State::THUMB) {
 		currentExecutingThumbOpcode = thumbpipeline[0];
@@ -1199,6 +1199,7 @@ u8 Arm::opBX(ArmInstruction& ins)
 	else {
 		flushThumbPipeline();
 	}
+	R15 -= 2;
 
 	return 1;
 }
@@ -1386,8 +1387,8 @@ u8 Arm::thumbOpLDRPool(ThumbInstruction& ins)
 	RegisterID rd = ins.rdUpper();
 	u8 imm8 = ins.imm8();
 
-	//lower 2 bits of PC are disregarded/shifted right to word align
-	u32 address = (R15 >> 2) + (imm8 * 4);
+	//lower 2 bits of PC are disregarded/shifted left to word align
+	u32 address = (R15 & 0xFFFFFFFC) + (imm8 * 4);
 	u32 value = mbus->readU32(address);
 
 	writeRegister(rd, value);
