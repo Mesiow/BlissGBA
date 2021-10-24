@@ -25,8 +25,14 @@ void Logger::createAndOpenFile(const std::string& fileName)
 void Logger::writeFile()
 {
 	if (file.is_open()) {
-		u32 opcode = cpu.currentExecutingOpcode;
-		file << "Opcode: " + intToHexString(opcode) + " ";
+		if (cpu.getState() == State::ARM) {
+			u32 opcode = cpu.currentExecutingArmOpcode;
+			file << "Opcode: " + intToHexString(opcode) + " ";
+		}
+		else {
+			u16 opcode = cpu.currentExecutingThumbOpcode;
+			file << "Opcode: " + intToHexString(opcode) + " ";
+		}
 
 		for (int i = 0; i < NUM_REGISTERS; i++) {
 			file << "R" + std::to_string(i) + ": "

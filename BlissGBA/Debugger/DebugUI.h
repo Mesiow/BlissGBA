@@ -61,7 +61,8 @@ struct DebugUI {
 
 	u32 addressToRunTo;
 	char addressBufferText[11];
-	u32 opcodeToRunTo;
+	u32 armOpcodeToRunTo;
+	u16 thumbOpcodeToRunTo;
 	char opcodeBufferText[9];
 
 	sf::RenderWindow* window;

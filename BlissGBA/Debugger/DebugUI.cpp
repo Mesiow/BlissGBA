@@ -333,14 +333,25 @@ void DebugUI::renderEmuButtons()
     if (ImGui::Button("Run until")) {
         std::string parse(opcodeBufferText);
 
-        //convert hex string to int
-        std::stringstream ss;
-        ss << std::hex << parse;
-        ss >> opcodeToRunTo;
+        if (cpu->getState() == State::ARM) {
+            //convert hex string to int
+            std::stringstream ss;
+            ss << std::hex << parse;
+            ss >> armOpcodeToRunTo;
 
-        printf("Running to opcode: 0x%08X\n", opcodeToRunTo);
-        *running = true;
-        runToOpcode = true;
+            printf("Running to opcode: 0x%08X\n", armOpcodeToRunTo);
+            *running = true;
+            runToOpcode = true;
+        }
+        else {
+            std::stringstream ss;
+            ss << std::hex << parse;
+            ss >> thumbOpcodeToRunTo;
+
+            printf("Running to opcode: 0x%04X\n", thumbOpcodeToRunTo);
+            *running = true;
+            runToOpcode = true;
+        }
     }
 
     ImGui::End();
@@ -377,10 +388,20 @@ void DebugUI::update()
     }
     
     if (runToOpcode && *running) {
-        if (emu->cpu.currentExecutingOpcode == opcodeToRunTo) {
-            printf("Hit opcode!\n");
-            *running = false;
-            runToOpcode = false;
+
+        if (cpu->getState() == State::ARM) {
+            if (emu->cpu.currentExecutingArmOpcode == armOpcodeToRunTo) {
+                printf("Hit arm opcode!\n");
+                *running = false;
+                runToOpcode = false;
+            }
+        }
+        else {
+            if (emu->cpu.currentExecutingThumbOpcode == thumbOpcodeToRunTo) {
+                printf("Hit thumb opcode!\n");
+                *running = false;
+                runToOpcode = false;
+            }
         }
     }
 
