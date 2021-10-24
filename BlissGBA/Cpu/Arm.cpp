@@ -15,21 +15,21 @@ u8 Arm::clock()
 {
 	state = getState();
 	if (state == State::ARM) {
-		currentExecutingOpcode = armpipeline[0];
+		currentExecutingArmOpcode = armpipeline[0];
 		armpipeline[0] = armpipeline[1];
 		
 		ArmInstruction ins;
-		ins.encoding = currentExecutingOpcode;
+		ins.encoding = currentExecutingArmOpcode;
 		executeArmIns(ins);
 
 		armpipeline[1] = fetchU32();
 	}
 	else if (state == State::THUMB) {
-		u16 encoding = thumbpipeline[0];
+		currentExecutingThumbOpcode = thumbpipeline[0];
 		thumbpipeline[0] = thumbpipeline[1];
 		
 		ThumbInstruction ins;
-		ins.encoding = encoding;
+		ins.encoding = currentExecutingThumbOpcode;
 		executeThumbIns(ins);
 
 		thumbpipeline[1] = fetchU16();
@@ -360,12 +360,18 @@ u8 Arm::getConditionCode(u8 cond)
 
 u16 Arm::readU16()
 {
-	return u16();
+	u16 halfword = (mbus->readU8(R15)) |
+		(mbus->readU8(R15 + 1) << 8);
+
+	return halfword;
 }
 
 u16 Arm::fetchU16()
 {
-	return u16();
+	u16 halfword = (mbus->readU8(R15++)) |
+		(mbus->readU8(R15++) << 8);
+
+	return halfword;
 }
 
 u32 Arm::readU32()
@@ -480,7 +486,7 @@ void Arm::executeArmIns(ArmInstruction& ins)
 
 void Arm::executeThumbIns(ThumbInstruction& ins)
 {
-	u16 instruction = ins.instruction();
+	u8 instruction = ins.instruction();
 	cycles = thumblut[instruction](ins);
 }
 
