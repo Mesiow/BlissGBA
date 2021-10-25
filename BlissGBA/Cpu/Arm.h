@@ -169,6 +169,8 @@ public:
 	u8 executeThumbShiftByImm(ThumbInstruction& ins);
 	u8 executeThumbDataProcessingImm(ThumbInstruction& ins);
 	u8 executeThumbDataProcessingReg(ThumbInstruction& ins);
+	u8 executeThumbAddSubReg(ThumbInstruction& ins);
+	u8 executeThumbAddSubImm(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -243,6 +245,7 @@ private:
 	u8 thumbOpLDR(ThumbInstruction& ins);
 	u8 thumbOpLSL(ThumbInstruction& ins);
 	u8 thumbOpMOV(ThumbInstruction& ins);
+	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 
 public:
 	State state;
