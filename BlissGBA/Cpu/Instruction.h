@@ -66,6 +66,7 @@ struct ThumbInstruction {
 	RegisterID rmLower(); //register located at bits 3 - 5
 	u8 opcode3(); //bits 9 - 11 for load/store register offset (takes up 3 bits)
 	u8 opcode2(); //bits 11 - 12 
+	u8 opc(); //bit 9 for add/sub reg/imm
 
 	u16 encoding;
 };

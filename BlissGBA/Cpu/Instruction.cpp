@@ -310,3 +310,9 @@ u8 ThumbInstruction::opcode2()
     u8 op = ((this->encoding) >> 11) & 0x3;
     return op;
 }
+
+u8 ThumbInstruction::opc()
+{
+    u8 opc = ((this->encoding) >> 9) & 0x1;
+    return opc;
+}
