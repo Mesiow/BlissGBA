@@ -99,13 +99,13 @@ void Arm::mapThumbOpcodes()
 		else if (((i >> 2) & 0x3F) == 0b000111) {
 
 		}
-		//Add/sub/cmp/mov immediate
+		//Add/sub/cmp/mov immediate (Data processing immediate)
 		else if (((i >> 5) & 0x7) == 0b001) {
-
+			thumblut[i] = b(&Arm::executeThumbDataProcessingImm);
 		}
 		//Data processing register
 		else if (((i >> 2) & 0x3F) == 0b010000) {
-
+			thumblut[i] = b(&Arm::executeThumbDataProcessingReg);
 		}
 		//Special Data processing
 		else if (((i >> 2) & 0x3F) == 0b010001) {
