@@ -93,11 +93,11 @@ void Arm::mapThumbOpcodes()
 		}
 		//Add/subtract register
 		else if (((i >> 2) & 0x3F) == 0b000110) {
-
+			thumblut[i] = b(&Arm::executeThumbAddSubReg);
 		}
 		//Add/subtract immediate
 		else if (((i >> 2) & 0x3F) == 0b000111) {
-
+			thumblut[i] = b(&Arm::executeThumbAddSubImm);
 		}
 		//Add/sub/cmp/mov immediate (Data processing immediate)
 		else if (((i >> 5) & 0x7) == 0b001) {
