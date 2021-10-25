@@ -167,6 +167,8 @@ public:
 	u8 executeThumbLoadFromPool(ThumbInstruction& ins);
 	u8 executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins);
 	u8 executeThumbShiftByImm(ThumbInstruction& ins);
+	u8 executeThumbDataProcessingImm(ThumbInstruction& ins);
+	u8 executeThumbDataProcessingReg(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -240,6 +242,7 @@ private:
 	u8 thumbOpLDRPool(ThumbInstruction& ins);
 	u8 thumbOpLDR(ThumbInstruction& ins);
 	u8 thumbOpLSL(ThumbInstruction& ins);
+	u8 thumbOpMOV(ThumbInstruction& ins);
 
 public:
 	State state;

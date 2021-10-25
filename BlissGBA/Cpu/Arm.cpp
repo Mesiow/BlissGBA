@@ -793,6 +793,21 @@ u8 Arm::executeThumbShiftByImm(ThumbInstruction& ins)
 	return 1;
 }
 
+u8 Arm::executeThumbDataProcessingImm(ThumbInstruction& ins)
+{
+	u8 opcode = ins.opcode2();
+	if (opcode == 0b00) {
+		thumbOpMOV(ins);
+	}
+
+	return 1;
+}
+
+u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
+{
+	return u8();
+}
+
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool flags, bool immediate)
 {
@@ -1374,11 +1389,12 @@ u8 Arm::thumbOpBL(ThumbInstruction& ins)
 
 			R15 = LR + offset11;
 			LR = (R15 + 4) | 0x1;
+
+			flushThumbPipeline();
 		}
 		break;
 	}
-	flushThumbPipeline();
-
+	
 	return 1;
 }
 
@@ -1442,6 +1458,22 @@ u8 Arm::thumbOpLSL(ThumbInstruction& ins)
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 
+	return 1;
+}
+
+u8 Arm::thumbOpMOV(ThumbInstruction& ins)
+{
+	RegisterID rd = ins.rdUpper();
+	u32 reg_rd = getRegister(rd);
+
+	u8 imm8 = ins.imm8();
+	reg_rd = imm8;
+
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+	
 	return 1;
 }
 
