@@ -805,21 +805,27 @@ u8 Arm::executeThumbDataProcessingImm(ThumbInstruction& ins)
 
 u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 {
-	return u8();
+	u8 opcode = ins.opcode5();
+	if (opcode == 0b1110) {
+		RegisterID rm = ins.rmLower();
+		RegisterID rd = ins.rdLower();
+		thumbOpBIC(ins, rm, rd);
+	}
+
+	return 1;
 }
 
 u8 Arm::executeThumbAddSubReg(ThumbInstruction& ins)
 {
 	u8 opc = ins.opc();
+	RegisterID rm = ins.rmUpper();
+	RegisterID rn = ins.rnMiddle();
+	RegisterID rd = ins.rdLower();
 	if (opc == 0x0) { //Add
-		RegisterID rm = ins.rmUpper();
-		RegisterID rn = ins.rnMiddle();
-		RegisterID rd = ins.rdLower();
-
 		thumbOpADD(ins, rm, rn, rd);
 	}
 	else { //Sub
-
+		thumbOpSUB(ins, rm, rn, rd);
 	}
 
 	return 1;
@@ -1508,14 +1514,41 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	reg_rd = reg_rn + reg_rm;
 	writeRegister(rd, reg_rd);
 
-	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
-
 	bool carry = carryFrom(reg_rn, reg_rm);
 	bool overflow = overflowFromAdd(reg_rn, reg_rm);
 
-	(carry == true) ? setFlag(C) : clearFlag(C);
-	(overflow == true) ? setFlag(V) : clearFlag(V);
+	setCC(reg_rd, !carry, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rn - reg_rm;
+	writeRegister(rd, reg_rd);
+
+	bool borrow = borrowFrom(reg_rn, reg_rm);
+	bool overflow = overflowFromSub(reg_rn, reg_rm);
+
+	setCC(reg_rd, borrow, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rd & ~(reg_rm);
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 
 	return 1;
 }

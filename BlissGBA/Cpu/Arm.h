@@ -246,6 +246,10 @@ private:
 	u8 thumbOpLSL(ThumbInstruction& ins);
 	u8 thumbOpMOV(ThumbInstruction& ins);
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
+	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
+	u8 thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
+
+	//TODO: Implement thumb stmia instruction
 
 public:
 	State state;
