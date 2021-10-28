@@ -796,8 +796,9 @@ u8 Arm::executeThumbShiftByImm(ThumbInstruction& ins)
 u8 Arm::executeThumbDataProcessingImm(ThumbInstruction& ins)
 {
 	u8 opcode = ins.opcode2();
-	if (opcode == 0b00) {
-		thumbOpMOV(ins);
+	switch (opcode) {
+		case 0b00: thumbOpMOV(ins); break;
+		case 0b11: thumbOpSUB(ins, ins.imm8()); break;
 	}
 
 	return 1;
@@ -833,7 +834,9 @@ u8 Arm::executeThumbAddSubReg(ThumbInstruction& ins)
 
 u8 Arm::executeThumbAddSubImm(ThumbInstruction& ins)
 {
-	return u8();
+
+
+	return 1;
 }
 
 u8 Arm::executeThumbLoadStoreMultiple(ThumbInstruction& ins)
@@ -847,6 +850,13 @@ u8 Arm::executeThumbLoadStoreMultiple(ThumbInstruction& ins)
 	}
 
 	return 1;
+}
+
+void Arm::handleUndefinedThumbIns(ThumbInstruction& ins)
+{
+	u8 lutIndex = ins.instruction();
+	printf("LUT Index: %d ", lutIndex);
+	printf("THUMB undefined or unimplemented instruction 0x%04X at PC: 0x%08X\n", ins.encoding, R15 - 8);
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
@@ -1546,6 +1556,22 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 
 	bool borrow = borrowFrom(reg_rn, reg_rm);
 	bool overflow = overflowFromSub(reg_rn, reg_rm);
+
+	setCC(reg_rd, borrow, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpSUB(ThumbInstruction& ins, u8 immediate)
+{
+	RegisterID rd = ins.rdUpper();
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rd - immediate;
+	writeRegister(rd, reg_rd);
+
+	bool borrow = borrowFrom(reg_rd, immediate);
+	bool overflow = overflowFromSub(reg_rd, immediate);
 
 	setCC(reg_rd, borrow, overflow);
 
