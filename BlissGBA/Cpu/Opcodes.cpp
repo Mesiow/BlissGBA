@@ -145,7 +145,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Load/Store multiple
 		else if (((i >> 4) & 0xF) == 0b1100) {
-
+			thumblut[i] = b(&Arm::executeThumbLoadStoreMultiple);
 		}
 		//Conditional branch
 		else if (((i >> 4) & 0xF) == 0b1101) {
