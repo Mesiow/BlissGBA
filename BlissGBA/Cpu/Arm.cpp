@@ -821,10 +821,10 @@ u8 Arm::executeThumbAddSubReg(ThumbInstruction& ins)
 	RegisterID rm = ins.rmUpper();
 	RegisterID rn = ins.rnMiddle();
 	RegisterID rd = ins.rdLower();
-	if (opc == 0x0) { //Add
+	if (opc == 0x0) {
 		thumbOpADD(ins, rm, rn, rd);
 	}
-	else { //Sub
+	else {
 		thumbOpSUB(ins, rm, rn, rd);
 	}
 
@@ -834,6 +834,19 @@ u8 Arm::executeThumbAddSubReg(ThumbInstruction& ins)
 u8 Arm::executeThumbAddSubImm(ThumbInstruction& ins)
 {
 	return u8();
+}
+
+u8 Arm::executeThumbLoadStoreMultiple(ThumbInstruction& ins)
+{
+	u8 L = ins.L();
+	if (L == 0x0) {
+		thumbOpSTMIA(ins);
+	}
+	else {
+		thumbOpLDMIA(ins);
+	}
+
+	return 1;
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
@@ -1549,6 +1562,60 @@ u8 Arm::thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
+{
+	RegisterID rn = ins.rnUpper();
+	u32 reg_rn = getRegister(rn);
+
+	u8 reg_list = ins.registerList();
+	u32 address = reg_rn;
+	u32 end_address = reg_rn + (numSetBitsU8(reg_list) * 4) - 4;
+
+	for (s32 i = 0; i <= 7; i++) {
+		bool included = testBit(reg_list, i);
+		if (included) {
+			RegisterID id; id.id = i;
+
+			u32 reg = getRegister(id);
+			mbus->writeU32(address, reg);
+			address += 4;
+		}
+
+		if (end_address == address - 4) break;
+	}
+	reg_rn += (numSetBitsU8(reg_list) * 4);
+	writeRegister(rn, reg_rn);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDMIA(ThumbInstruction& ins)
+{
+	RegisterID rn = ins.rnUpper();
+	u32 reg_rn = getRegister(rn);
+
+	u8 reg_list = ins.registerList();
+	u32 address = reg_rn;
+	u32 end_address = reg_rn + (numSetBitsU8(reg_list) * 4) - 4;
+
+	for (s32 i = 0; i <= 7; i++) {
+		bool included = testBit(reg_list, i);
+		if (included) {
+			RegisterID id; id.id = i;
+			
+			u32 value = mbus->readU32(address);
+			writeRegister(id, value);
+			address += 4;
+		}
+
+		if (end_address == address - 4) break;
+	}
+	reg_rn += (numSetBitsU8(reg_list) * 4);
+	writeRegister(rn, reg_rn);
 
 	return 1;
 }

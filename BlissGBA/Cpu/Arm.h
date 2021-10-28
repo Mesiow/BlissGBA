@@ -171,6 +171,7 @@ public:
 	u8 executeThumbDataProcessingReg(ThumbInstruction& ins);
 	u8 executeThumbAddSubReg(ThumbInstruction& ins);
 	u8 executeThumbAddSubImm(ThumbInstruction& ins);
+	u8 executeThumbLoadStoreMultiple(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -248,8 +249,8 @@ private:
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 	u8 thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
-
-	//TODO: Implement thumb stmia instruction
+	u8 thumbOpSTMIA(ThumbInstruction& ins);
+	u8 thumbOpLDMIA(ThumbInstruction& ins);
 
 public:
 	State state;
