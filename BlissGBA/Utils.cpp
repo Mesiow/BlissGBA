@@ -58,3 +58,14 @@ u8 numSetBitsU16(u16 value)
 	}
 	return count;
 }
+
+u8 numSetBitsU8(u8 value)
+{
+	u8 count = 0;
+	for (int i = 0; i < 8; i++) {
+		u8 mask = (1 << i);
+		if (value & mask)
+			count++;
+	}
+	return count;
+}
