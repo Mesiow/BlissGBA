@@ -852,11 +852,23 @@ u8 Arm::executeThumbLoadStoreMultiple(ThumbInstruction& ins)
 	return 1;
 }
 
-void Arm::handleUndefinedThumbIns(ThumbInstruction& ins)
+u8 Arm::executeThumbBranchExchange(ThumbInstruction& ins)
+{
+	u8 L = (ins.encoding >> 7) & 0x1;
+	if (L == 0x0) {
+		thumbOpBX(ins);
+	}
+
+	return 1;
+}
+
+u8 Arm::handleUndefinedThumbIns(ThumbInstruction& ins)
 {
 	u8 lutIndex = ins.instruction();
 	printf("LUT Index: %d ", lutIndex);
 	printf("THUMB undefined or unimplemented instruction 0x%04X at PC: 0x%08X\n", ins.encoding, R15 - 8);
+
+	return 1;
 }
 
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
@@ -1438,8 +1450,9 @@ u8 Arm::thumbOpBL(ThumbInstruction& ins)
 			offset11 = signExtend32(offset11, 11);
 			offset11 <<= 1;
 
-			R15 = LR + offset11;
-			LR = (R15 + 4) | 0x1;
+			u32 prevLR = LR;
+			LR = prevLR | 0x1;
+			R15 = prevLR + offset11;
 
 			flushThumbPipeline();
 		}
@@ -1573,7 +1586,7 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, u8 immediate)
 	bool borrow = borrowFrom(reg_rd, immediate);
 	bool overflow = overflowFromSub(reg_rd, immediate);
 
-	setCC(reg_rd, borrow, overflow);
+	setCC(reg_rd, !borrow, overflow);
 
 	return 1;
 }
@@ -1642,6 +1655,30 @@ u8 Arm::thumbOpLDMIA(ThumbInstruction& ins)
 	}
 	reg_rn += (numSetBitsU8(reg_list) * 4);
 	writeRegister(rn, reg_rn);
+
+	return 1;
+}
+
+u8 Arm::thumbOpBX(ThumbInstruction& ins)
+{
+	RegisterID rm = ins.rmLower();
+	u8 h2 = ins.h2();
+
+	RegisterID actual_reg_id;
+	actual_reg_id.id = ((h2 << 3) | rm.id) & 0xF;
+
+	u32 reg = getRegister(actual_reg_id);
+
+	(reg & 0x1) == 1 ? setFlag(T) : clearFlag(T);
+	R15 = reg & 0xFFFFFFFE;
+
+	if (getFlag(T) == 0x0) {
+		flushPipeline();
+	}
+	else {
+		flushThumbPipeline();
+	}
+	R15 += 2;
 
 	return 1;
 }

@@ -172,8 +172,9 @@ public:
 	u8 executeThumbAddSubReg(ThumbInstruction& ins);
 	u8 executeThumbAddSubImm(ThumbInstruction& ins);
 	u8 executeThumbLoadStoreMultiple(ThumbInstruction& ins);
+	u8 executeThumbBranchExchange(ThumbInstruction& ins);
 
-	void handleUndefinedThumbIns(ThumbInstruction& ins);
+	u8 handleUndefinedThumbIns(ThumbInstruction& ins);
 
 private:
 	void mapArmOpcodes();
@@ -254,6 +255,7 @@ private:
 	u8 thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpSTMIA(ThumbInstruction& ins);
 	u8 thumbOpLDMIA(ThumbInstruction& ins);
+	u8 thumbOpBX(ThumbInstruction& ins);
 
 public:
 	State state;
