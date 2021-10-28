@@ -70,6 +70,7 @@ struct ThumbInstruction {
 	u8 opc(); //bit 9 for add/sub reg/imm
 	u8 L(); //L bit for load/store instructions
 	u8 registerList(); //for stmia/ldmia
+	u8 h2();
 
 	u16 encoding;
 };
