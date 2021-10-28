@@ -56,6 +56,7 @@ public:
 	u8* getBiosMemory() { return genMem.bios;}
 	u8* getVRAM() { return displayMem.vram; }
 	u8* getIO() { return genMem.io; }
+	u8* getOBWRAM() { return genMem.obwram; }
 	u8* getGamePakMemory() { return pak.getGamePakWS0(); }
 
 	GeneralMemory genMem;
