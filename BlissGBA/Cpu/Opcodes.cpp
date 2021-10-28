@@ -107,12 +107,12 @@ void Arm::mapThumbOpcodes()
 		else if (((i >> 2) & 0x3F) == 0b010000) {
 			thumblut[i] = b(&Arm::executeThumbDataProcessingReg);
 		}
-		//Special Data processing
-		else if (((i >> 2) & 0x3F) == 0b010001) {
-
-		}
 		//Branch/Exchange
 		else if ((((i >> 2) & 0x3F) == 0b010001) && ((i & 0x3) == 0b11)) {
+			thumblut[i] = b(&Arm::executeThumbBranchExchange);
+		}
+		//Special Data processing
+		else if (((i >> 2) & 0x3F) == 0b010001) {
 
 		}
 		//Load from literal pool
@@ -153,7 +153,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Undefined instruction
 		else if ((i & 0xFF) == 0b11011110) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//SWI
 		else if ((i & 0xFF) == 0b11011111) {
@@ -173,7 +173,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Undefined instruction
 		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x1)) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//BL/BLX prefix
 		else if (((i >> 5) & 0x1F) == 0b11110) {
@@ -185,7 +185,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Undefined
 		else {
-			
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 	}
 
