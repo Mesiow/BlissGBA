@@ -834,7 +834,17 @@ u8 Arm::executeThumbAddSubReg(ThumbInstruction& ins)
 
 u8 Arm::executeThumbAddSubImm(ThumbInstruction& ins)
 {
+	u8 opc = ins.opc();
+	RegisterID rn = ins.rnMiddle();
+	RegisterID rd = ins.rdLower();
+	u8 imm3 = ins.imm3();
 
+	if (opc == 0x0) {
+		thumbOpADD(ins, rn, rd, imm3);
+	}
+	else {
+		thumbOpSUB(ins, rn, rd, imm3);
+	}
 
 	return 1;
 }
@@ -1558,6 +1568,22 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	return 1;
 }
 
+u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate)
+{
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rn + immediate;
+	writeRegister(rd, reg_rd);
+
+	bool carry = carryFrom(reg_rn, immediate);
+	bool overflow = overflowFromAdd(reg_rn, immediate);
+
+	setCC(reg_rd, !carry, overflow);
+
+	return 1;
+}
+
 u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
 {
 	u32 reg_rm = getRegister(rm);
@@ -1571,6 +1597,22 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	bool overflow = overflowFromSub(reg_rn, reg_rm);
 
 	setCC(reg_rd, borrow, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate)
+{
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rn - immediate;
+	writeRegister(rd, reg_rd);
+
+	bool borrow = borrowFrom(reg_rn, immediate);
+	bool overflow = overflowFromSub(reg_rn, immediate);
+
+	setCC(reg_rd, !borrow, overflow);
 
 	return 1;
 }

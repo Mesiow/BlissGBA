@@ -250,7 +250,9 @@ private:
 	u8 thumbOpLSL(ThumbInstruction& ins);
 	u8 thumbOpMOV(ThumbInstruction& ins);
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
+	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
+	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate);
 	u8 thumbOpSUB(ThumbInstruction& ins, u8 immediate);
 	u8 thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpSTMIA(ThumbInstruction& ins);
