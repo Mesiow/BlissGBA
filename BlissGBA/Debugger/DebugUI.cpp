@@ -9,7 +9,7 @@ MemoryEditor DebugUI::obwramEditor;
 MemoryEditor DebugUI::gamepakMemory;
 
 DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
-	:window(window), emu(emu), logger(emu->cpu)
+	:window(window), emu(emu), logger(emu->cpu), cmper(emu->cpu)
 {
     mbus = &emu->mbus;
     cpu = &emu->cpu;
@@ -29,6 +29,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showDisplay = true;
     vsync = false;
     showLoggerSetup = false;
+    compareAgainstFile = false;
 
     //shift and h
     showKeys[0] = false; showKeys[1] = false;
@@ -182,6 +183,20 @@ void DebugUI::renderMenuBar()
                 onDebugUIToggle();
             }
             ImGui::MenuItem("Logging", nullptr, &showLoggerSetup);
+            if (ImGui::MenuItem("Compare against file", nullptr, &compareAgainstFile)) {
+                auto file = tinyfd_openFileDialog(
+                    "BIN",
+                    "",
+                    5,
+                    fileTypes,
+                    "BIN",
+                    0);
+
+                if (file != nullptr) {
+                    std::string path = std::filesystem::path(file).string();
+                    cmper.openExistingFile(path);
+                }
+            }
               
             //if (ImGui::MenuItem("Trace", nullptr) && cartInserted) // Make sure not to run without cart
             //    gba.step();
@@ -415,6 +430,10 @@ void DebugUI::update()
 
     if (logger.isActive() && *running) {
         logger.writeFile();
+    }
+
+    if (compareAgainstFile && *running) {
+        cmper.compareAgainstFile();
     }
 }
 

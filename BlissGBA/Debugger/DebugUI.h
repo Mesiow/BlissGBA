@@ -40,7 +40,9 @@ struct DebugUI {
 	static MemoryEditor gamepakMemory;
 
 	Logger logger;
+	Comparer cmper;
 	char logFileName[50];
+	bool compareAgainstFile;
 
 	bool* running = nullptr;
 	bool *showDebugger = nullptr;
