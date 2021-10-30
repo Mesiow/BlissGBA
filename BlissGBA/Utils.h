@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <assert.h>
 
 using u8 = uint8_t;
 using s8 = int8_t;
