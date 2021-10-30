@@ -6,6 +6,7 @@
 
 #include "Core\Emulator.h"
 
+
 int main(int arc, char* argv[]) {
 
     float displayScaleFactor = 4;
