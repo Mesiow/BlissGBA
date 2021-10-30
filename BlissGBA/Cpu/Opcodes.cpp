@@ -113,7 +113,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Special Data processing
 		else if (((i >> 2) & 0x3F) == 0b010001) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Load from literal pool
 		else if (((i >> 3) & 0x1F) == 0b01001) {
@@ -125,23 +125,23 @@ void Arm::mapThumbOpcodes()
 		}
 		//Load/Store Word/Byte imm offset
 		else if (((i >> 5) & 0x7) == 0b011) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Load/Store halfword immediate offset
 		else if (((i >> 4) & 0xF) == 0b1000) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Load/Store to/from stack
 		else if (((i >> 4) & 0xF) == 0b1001) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Add to SP or PC
 		else if (((i >> 4) & 0xF) == 0b1010) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Misc
 		else if (((i >> 4) & 0xF) == 0b1011) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Load/Store multiple
 		else if (((i >> 4) & 0xF) == 0b1100) {
@@ -157,7 +157,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//SWI
 		else if ((i & 0xFF) == 0b11011111) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Unconditional branch
 		else if ((((i >> 5) & 0x1F) == 0b111) && 
@@ -169,7 +169,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//BLX suffix
 		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x0)) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Undefined instruction
 		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x1)) {
@@ -177,11 +177,11 @@ void Arm::mapThumbOpcodes()
 		}
 		//BL/BLX prefix
 		else if (((i >> 5) & 0x1F) == 0b11110) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//BL suffix
 		else if (((i >> 5) & 0x1F) == 0b11111) {
-
+			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Undefined
 		else {
