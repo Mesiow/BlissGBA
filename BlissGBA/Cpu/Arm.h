@@ -120,6 +120,7 @@ public:
 	u8 overflowFromSub(u32 op1, u32 op2);
 	u8 fetchOp(u32 encoding);
 	PSR getPSR();
+	u32 getSPSR();
 
 	u32 getRegister(RegisterID reg);
 	void writeRegister(RegisterID reg, u32 value);
@@ -288,6 +289,11 @@ public:
 	u32 R15; //contains PC
 	u32 CPSR;
 	u32 SPSR;
+	u32 SPSR_fiq;
+	u32 SPSR_svc;
+	u32 SPSR_abt;
+	u32 SPSR_irq;
+	u32 SPSR_und;
 
 	//FIQ
 	u32 SP_fiq;

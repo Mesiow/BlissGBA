@@ -284,6 +284,28 @@ PSR Arm::getPSR()
 	};
 }
 
+u32 Arm::getSPSR()
+{
+	if (mode == ProcessorMode::USER || mode == ProcessorMode::SYS) {
+		return SPSR;
+	}
+	else if (mode == ProcessorMode::FIQ) {
+		return SPSR_fiq;
+	}
+	else if (mode == ProcessorMode::IRQ) {
+		return SPSR_irq;
+	}
+	else if (mode == ProcessorMode::SVC) {
+		return SPSR_svc;
+	}
+	else if (mode == ProcessorMode::ABT) {
+		return SPSR_abt;
+	}
+	else if (mode == ProcessorMode::UND) {
+		return SPSR_und;
+	}
+}
+
 u32 Arm::getRegister(RegisterID reg)
 {
 	//Registers r0 - r7 remain the same for all states
