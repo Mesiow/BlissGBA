@@ -89,14 +89,24 @@ void Comparer::openExistingFile(const std::string& fileName)
 
 			fileBuffer = new u32[file_length];
 			file.read((char*)fileBuffer, file_length);
+
+			state = reinterpret_cast<ExpectedState*>(fileBuffer);
+			////Skip first 2 instructions in log
+			state += 2;
+			for (int i = 0; i < 13; i++) {
+				printf("0x%08X\n", state->regs[i]);
+			}
+			printf("0x%08X\n", state->sp);
+			printf("0x%08X\n", state->lr);
+			printf("0x%08X\n", state->r15);
+			printf("0x%08X\n", state->cpsr);
+			printf("0x%08X\n", state->spsr);
 		}
 	}
 }
 
 void Comparer::compareAgainstFile()
 {
-	ExpectedState* state = reinterpret_cast<ExpectedState*>(fileBuffer);
-
 	u32 state_address;
 	if (cpu.getState() == State::ARM)
 		state_address = cpu.R15 - 8;
@@ -108,42 +118,61 @@ void Comparer::compareAgainstFile()
 			if (cpu.getState() == State::ARM) {
 				printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 				printf("Register %d does not match\n", i);
+				printf("Our value: 0x%08X\n", cpu.getRegister(RegisterID{ i }));
+				printf("Logs value: 0x%08X\n", state->regs[i]);
 				assert(false);
 			}
 			else {
 				printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 				printf("Register %d does not match\n", i);
+				printf("Our value: 0x%08X\n", cpu.getRegister(RegisterID{ i }));
+				printf("Logs value: 0x%08X\n", state->regs[i]);
 				assert(false);
 			}
 			
 		}
 	}
-	if (cpu.SP != state->sp) {
+
+	u32 r13 = cpu.getRegister(RegisterID{ R13_ID });
+	if (r13 != state->sp) {
 		printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 		printf("Register 13(SP) does not match\n");
+		printf("Our value: 0x%08X\n", r13);
+		printf("Logs value: 0x%08X\n", state->sp);
 		assert(false);
 	}
-	if (cpu.LR != state->lr) {
+	u32 r14 = cpu.getRegister(RegisterID{ R14_ID });
+	if (r14 != state->lr) {
 		printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 		printf("Register 14(LR) does not match\n");
+		printf("Our value: 0x%08X\n", r14);
+		printf("Logs value: 0x%08X\n", state->lr);
 		assert(false);
 	}
 	if (cpu.R15 != state->r15) {
 		printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 		printf("Register 15(R15) does not match\n");
+		printf("Our value: 0x%08X\n", cpu.R15);
+		printf("Logs value: 0x%08X\n", state->r15);
 		assert(false);
 	}
 	if (cpu.CPSR != state->cpsr) {
 		printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 		printf("CPSR) does not match\n");
+		printf("Our value: 0x%08X\n", cpu.CPSR);
+		printf("Logs value: 0x%08X\n", state->cpsr);
 		assert(false);
 	}
-	if (cpu.SPSR != state->spsr) {
+	u32 spsr = cpu.getSPSR();
+	if (spsr != state->spsr) {
 		printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 		printf("SPSR does not match\n");
+		printf("Our value: 0x%08X\n", spsr);
+		printf("Logs value: 0x%08X\n", state->spsr);
 		assert(false);
 	}
 
+	state += 1;
 }
 
 void Comparer::closeFile()

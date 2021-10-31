@@ -20,7 +20,8 @@ struct Comparer {
 	void closeFile();
 
 	std::ifstream file;
-	u32* fileBuffer;
+	u32* fileBuffer = nullptr;
+	ExpectedState* state = nullptr;
 	Arm& cpu;
 };
 
