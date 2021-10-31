@@ -18,6 +18,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     runToAddr = false;
     runToOpcode = false;
     showRegisterWindow = true;
+    showBankedRegisters = true;
     showBiosMemory = false;
     showVRAM = true;
     showIO = true;
@@ -40,7 +41,8 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
 void DebugUI::render()
 {
     renderMenuBar();
-    renderRegisters();
+    renderGeneralState();
+    renderBankedRegisters();
     renderCartInfo();
     renderPipeline();
     renderEmuButtons();
@@ -66,11 +68,10 @@ void DebugUI::render()
     }
 }
 
-void DebugUI::renderRegisters()
+void DebugUI::renderGeneralState()
 {
     if (showRegisterWindow) {
         ImGui::Begin("General");
-        ImGui::SetWindowFontScale(1.2);
 
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
         ImGui::Text("Registers");
@@ -115,11 +116,97 @@ void DebugUI::renderRegisters()
             ImGui::NewLine();
             ImGui::Checkbox("State(T)", &state);
             ImGui::SameLine();
-            ImGui::Checkbox("FIQ", &fiq);
+            ImGui::Checkbox("FIQ disable", &fiq);
             ImGui::SameLine();
-            ImGui::Checkbox("IRQ", &irq);
+            ImGui::Checkbox("IRQ disable", &irq);
             ImGui::SameLine();
             ImGui::NewLine();
+        }
+
+        {
+            ImGui::NewLine();
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+            ImGui::Text("Processor Mode");
+            ImGui::PopStyleColor();
+
+            ProcessorMode mode = cpu->getProcessorMode();
+            if (mode == ProcessorMode::USER) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                    ImGui::Text("User(non-privileged)");
+                    ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("User(non-privileged)");
+                ImGui::PopStyleColor();
+            }
+        
+
+            if (mode == ProcessorMode::FIQ) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("FIQ");
+                ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("FIQ");
+                ImGui::PopStyleColor();
+            }
+
+            if (mode == ProcessorMode::IRQ) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("IRQ");
+                ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("IRQ");
+                ImGui::PopStyleColor();
+            }
+
+            if (mode == ProcessorMode::SVC) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("Supervisor");
+                ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("Supervisor");
+                ImGui::PopStyleColor();
+            }
+
+            if (mode == ProcessorMode::ABT) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("Abort");
+                ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("Abort");
+                ImGui::PopStyleColor();
+            }
+
+            if (mode == ProcessorMode::UND) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("Undefined");
+                ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("Undefined");
+                ImGui::PopStyleColor();
+            }
+
+            if (mode == ProcessorMode::SYS) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(0, 242, 0, 255)));
+                ImGui::Text("System(privileged)");
+                ImGui::PopStyleColor();
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(128, 128, 136, 255)));
+                ImGui::Text("System(privileged)");
+                ImGui::PopStyleColor();
+            }
         }
 
         {
@@ -151,6 +238,69 @@ void DebugUI::renderRegisters()
                 ImGui::PopStyleColor();
             }
         }
+
+        ImGui::End();
+    }
+}
+
+void DebugUI::renderBankedRegisters()
+{
+    if (showBankedRegisters) {
+        ImGui::Begin("Banked Registers");
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+        ImGui::Text("FIQ");
+        ImGui::PopStyleColor();
+
+        std::string str;
+        for (s32 i = 8; i <= 12; i++) {
+            str = "R" + std::to_string(i) + "_fiq" + ": 0x%08X";
+            RegisterID id{ (u8)i };
+            ImGui::Text(str.c_str(), cpu->getRegister(id));
+        }
+        ImGui::Text("R13(SP)_fiq: 0x%08X", cpu->SP_fiq);
+        ImGui::Text("R14(LR)_fiq: 0x%08X", cpu->LR_fiq);
+        ImGui::Text("SPSR_fiq: 0x%08X", cpu->SPSR_fiq);
+
+        ImGui::NewLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+        ImGui::Text("IRQ");
+        ImGui::PopStyleColor();
+
+        ImGui::Text("R13(SP)_irq: 0x%08X", cpu->SP_irq);
+        ImGui::Text("R14(LR)_irq: 0x%08X", cpu->LR_irq);
+        ImGui::Text("SPSR_irq: 0x%08X", cpu->SPSR_irq);
+
+        ImGui::NewLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+        ImGui::Text("Supervisor");
+        ImGui::PopStyleColor();
+
+        ImGui::Text("R13(SP)_svc: 0x%08X", cpu->SP_svc);
+        ImGui::Text("R14(LR)_svc: 0x%08X", cpu->LR_svc);
+        ImGui::Text("SPSR_svc: 0x%08X", cpu->SPSR_svc);
+
+        ImGui::NewLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+        ImGui::Text("Abort");
+        ImGui::PopStyleColor();
+
+        ImGui::Text("R13(SP)_abt: 0x%08X", cpu->SP_abt);
+        ImGui::Text("R14(LR)_abt: 0x%08X", cpu->LR_abt);
+        ImGui::Text("SPSR_abt: 0x%08X", cpu->SPSR_abt);
+
+        ImGui::NewLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+        ImGui::Text("Undefined");
+        ImGui::PopStyleColor();
+
+        ImGui::Text("R13(SP)_und: 0x%08X", cpu->SP_und);
+        ImGui::Text("R14(LR)_und: 0x%08X", cpu->LR_und);
+        ImGui::Text("SPSR_und: 0x%08X", cpu->SPSR_und);
 
         ImGui::End();
     }
@@ -212,6 +362,7 @@ void DebugUI::renderMenuBar()
 
         if (ImGui::BeginMenu("Debug")) {
             ImGui::MenuItem("General Debug Info", nullptr, &showRegisterWindow);
+            ImGui::MenuItem("Banked Registers", nullptr, &showBankedRegisters);
             ImGui::MenuItem("Show Cart Info", nullptr, &showCartWindow);
             ImGui::MenuItem("Show Pipeline", nullptr, &showPipeline);
             ImGui::MenuItem("Show PPU registers", nullptr, &showPPUWindow);

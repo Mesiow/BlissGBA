@@ -20,7 +20,8 @@ class Ppu;
 struct DebugUI {
 	DebugUI(sf::RenderWindow *window, Emulator *emu);
 	void render();
-	void renderRegisters();
+	void renderGeneralState();
+	void renderBankedRegisters();
 	void renderMenuBar();
 	void renderCartInfo();
 	void renderPipeline();
@@ -49,6 +50,7 @@ struct DebugUI {
 	bool runToAddr;
 	bool runToOpcode;
 	bool showRegisterWindow;
+	bool showBankedRegisters;
 	bool showBiosMemory;
 	bool showVRAM;
 	bool showIO;
