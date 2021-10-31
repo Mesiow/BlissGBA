@@ -51,6 +51,8 @@ void Arm::reset()
 	CPSR = 0x000000DF;
 	SPSR = 0x000000DF;
 
+	mode = getProcessorMode();
+
 	armpipeline[0] = fetchU32();
 	armpipeline[1] = fetchU32();
 }
@@ -332,6 +334,7 @@ u32 Arm::getRegister(RegisterID reg)
 			}
 			else {
 				u8 index = reg.id - 8;
+				if (index == NUM_REGISTERS_FIQ) index -= 1; //array out of bounds check
 				return registersFiq[index].value;
 			}
 		}
@@ -404,6 +407,7 @@ void Arm::writeRegister(RegisterID reg, u32 value)
 			}
 			else {
 				u8 index = reg.id - 8;
+				if (index == NUM_REGISTERS_FIQ) index -= 1;
 				registersFiq[index].value = value;
 			}
 		}
@@ -488,7 +492,6 @@ ProcessorMode Arm::getProcessorMode()
 		case 0b11011: mode = ProcessorMode::UND; break;
 		case 0b11111: mode = ProcessorMode::SYS; break;
 	}
-
 	return mode;
 }
 
