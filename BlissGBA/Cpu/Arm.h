@@ -66,6 +66,7 @@ using namespace std::placeholders;
 #define R13_ID 0xD
 #define R14_ID 0xE
 #define R15_ID 0xF
+#define NUM_REGISTERS_FIQ 4
 
 union Register {
 	struct {
@@ -78,6 +79,16 @@ union Register {
 enum class State : u8 {
 	ARM = 0,
 	THUMB
+};
+
+enum class ProcessorMode : u8 {
+	USER = 0, //Normal program execution
+	FIQ, //High speed data transfer or channel process
+	IRQ, //General purpose interrupt handling
+	SVC, //Supervisor (protected mode for the OS)
+	ABT, //Abort (Implements virtual memory/and or mem protection)
+	UND, //Undefined (supports software emulation of hardware co-processors)
+	SYS //System
 };
 
 struct PSR {
@@ -118,6 +129,7 @@ public:
 	void setCC(u32 rd, bool borrow, bool overflow,
 		 bool shiftOut = false, u8 shifterCarryOut = 0);
 
+	ProcessorMode getProcessorMode();
 	State getState();
 	u8 getConditionCode(u8 cond);
 
@@ -261,12 +273,14 @@ private:
 
 public:
 	State state;
+	ProcessorMode mode;
 	/*
 		in THUMB mode only R0-R7 (Lo registers) may be accessed freely,
 		while R8-R12 and up (Hi registers) can be accessed 
 		only by some instructions.
 	*/
 	Register registers[NUM_REGISTERS]; //R0 - R12
+	Register registersFiq[NUM_REGISTERS_FIQ]; //R8 - R14
 
 	u32 SP; //R13
 	//Stores return addr when calling subroutine or branch instr
@@ -274,6 +288,26 @@ public:
 	u32 R15; //contains PC
 	u32 CPSR;
 	u32 SPSR;
+
+	//FIQ
+	u32 SP_fiq;
+	u32 LR_fiq;
+
+	//IRQ
+	u32 SP_irq;
+	u32 LR_irq;
+
+	//SVC
+	u32 SP_svc;
+	u32 LR_svc;
+
+	//ABT
+	u32 SP_abt;
+	u32 LR_abt;
+
+	//UND
+	u32 SP_und;
+	u32 LR_und;
 
 	AddressingMode1 addrMode1;
 	AddressingMode2 addrMode2;

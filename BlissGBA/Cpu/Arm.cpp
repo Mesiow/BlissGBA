@@ -13,6 +13,7 @@ Arm::Arm(MemoryBus *mbus)
 
 u8 Arm::clock()
 {
+	mode = getProcessorMode();
 	state = getState();
 	if (state == State::ARM) {
 		currentExecutingArmOpcode = armpipeline[0];
@@ -40,15 +41,15 @@ u8 Arm::clock()
 void Arm::reset()
 {
 	cycles = 0;
-	for (s32 i = 0; i < 0xD; i++) {
-		registers[i].value = 0x00000000;
-	}
-
-	LR = 0x08000000; //R14
+	for (s32 i = 0; i < NUM_REGISTERS; i++) registers[i].value = 0x0;
+	for (s32 i = 0; i < NUM_REGISTERS_FIQ; i++) registersFiq[i].value = 0x0;
+	
+	//System/User
+	LR = 0x00000000; //R14
 	R15 = 0x08000000;
 	SP = 0x03007F00; //R13
-	CPSR = 0x0000001F;
-	SPSR = 0x00000000;
+	CPSR = 0x000000DF;
+	SPSR = 0x000000DF;
 
 	armpipeline[0] = fetchU32();
 	armpipeline[1] = fetchU32();
@@ -285,24 +286,146 @@ PSR Arm::getPSR()
 
 u32 Arm::getRegister(RegisterID reg)
 {
-	if (reg.id >= 0xD) {
-		if (reg.id == 0xD) return SP;
-		if (reg.id == 0xE) return LR;
-		if (reg.id == 0xF) return R15;
+	//Registers r0 - r7 remain the same for all states
+	if (reg.id <= 7) {
+		return registers[reg.id].value;
 	}
-	return registers[reg.id].value;
+	else {
+		if (mode == ProcessorMode::USER || mode == ProcessorMode::SYS) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) return SP;
+				if (reg.id == R14_ID) return LR;
+				if (reg.id == R15_ID) return R15;
+			}
+			else {
+				//return registers within r8 - r12 range
+				return registers[reg.id].value;
+			}
+		}
+		else if (mode == ProcessorMode::FIQ) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) return SP_fiq;
+				if (reg.id == R14_ID) return LR_fiq;
+				if (reg.id == R15_ID) return R15;
+			}
+			else {
+				u8 index = reg.id - 8;
+				return registersFiq[index].value;
+			}
+		}
+		else if (mode == ProcessorMode::IRQ) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) return SP_irq;
+				if (reg.id == R14_ID) return LR_irq;
+				if (reg.id == R15_ID) return R15;
+			}
+			else {
+				return registers[reg.id].value;
+			}
+		}
+		else if (mode == ProcessorMode::SVC) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) return SP_svc;
+				if (reg.id == R14_ID) return LR_svc;
+				if (reg.id == R15_ID) return R15;
+			}
+			else {
+				return registers[reg.id].value;
+			}
+		}
+		else if (mode == ProcessorMode::ABT) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) return SP_abt;
+				if (reg.id == R14_ID) return LR_abt;
+				if (reg.id == R15_ID) return R15;
+			}
+			else {
+				return registers[reg.id].value;
+			}
+		}
+		else if (mode == ProcessorMode::UND) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) return SP_und;
+				if (reg.id == R14_ID) return LR_und;
+				if (reg.id == R15_ID) return R15;
+			}
+			else {
+				return registers[reg.id].value;
+			}
+		}
+	}
 }
 
 void Arm::writeRegister(RegisterID reg, u32 value)
 {
-	if (reg.id >= 0xD) {
-		if (reg.id == 0xD) SP = value;
-		if (reg.id == 0xE) LR = value;
-		if (reg.id == 0xF) R15 = value;
-
-		return;
+	//Registers r0 - r7 remain the same for all states
+	if (reg.id <= 7) {
+		registers[reg.id].value = value;
 	}
-	registers[reg.id].value = value;
+	else {
+		if (mode == ProcessorMode::USER || mode == ProcessorMode::SYS) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) SP = value;
+				if (reg.id == R14_ID) LR = value;
+				if (reg.id == R15_ID) R15 = value;
+			}
+			else {
+				//modify registers within r8 - r12 range
+				registers[reg.id].value = value;
+			}
+		}
+		else if (mode == ProcessorMode::FIQ) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) SP_fiq = value;;
+				if (reg.id == R14_ID) LR_fiq = value;
+				if (reg.id == R15_ID) R15 = value;
+			}
+			else {
+				u8 index = reg.id - 8;
+				registersFiq[index].value = value;
+			}
+		}
+		else if (mode == ProcessorMode::IRQ) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) SP_irq = value;
+				if (reg.id == R14_ID) LR_irq = value;
+				if (reg.id == R15_ID) R15 = value;
+			}
+			else {
+				registers[reg.id].value = value;
+			}
+		}
+		else if (mode == ProcessorMode::SVC) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) SP_svc = value;
+				if (reg.id == R14_ID) LR_svc = value;
+				if (reg.id == R15_ID) R15 = value;
+			}
+			else {
+				registers[reg.id].value = value;
+			}
+		}
+		else if (mode == ProcessorMode::ABT) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) SP_abt = value;
+				if (reg.id == R14_ID) LR_abt = value;
+				if (reg.id == R15_ID) R15 = value;
+			}
+			else {
+				registers[reg.id].value = value;
+			}
+		}
+		else if (mode == ProcessorMode::UND) {
+			if (reg.id >= R13_ID) {
+				if (reg.id == R13_ID) SP_und = value;
+				if (reg.id == R14_ID) LR_und = value;
+				if (reg.id == R15_ID) R15 = value;
+			}
+			else {
+				registers[reg.id].value = value;
+			}
+		}
+	}
 }
 
 void Arm::writePC(u32 pc)
@@ -328,6 +451,23 @@ void Arm::setCC(u32 rd, bool borrow, bool overflow,
 	else {
 		CPSR = SPSR;
 	}
+}
+
+ProcessorMode Arm::getProcessorMode()
+{
+	ProcessorMode mode;
+	u8 mbits = CPSR & 0x1F;
+	switch (mbits) {
+		case 0b10000: mode = ProcessorMode::USER; break;
+		case 0b10001: mode = ProcessorMode::FIQ; break;
+		case 0b10010: mode = ProcessorMode::IRQ; break;
+		case 0b10011: mode = ProcessorMode::SVC; break;
+		case 0b10111: mode = ProcessorMode::ABT; break;
+		case 0b11011: mode = ProcessorMode::UND; break;
+		case 0b11111: mode = ProcessorMode::SYS; break;
+	}
+
+	return mode;
 }
 
 State Arm::getState()
