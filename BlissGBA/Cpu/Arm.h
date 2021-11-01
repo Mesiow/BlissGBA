@@ -102,6 +102,7 @@ class Arm {
 public:
 	Arm(MemoryBus *mbus);
 	u8 clock();
+	void checkStateAndProcessorMode();
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);

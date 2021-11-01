@@ -13,8 +13,6 @@ Arm::Arm(MemoryBus *mbus)
 
 u8 Arm::clock()
 {
-	mode = getProcessorMode();
-	state = getState();
 	if (state == State::ARM) {
 		currentExecutingArmOpcode = armpipeline[0];
 		armpipeline[0] = armpipeline[1];
@@ -38,6 +36,12 @@ u8 Arm::clock()
 	return cycles;
 }
 
+void Arm::checkStateAndProcessorMode()
+{
+	mode = getProcessorMode();
+	state = getState();
+}
+
 void Arm::reset()
 {
 	cycles = 0;
@@ -50,6 +54,10 @@ void Arm::reset()
 	SP = 0x03007F00; //R13
 	CPSR = 0x000000DF;
 	SPSR = 0x000000DF;
+	SPSR_irq = 0x0;
+
+	SP_irq = 0x03007FA0;
+	SP_svc = 0x03007FE0;
 
 	mode = getProcessorMode();
 
@@ -289,7 +297,7 @@ PSR Arm::getPSR()
 u32 Arm::getSPSR()
 {
 	if (mode == ProcessorMode::USER || mode == ProcessorMode::SYS) {
-		return SPSR;
+		return CPSR;
 	}
 	else if (mode == ProcessorMode::FIQ) {
 		return SPSR_fiq;
