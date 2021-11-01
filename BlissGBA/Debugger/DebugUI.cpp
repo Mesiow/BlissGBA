@@ -80,16 +80,15 @@ void DebugUI::renderGeneralState()
         std::string str;
         for (s32 i = 0; i < NUM_REGISTERS; i++) {
             str = "R" + std::to_string(i) + ": 0x%08X";
-            RegisterID id{ i };
-            ImGui::Text(str.c_str(), cpu->getRegister(id));
+            ImGui::Text(str.c_str(), cpu->registers[i].value);
         }
-        ImGui::Text("R13(SP): 0x%08X", cpu->getRegister(RegisterID{ R13_ID }));
-        ImGui::Text("R14(LR): 0x%08X", cpu->getRegister(RegisterID{ R14_ID }));
-        ImGui::Text("R15(PC): 0x%08X", cpu->getRegister(RegisterID{ R15_ID }));
+        ImGui::Text("R13(SP): 0x%08X", cpu->SP);
+        ImGui::Text("R14(LR): 0x%08X", cpu->LR);
+        ImGui::Text("R15(PC): 0x%08X", cpu->R15);
 
         ImGui::NewLine();
-        ImGui::Text("CPSR: 0x%08X", cpu->getPSR().CPSR);
-        ImGui::Text("SPSR: 0x%08X", cpu->getPSR().SPSR);
+        ImGui::Text("CPSR: 0x%08X", cpu->CPSR);
+        ImGui::Text("SPSR: 0x%08X", cpu->SPSR);
 
         {
             ImGui::NewLine();
@@ -255,8 +254,9 @@ void DebugUI::renderBankedRegisters()
         std::string str;
         for (s32 i = 8; i <= 12; i++) {
             str = "R" + std::to_string(i) + "_fiq" + ": 0x%08X";
-            RegisterID id{ (u8)i };
-            ImGui::Text(str.c_str(), cpu->getRegister(id));
+            u8 index = i - 8;
+            if (index == NUM_REGISTERS_FIQ) index -= 1;
+            ImGui::Text(str.c_str(), cpu->registersFiq[index].value);
         }
         ImGui::Text("R13(SP)_fiq: 0x%08X", cpu->SP_fiq);
         ImGui::Text("R14(LR)_fiq: 0x%08X", cpu->LR_fiq);
