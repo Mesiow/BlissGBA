@@ -474,27 +474,27 @@ void DebugUI::renderEmuButtons()
         emu->reset();
     }
     
-    //ImGui::NewLine();
+    ImGui::NewLine();
 
-    //ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
-    //ImGui::Text("Run until address");
-    //ImGui::PopStyleColor();
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 242, 0, 255)));
+    ImGui::Text("Run until address");
+    ImGui::PopStyleColor();
 
-    //ImGui::InputText("##Label", addressBufferText, sizeof(addressBufferText));
-    //ImGui::SameLine();
-    //if (ImGui::Button("Run until")) {
-    //    std::string parse(addressBufferText);
-    //    parse.erase(0, 2);
+    ImGui::InputText("##Address", addressBufferText, sizeof(addressBufferText));
+    ImGui::SameLine();
+    if (ImGui::Button("Run until")) {
+        std::string parse(addressBufferText);
+        parse.erase(0, 2);
 
-    //    //convert hex string to int
-    //    std::stringstream ss;
-    //    ss << std::hex << parse;
-    //    ss >> addressToRunTo;
+        //convert hex string to int
+        std::stringstream ss;
+        ss << std::hex << parse;
+        ss >> addressToRunTo;
 
-    //    printf("Running to address: 0x%08X\n", addressToRunTo);
-    //    *running = true;
-    //    runToAddr = true;
-    //}
+        printf("Running to address: 0x%08X\n", addressToRunTo);
+        *running = true;
+        runToAddr = true;
+    }
 
     ImGui::NewLine();
 
@@ -502,7 +502,7 @@ void DebugUI::renderEmuButtons()
     ImGui::Text("Run until opcode");
     ImGui::PopStyleColor();
 
-    ImGui::InputText("##Label", opcodeBufferText, sizeof(opcodeBufferText));
+    ImGui::InputText("##Opcode", opcodeBufferText, sizeof(opcodeBufferText));
     ImGui::SameLine();
     if (ImGui::Button("Run until")) {
         std::string parse(opcodeBufferText);
@@ -554,10 +554,19 @@ void DebugUI::update()
 {
     //Running emulation until specific address is hit
     if (runToAddr && *running) {
-        if ((emu->cpu.R15 - 8) == addressToRunTo) {
-            printf("Hit address!\n");
-            *running = false;
-            runToAddr = false;
+        if (cpu->getState() == State::ARM) {
+            if ((emu->cpu.R15 - 8) == addressToRunTo) {
+                printf("Hit address in arm mode!\n");
+                *running = false;
+                runToAddr = false;
+            }
+        }
+        else {
+            if ((emu->cpu.R15 - 4) == addressToRunTo) {
+                printf("Hit address in thumb mode!\n");
+                *running = false;
+                runToAddr = false;
+            }
         }
     }
     
