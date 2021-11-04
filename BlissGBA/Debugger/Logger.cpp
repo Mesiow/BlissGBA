@@ -93,14 +93,15 @@ void Comparer::openExistingFile(const std::string& fileName)
 			state = reinterpret_cast<ExpectedState*>(fileBuffer);
 			////Skip first 2 instructions in log
 			state += 2;
-			for (int i = 0; i < 13; i++) {
+			instructionCounter += 2;
+			/*for (int i = 0; i < 13; i++) {
 				printf("0x%08X\n", state->regs[i]);
 			}
 			printf("0x%08X\n", state->sp);
 			printf("0x%08X\n", state->lr);
 			printf("0x%08X\n", state->r15);
 			printf("0x%08X\n", state->cpsr);
-			printf("0x%08X\n", state->spsr);
+			printf("0x%08X\n", state->spsr);*/
 		}
 	}
 }
@@ -120,6 +121,14 @@ void Comparer::compareAgainstFile()
 				printf("Register %d does not match\n", i);
 				printf("Our value: 0x%08X\n", cpu.getRegister(RegisterID{ (u8)i }));
 				printf("Logs value: 0x%08X\n", state->regs[i]);
+				printf("Instruction #: %d\n", instructionCounter);
+
+				printf("\nArm Register State:\n");
+				for (int i = 0; i < 13; i++) {
+					printf("R%d: 0x%08X\n", i, cpu.getRegister(RegisterID{ (u8)i }));
+				}
+				printRegisterStatus();
+
 				assert(false);
 			}
 			else {
@@ -127,6 +136,14 @@ void Comparer::compareAgainstFile()
 				printf("Register %d does not match\n", i);
 				printf("Our value: 0x%08X\n", cpu.getRegister(RegisterID{ (u8)i }));
 				printf("Logs value: 0x%08X\n", state->regs[i]);
+				printf("Instruction #: %d\n", instructionCounter);
+
+				printf("\nThumb Register State:\n");
+				for (int i = 0; i < 13; i++) {
+					printf("R%d: 0x%08X\n", i, cpu.getRegister(RegisterID{ (u8)i }));
+				}
+				printRegisterStatus();
+
 				assert(false);
 			}
 			
@@ -139,6 +156,7 @@ void Comparer::compareAgainstFile()
 		printf("Register 13(SP) does not match\n");
 		printf("Our value: 0x%08X\n", r13);
 		printf("Logs value: 0x%08X\n", state->sp);
+		printf("Instruction #: %d\n", instructionCounter);
 		assert(false);
 	}
 	u32 r14 = cpu.getRegister(RegisterID{ R14_ID });
@@ -147,6 +165,7 @@ void Comparer::compareAgainstFile()
 		printf("Register 14(LR) does not match\n");
 		printf("Our value: 0x%08X\n", r14);
 		printf("Logs value: 0x%08X\n", state->lr);
+		printf("Instruction #: %d\n", instructionCounter);
 		assert(false);
 	}
 	if (cpu.R15 != state->r15) {
@@ -154,6 +173,7 @@ void Comparer::compareAgainstFile()
 		printf("Register 15(R15) does not match\n");
 		printf("Our value: 0x%08X\n", cpu.R15);
 		printf("Logs value: 0x%08X\n", state->r15);
+		printf("Instruction #: %d\n", instructionCounter);
 		assert(false);
 	}
 	if (cpu.CPSR != state->cpsr) {
@@ -161,6 +181,7 @@ void Comparer::compareAgainstFile()
 		printf("CPSR) does not match\n");
 		printf("Our value: 0x%08X\n", cpu.CPSR);
 		printf("Logs value: 0x%08X\n", state->cpsr);
+		printf("Instruction #: %d\n", instructionCounter);
 		assert(false);
 	}
 	u32 spsr = cpu.getSPSR();
@@ -169,10 +190,30 @@ void Comparer::compareAgainstFile()
 		printf("SPSR does not match\n");
 		printf("Our value: 0x%08X\n", spsr);
 		printf("Logs value: 0x%08X\n", state->spsr);
+		printf("Instruction #: %d\n", instructionCounter);
 		assert(false);
 	}
 
+	
+
 	state += 1;
+	instructionCounter += 1;
+}
+
+void Comparer::printRegisterStatus()
+{
+	u32 r13 = cpu.getRegister(RegisterID{ R13_ID });
+	printf("R13: 0x%08X\n", r13);
+
+	u32 r14 = cpu.getRegister(RegisterID{ R14_ID });
+	printf("R14: 0x%08X\n", r14);
+
+	printf("R15: 0x%08X\n", cpu.R15);
+
+	printf("CPSR: 0x%08X\n", cpu.CPSR);
+
+	u32 spsr = cpu.getSPSR();
+	printf("SPSR: 0x%08X\n", spsr);
 }
 
 void Comparer::closeFile()

@@ -17,11 +17,13 @@ struct Comparer {
 	Comparer(Arm& cpu);
 	void openExistingFile(const std::string& fileName);
 	void compareAgainstFile();
+	void printRegisterStatus();
 	void closeFile();
 
 	std::ifstream file;
 	u32* fileBuffer = nullptr;
 	ExpectedState* state = nullptr;
+	u32 instructionCounter = 0;
 	Arm& cpu;
 };
 
