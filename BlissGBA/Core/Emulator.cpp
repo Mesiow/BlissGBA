@@ -9,6 +9,9 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	running = false;
 	debug.running = &running;
 	debug.showDebugger = &showDebugger;
+
+	mbus.loadGamePak("test_roms/gba-tests-master/thumb/thumb.gba");
+	reset();
 }
 
 void Emulator::run()
@@ -16,16 +19,16 @@ void Emulator::run()
 	if (running) {
 		s32 cycles_this_frame = 0;
 		while (cycles_this_frame < maxCycles) {
+			if (debuggerRunning)
+				debug.update();
+
 			u8 cycle = cpu.clock();
 			cycle *= 1;
 			cycles_this_frame += cycle;
 
 			//emulate timers
 			ppu.update(cycles_this_frame);
-			//emulate interrupts
-
-			if(debuggerRunning)
-				debug.update();
+			//emulate interrupts		
 		}
 		ppu.bufferPixels();
 	}
