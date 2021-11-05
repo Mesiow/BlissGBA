@@ -13,6 +13,7 @@ Arm::Arm(MemoryBus *mbus)
 
 u8 Arm::clock()
 {
+	
 	if (state == State::ARM) {
 		currentExecutingArmOpcode = armpipeline[0];
 		armpipeline[0] = armpipeline[1];
@@ -33,6 +34,7 @@ u8 Arm::clock()
 
 		thumbpipeline[1] = fetchU16();
 	}
+	checkStateAndProcessorMode();
 	return cycles;
 }
 
@@ -896,6 +898,34 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 		case 0b11: result = addrMode4.incrementBefore(ins); break;
 		case 0b00: result = addrMode4.decrementAfter(ins); break;
 		case 0b10: result = addrMode4.decrementBefore(ins); break;
+	}
+
+	u16 reg_list = ins.registerList();
+	u32 addr = result.startAddress;
+	u32 end = result.endAddress;
+
+	for (s32 i = 0; i <= 14; i++) {
+		bool included = testBit(reg_list, i);
+		if (included) {
+			RegisterID id; id.id = i;
+
+			u32 value = mbus->readU32(addr);
+			writeRegister(id, value);
+			addr += 4;
+		}
+
+		if (end == addr - 4) break;
+	}
+
+	//R15
+	if (testBit(reg_list, 15)) {
+		u32 value = mbus->readU32(addr);
+		R15 = value & 0xFFFFFFFC;
+	}
+
+	if (result.writeback) {
+		RegisterID rn = ins.rn();
+		writeRegister(rn, result.rn);
 	}
 
 	return 1;
@@ -1785,7 +1815,7 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	bool borrow = borrowFrom(reg_rn, immediate);
 	bool overflow = overflowFromSub(reg_rn, immediate);
 
-	setCC(reg_rd, !borrow, overflow);
+	setCC(reg_rd, borrow, overflow);
 
 	return 1;
 }
@@ -1795,13 +1825,18 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, u8 immediate)
 	RegisterID rd = ins.rdUpper();
 	u32 reg_rd = getRegister(rd);
 
-	reg_rd = reg_rd - immediate;
+	u32 src_reg = reg_rd;
+	reg_rd = src_reg - immediate;
 	writeRegister(rd, reg_rd);
 
-	bool borrow = borrowFrom(reg_rd, immediate);
+	//bool borrow = borrowFrom(reg_rd, immediate);
 	bool overflow = overflowFromSub(reg_rd, immediate);
 
-	setCC(reg_rd, !borrow, overflow);
+	//setCC(reg_rd, borrow, overflow);
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+	((u64)immediate > src_reg) ? clearFlag(C) : setFlag(C);
+	(overflow == true) ? setFlag(V) : clearFlag(V);
 
 	return 1;
 }
@@ -1893,7 +1928,6 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 	else {
 		flushThumbPipeline();
 	}
-	R15 += 2;
 
 	return 1;
 }
