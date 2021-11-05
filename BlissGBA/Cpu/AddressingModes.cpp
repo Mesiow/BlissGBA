@@ -302,6 +302,7 @@ AddressingMode4::AddressingMode4(Arm& cpu)
 AddrMode4Result AddressingMode4::incrementAfter(ArmInstruction& ins)
 {
 	AddrMode4Result result;
+	result.writeback = false;
 
 	u8 W = ins.W();
 	RegisterID rn = ins.rn();
@@ -309,7 +310,7 @@ AddrMode4Result AddressingMode4::incrementAfter(ArmInstruction& ins)
 	u16 reg_list = ins.registerList();
 
 	u32 start_address = reg_rn;
-	u32 end_address = start_address + ((numSetBitsU16(reg_list) * 4) - 4);
+	u32 end_address = reg_rn + ((numSetBitsU16(reg_list) * 4) - 4);
 
 	result.startAddress = start_address;
 	result.endAddress = end_address;
@@ -318,6 +319,7 @@ AddrMode4Result AddressingMode4::incrementAfter(ArmInstruction& ins)
 	if (W == 0x1) {
 		reg_rn = reg_rn + (numSetBitsU16(reg_list) * 4);
 		result.rn = reg_rn;
+		result.writeback = true;
 	}
 
 	return result;
@@ -325,17 +327,77 @@ AddrMode4Result AddressingMode4::incrementAfter(ArmInstruction& ins)
 
 AddrMode4Result AddressingMode4::incrementBefore(ArmInstruction& ins)
 {
-	return AddrMode4Result();
+	AddrMode4Result result;
+	result.writeback = false;
+
+	u8 W = ins.W();
+	RegisterID rn = ins.rn();
+	u32 reg_rn = cpu.getRegister(rn);
+	u16 reg_list = ins.registerList();
+
+	u32 start_address = reg_rn + 4;
+	u32 end_address = reg_rn + (numSetBitsU16(reg_list) * 4);
+
+	result.startAddress = start_address;
+	result.endAddress = end_address;
+
+	if (W == 0x1) {
+		reg_rn = reg_rn + (numSetBitsU16(reg_list) * 4);
+		result.rn = reg_rn;
+		result.writeback = true;
+	}
+
+	return result;
 }
 
 AddrMode4Result AddressingMode4::decrementAfter(ArmInstruction& ins)
 {
-	return AddrMode4Result();
+	AddrMode4Result result;
+	result.writeback = false;
+
+	u8 W = ins.W();
+	RegisterID rn = ins.rn();
+	u32 reg_rn = cpu.getRegister(rn);
+	u16 reg_list = ins.registerList();
+
+	u32 start_address = reg_rn - ((numSetBitsU16(reg_list) * 4) + 4);
+	u32 end_address = reg_rn;
+
+	result.startAddress = start_address;
+	result.endAddress = end_address;
+
+	if (W == 0x1) {
+		reg_rn = reg_rn - (numSetBitsU16(reg_list) * 4);
+		result.rn = reg_rn;
+		result.writeback = true;
+	}
+
+	return result;
 }
 
 AddrMode4Result AddressingMode4::decrementBefore(ArmInstruction& ins)
 {
-	return AddrMode4Result();
+	AddrMode4Result result;
+	result.writeback = false;
+
+	u8 W = ins.W();
+	RegisterID rn = ins.rn();
+	u32 reg_rn = cpu.getRegister(rn);
+	u16 reg_list = ins.registerList();
+
+	u32 start_address = reg_rn - (numSetBitsU16(reg_list) * 4);
+	u32 end_address = reg_rn - 4;
+
+	result.startAddress = start_address;
+	result.endAddress = end_address;
+
+	if (W == 0x1) {
+		reg_rn = reg_rn - (numSetBitsU16(reg_list) * 4);
+		result.rn = reg_rn;
+		result.writeback = true;
+	}
+
+	return result;
 }
 
 

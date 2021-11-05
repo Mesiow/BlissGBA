@@ -43,6 +43,7 @@ struct AddressingMode3 : public AddressingMode{
 };
 
 struct AddrMode4Result {
+	bool writeback;
 	u32 startAddress;
 	u32 endAddress;
 	u32 rn;
