@@ -49,6 +49,9 @@ void GamePak::load(const std::string& fileName)
 
 		file.close();
 	}
+	else {
+		std::cerr << "Rom/File <" << fileName << " failed to open\n";
+	}
 }
 
 void GamePak::writeU8(u32 address, u8 value)
