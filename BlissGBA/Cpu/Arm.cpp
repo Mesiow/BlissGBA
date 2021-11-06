@@ -892,6 +892,7 @@ u8 Arm::executeMiscLoadStoreReg(ArmInstruction& ins)
 u8 Arm::executeLDM(ArmInstruction& ins)
 {
 	u8 PU = (ins.P() << 1) | ins.U();
+	u8 S = ins.S_bit22();
 	AddrMode4Result result;
 	switch (PU) {
 		case 0b01: result = addrMode4.incrementAfter(ins); break;
@@ -921,6 +922,10 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	if (testBit(reg_list, 15)) {
 		u32 value = mbus->readU32(addr);
 		R15 = value & 0xFFFFFFFC;
+
+		if (S == 0x1) {
+			CPSR = getSPSR();
+		}
 	}
 
 	if (result.writeback) {
@@ -933,6 +938,37 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 
 u8 Arm::executeSTM(ArmInstruction& ins)
 {
+	u8 PU = (ins.P() << 1) | ins.U();
+	AddrMode4Result result;
+	switch (PU) {
+	case 0b01: result = addrMode4.incrementAfter(ins); break;
+	case 0b11: result = addrMode4.incrementBefore(ins); break;
+	case 0b00: result = addrMode4.decrementAfter(ins); break;
+	case 0b10: result = addrMode4.decrementBefore(ins); break;
+	}
+
+	u16 reg_list = ins.registerList();
+	u32 addr = result.startAddress;
+	u32 end = result.endAddress;
+
+	for (s32 i = 0; i <= 15; i++) {
+		bool included = testBit(reg_list, i);
+		if (included) {
+			RegisterID id; id.id = i;
+
+			u32 reg = getRegister(id);
+			mbus->writeU32(addr, reg);
+			addr += 4;
+		}
+
+		if (end == addr - 4) break;
+	}
+
+	if (result.writeback) {
+		RegisterID rn = ins.rn();
+		writeRegister(rn, result.rn);
+	}
+
 	return 1;
 }
 
