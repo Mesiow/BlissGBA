@@ -199,6 +199,12 @@ u8 ArmInstruction::fieldMask()
     return fm;
 }
 
+u8 ArmInstruction::S_bit22()
+{
+    u8 S = ((this->encoding) >> 22) & 0x1;
+    return S;
+}
+
 //Thumb
 
 u8 ThumbInstruction::cond()

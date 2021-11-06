@@ -43,6 +43,9 @@ struct ArmInstruction {
 	u8 R();
 	u8 fieldMask();
 
+	//LDM/STM
+	u8 S_bit22();
+
 	u32 encoding;
 };
 
