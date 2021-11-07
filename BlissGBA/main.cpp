@@ -9,7 +9,7 @@
 
 int main(int arc, char* argv[]) {
 
-    float displayScaleFactor = 4;
+    float displayScaleFactor = 6;
     std::string title = "BlissGBA";
     sf::RenderWindow window(sf::VideoMode(240 * displayScaleFactor, 160 * displayScaleFactor), title);
 
