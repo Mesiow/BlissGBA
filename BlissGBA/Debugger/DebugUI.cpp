@@ -3,6 +3,7 @@
 
 
 MemoryEditor DebugUI::biosMemory;
+MemoryEditor DebugUI::palRamEditor;
 MemoryEditor DebugUI::vramEditor;
 MemoryEditor DebugUI::ioEditor;
 MemoryEditor DebugUI::obwramEditor;
@@ -21,6 +22,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showRegisterWindow = true;
     showBankedRegisters = true;
     showBiosMemory = false;
+    showPALRAM = false;
     showVRAM = true;
     showIO = true;
     showOBWRAM = false;
@@ -53,6 +55,9 @@ void DebugUI::render()
 
     if (showBiosMemory) {
         biosMemory.DrawWindow("Bios Memory", mbus->getBiosMemory(), BIOS_SIZE);
+    }
+    if (showPALRAM) {
+        palRamEditor.DrawWindow("Palette RAM", mbus->getPALRAM(), BG_OBJ_PALETTE_SIZE);
     }
     if (showVRAM) {
         vramEditor.DrawWindow("VRAM", mbus->getVRAM(), VRAM_SIZE);
@@ -374,6 +379,7 @@ void DebugUI::renderMenuBar()
             ImGui::MenuItem("Show Bios memory", nullptr, &showBiosMemory);
             ImGui::MenuItem("Show GamePak memory", nullptr, &showGamePakMemory);
             ImGui::MenuItem("Show IO registers", nullptr, &showIO);
+            ImGui::MenuItem("Show Palette RAM", nullptr, &showPALRAM);
             ImGui::MenuItem("Show VRAM", nullptr, &showVRAM);
             ImGui::MenuItem("Show OB WRAM", nullptr, &showOBWRAM);
             ImGui::MenuItem("Show OC WRAM", nullptr, &showOCWRAM);
