@@ -54,6 +54,7 @@ public:
 	bool isAlignedU32(u32 address);
 
 	u8* getBiosMemory() { return genMem.bios;}
+	u8* getPALRAM() { return displayMem.pram; }
 	u8* getVRAM() { return displayMem.vram; }
 	u8* getIO() { return genMem.io; }
 	u8* getOBWRAM() { return genMem.obwram; }

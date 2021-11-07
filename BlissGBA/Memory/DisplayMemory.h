@@ -9,13 +9,15 @@
 #define VRAM_END_ADDR 0x06017FFF
 #define PRAM_START_ADDR 0x05000000
 #define PRAM_END_ADDR 0x050003FF
+#define OAM_START_ADDR 0x07000000
+#define OAM_END_ADDR 0x070003FF
 
 class DisplayMemory {
 public:
 	void zero();
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
-	void writeU32(u32 address, u16 value);
+	void writeU32(u32 address, u32 value);
 
 	u8 readU8(u32 address);
 	u16 readU16(u32 address);
