@@ -922,6 +922,7 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	if (testBit(reg_list, 15)) {
 		u32 value = mbus->readU32(addr);
 		R15 = value & 0xFFFFFFFC;
+		flushPipeline();
 
 		if (S == 0x1) {
 			CPSR = getSPSR();
