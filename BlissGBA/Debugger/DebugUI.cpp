@@ -6,6 +6,7 @@ MemoryEditor DebugUI::biosMemory;
 MemoryEditor DebugUI::vramEditor;
 MemoryEditor DebugUI::ioEditor;
 MemoryEditor DebugUI::obwramEditor;
+MemoryEditor DebugUI::ocwramEditor;
 MemoryEditor DebugUI::gamepakMemory;
 
 DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
@@ -22,7 +23,8 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showBiosMemory = false;
     showVRAM = true;
     showIO = true;
-    showOBWRAM = true;
+    showOBWRAM = false;
+    showOCWRAM = false;
     showGamePakMemory = false;
     showCartWindow = true;
     showPPUWindow = false;
@@ -60,6 +62,9 @@ void DebugUI::render()
     }
     if (showOBWRAM) {
         obwramEditor.DrawWindow("OBWRAM", mbus->getOBWRAM(), OB_WRAM_SIZE);
+    }
+    if (showOCWRAM) {
+        ocwramEditor.DrawWindow("OCWRAM", mbus->getOCWRAM(), OC_WRAM_SIZE);
     }
     if (showGamePakMemory) {
         if (mbus->getGamePakMemory() != nullptr) {
@@ -371,6 +376,7 @@ void DebugUI::renderMenuBar()
             ImGui::MenuItem("Show IO registers", nullptr, &showIO);
             ImGui::MenuItem("Show VRAM", nullptr, &showVRAM);
             ImGui::MenuItem("Show OB WRAM", nullptr, &showOBWRAM);
+            ImGui::MenuItem("Show OC WRAM", nullptr, &showOCWRAM);
             ImGui::EndMenu();
         }
 
