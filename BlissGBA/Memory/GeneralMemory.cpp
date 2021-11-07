@@ -76,12 +76,45 @@ u8 GeneralMemory::readU8(u32 address)
 	if (address < BIOS_SIZE)
 		return bios[address];
 
-	return 0;
+	if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
+		u32 addr = address - OB_WRAM_START_ADDR;
+		return obwram[addr];
+	}
+	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
+		u32 addr = address - OC_WRAM_START_ADDR;
+		return ocwram[addr];
+	}
+	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		u32 addr = address - IO_START_ADDR;
+		return io[addr];
+	}
 }
 
 u16 GeneralMemory::readU16(u32 address)
 {
-	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+	if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
+		u32 addr = address - OB_WRAM_START_ADDR;
+
+		u8 lo, hi;
+		lo = obwram[addr];
+		hi = obwram[addr + 1];
+
+		u16 value = (hi << 8) | lo;
+
+		return value;
+	}
+	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
+		u32 addr = address - OC_WRAM_START_ADDR;
+
+		u8 lo, hi;
+		lo = ocwram[addr];
+		hi = ocwram[addr + 1];
+
+		u16 value = (hi << 8) | lo;
+
+		return value;
+	}
+	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		u32 addr = address - IO_START_ADDR;
 
 		u8 lo, hi;
@@ -96,5 +129,43 @@ u16 GeneralMemory::readU16(u32 address)
 
 u32 GeneralMemory::readU32(u32 address)
 {
-	return u32();
+	if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
+		u32 addr = address - OB_WRAM_START_ADDR;
+
+		u8 byte1, byte2, byte3, byte4;
+		byte1 = obwram[addr];
+		byte2 = obwram[addr + 1];
+		byte3 = obwram[addr + 2];
+		byte4 = obwram[addr + 3];
+
+		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+		return value;
+	}
+	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
+		u32 addr = address - OC_WRAM_START_ADDR;
+
+		u8 byte1, byte2, byte3, byte4;
+		byte1 = ocwram[addr];
+		byte2 = ocwram[addr + 1];
+		byte3 = ocwram[addr + 2];
+		byte4 = ocwram[addr + 3];
+
+		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+		return value;
+	}
+	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		u32 addr = address - IO_START_ADDR;
+
+		u8 byte1, byte2, byte3, byte4;
+		byte1 = io[addr];
+		byte2 = io[addr + 1];
+		byte3 = io[addr + 2];
+		byte4 = io[addr + 3];
+
+		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+		return value;
+	}
 }
