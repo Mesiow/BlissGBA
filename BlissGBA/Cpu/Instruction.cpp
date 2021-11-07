@@ -183,7 +183,7 @@ u8 ArmInstruction::S_LSM()
 
 u16 ArmInstruction::registerList()
 {
-    u16 reg_list = (this->encoding) & 0xFF;
+    u16 reg_list = (this->encoding) & 0xFFFF;
     return reg_list;
 }
 
