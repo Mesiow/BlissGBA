@@ -114,6 +114,8 @@ public:
 	void flushPipeline();
 	void flushThumbPipeline();
 
+	void enterSupervisorMode();
+
 	u8 getFlag(u32 flag);
 	u8 carryFrom(u32 op1, u32 op2);
 	u8 borrowFrom(u32 op1, u32 op2);
@@ -274,6 +276,7 @@ private:
 	u8 thumbOpSTMIA(ThumbInstruction& ins);
 	u8 thumbOpLDMIA(ThumbInstruction& ins);
 	u8 thumbOpBX(ThumbInstruction& ins);
+	u8 thumbOpSWI(ThumbInstruction& ins);
 
 public:
 	State state;

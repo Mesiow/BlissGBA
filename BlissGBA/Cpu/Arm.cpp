@@ -13,7 +13,6 @@ Arm::Arm(MemoryBus *mbus)
 
 u8 Arm::clock()
 {
-	
 	if (state == State::ARM) {
 		currentExecutingArmOpcode = armpipeline[0];
 		armpipeline[0] = armpipeline[1];
@@ -35,6 +34,7 @@ u8 Arm::clock()
 		thumbpipeline[1] = fetchU16();
 	}
 	checkStateAndProcessorMode();
+
 	return cycles;
 }
 
@@ -229,6 +229,12 @@ void Arm::flushThumbPipeline()
 {
 	thumbpipeline[0] = fetchU16();
 	thumbpipeline[1] = readU16();
+}
+
+void Arm::enterSupervisorMode()
+{
+	clearFlag(M2 | M3);
+	setFlag(M0 | M1 | M4);
 }
 
 u8 Arm::getFlag(u32 flag)
@@ -2005,6 +2011,21 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 	else {
 		flushThumbPipeline();
 	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpSWI(ThumbInstruction& ins)
+{
+	LR_svc = R15;
+	SPSR_svc = CPSR;
+
+	enterSupervisorMode();
+	clearFlag(T); //Execute in arm state
+	setFlag(I); //disable normal interrupts
+
+	R15 = 0x8; //jump to bios
+	flushPipeline();
 
 	return 1;
 }
