@@ -157,7 +157,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//SWI
 		else if ((i & 0xFF) == 0b11011111) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
+			thumblut[i] = b(&Arm::thumbOpSWI);
 		}
 		//Unconditional branch
 		else if ((((i >> 5) & 0x1F) == 0b111) && 
