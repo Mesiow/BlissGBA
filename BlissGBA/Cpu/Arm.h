@@ -190,6 +190,7 @@ public:
 	u8 executeThumbLoadStoreMultiple(ThumbInstruction& ins);
 	u8 executeThumbBranchExchange(ThumbInstruction& ins);
 	u8 executeThumbSpecialDataProcessing(ThumbInstruction& ins);
+	u8 executeThumbAddSPOrPC(ThumbInstruction& ins);
 
 	u8 handleUndefinedThumbIns(ThumbInstruction& ins);
 
@@ -269,6 +270,7 @@ private:
 	u8 thumbOpMOV(ThumbInstruction& ins, u8 immediate);
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate);
+	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rd, bool pc);
 	u8 thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn);
 	u8 thumbOpCMP(ThumbInstruction& ins, u8 immediate);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);

@@ -497,7 +497,7 @@ void Arm::setCC(u32 rd, bool borrow, bool overflow,
 
 ProcessorMode Arm::getProcessorMode()
 {
-	ProcessorMode mode;
+	ProcessorMode mode = ProcessorMode::SYS;
 	u8 mbits = CPSR & 0x1F;
 	switch (mbits) {
 		case 0b10000: mode = ProcessorMode::USER; break;
@@ -1139,6 +1139,18 @@ u8 Arm::executeThumbSpecialDataProcessing(ThumbInstruction& ins)
 		}
 		break;
 	}
+
+	return 1;
+}
+
+u8 Arm::executeThumbAddSPOrPC(ThumbInstruction& ins)
+{
+	u8 reg = ins.reg();
+	RegisterID rd = ins.rdUpper();
+	if (reg == 0x0)
+		thumbOpADD(ins, rd, true);
+	else
+		thumbOpADD(ins, rd, false);
 
 	return 1;
 }
@@ -1867,6 +1879,25 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	bool overflow = overflowFromAdd(reg_rn, immediate);
 
 	setCC(reg_rd, !carry, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rd, bool pc)
+{
+	u32 reg_rd = getRegister(rd);
+	u8 imm8 = ins.imm8();
+	//Add pc
+	if (pc) {
+		reg_rd = (R15 & 0xFFFFFFFC) + (imm8 * 4);
+	}
+	//add sp
+	else {
+		u32 sp = getRegister(RegisterID{ R13_ID });
+		reg_rd = sp + (imm8 * 4);
+	}
+
+	writeRegister(rd, reg_rd);
 
 	return 1;
 }
