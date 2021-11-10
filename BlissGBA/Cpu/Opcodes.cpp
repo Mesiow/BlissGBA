@@ -137,7 +137,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Add to SP or PC
 		else if (((i >> 4) & 0xF) == 0b1010) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
+			thumblut[i] = b(&Arm::executeThumbAddSPOrPC);
 		}
 		//Misc
 		else if (((i >> 4) & 0xF) == 0b1011) {
