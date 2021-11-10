@@ -80,5 +80,8 @@ struct ThumbInstruction {
 	u8 h1();
 	u8 h2();
 
+	//sp or pc(add to sp or pc)
+	u8 reg();
+
 	u16 encoding;
 };

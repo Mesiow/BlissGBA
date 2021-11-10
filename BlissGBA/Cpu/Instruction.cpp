@@ -364,3 +364,9 @@ u8 ThumbInstruction::h2()
     u8 h2 = ((this->encoding) >> 6) & 0x1;
     return h2;
 }
+
+u8 ThumbInstruction::reg()
+{
+    u8 reg = ((this->encoding) >> 11) & 0x1;
+    return reg;
+}
