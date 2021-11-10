@@ -1043,7 +1043,7 @@ u8 Arm::executeThumbDataProcessingImm(ThumbInstruction& ins)
 {
 	u8 opcode = ins.opcode2();
 	switch (opcode) {
-		case 0b00: thumbOpMOV(ins); break;
+		case 0b00: thumbOpMOV(ins, ins.imm8()); break;
 		case 0b01: thumbOpCMP(ins, ins.imm8()); break;
 		case 0b11: thumbOpSUB(ins, ins.imm8()); break;
 	}
@@ -1123,6 +1123,21 @@ u8 Arm::executeThumbBranchExchange(ThumbInstruction& ins)
 	u8 L = (ins.encoding >> 7) & 0x1;
 	if (L == 0x0) {
 		thumbOpBX(ins);
+	}
+
+	return 1;
+}
+
+u8 Arm::executeThumbSpecialDataProcessing(ThumbInstruction& ins)
+{
+	u8 opcode = ins.opcode();
+	switch (opcode) {
+		case 0b10: {
+			RegisterID rm = ins.rmLower();
+			RegisterID rd = ins.rdLower();
+			thumbOpMOV(ins, rm, rd); //Hi regs
+		}
+		break;
 	}
 
 	return 1;
@@ -1791,14 +1806,30 @@ u8 Arm::thumbOpLSL(ThumbInstruction& ins)
 	return 1;
 }
 
-u8 Arm::thumbOpMOV(ThumbInstruction& ins)
+u8 Arm::thumbOpMOV(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{	
+	u8 h1 = ins.h1();
+	u8 h2 = ins.h2();
+
+	RegisterID actual_reg_rm;
+	actual_reg_rm.id = (h2 << 3) | rm.id;
+
+	RegisterID actual_reg_rd;
+	actual_reg_rd.id = (h1 << 3) | rd.id;
+
+	u32 reg_rm = getRegister(actual_reg_rm);
+
+	writeRegister(actual_reg_rd, reg_rm);
+
+	return 1;
+}
+
+u8 Arm::thumbOpMOV(ThumbInstruction& ins, u8 immediate)
 {
 	RegisterID rd = ins.rdUpper();
 	u32 reg_rd = getRegister(rd);
 
-	u8 imm8 = ins.imm8();
-	reg_rd = imm8;
-
+	reg_rd = immediate;
 	writeRegister(rd, reg_rd);
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
