@@ -99,7 +99,7 @@ AddrModeLoadStoreResult AddressingMode2::immOffsetIndex(ArmInstruction& ins)
 	u8 U = ins.U();
 
 	u16 offset_12 = ins.offset12();
-	AddrModeLoadStoreResult result;
+	AddrModeLoadStoreResult result = {AddrModeLoadStoreType::NONE, 0, 0, 0};
 	u32 address;
 	if (P == 0x1) {
 		//Pre-indexed addressing (mem address is written back to the base register)

@@ -18,7 +18,8 @@ struct AddressingMode1 : public AddressingMode{
 enum class AddrModeLoadStoreType : u8 {
 	PREINDEXED = 0,
 	OFFSET,
-	POSTINDEX
+	POSTINDEX,
+	NONE
 };
 
 //Struct used for Addr Mode 2 and 3
