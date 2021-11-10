@@ -329,6 +329,12 @@ u8 ThumbInstruction::opcode5()
     return op;
 }
 
+u8 ThumbInstruction::opcode()
+{
+    u8 opcode = ((this->encoding) >> 8) & 0x3;
+    return opcode;
+}
+
 u8 ThumbInstruction::opc()
 {
     u8 opc = ((this->encoding) >> 9) & 0x1;
@@ -345,6 +351,12 @@ u8 ThumbInstruction::registerList()
 {
     u8 rl = (this->encoding) & 0xFF;
     return rl;
+}
+
+u8 ThumbInstruction::h1()
+{
+    u8 h1 = ((this->encoding) >> 7) & 0x1;
+    return h1;
 }
 
 u8 ThumbInstruction::h2()
