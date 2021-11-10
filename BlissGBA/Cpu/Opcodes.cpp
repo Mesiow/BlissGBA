@@ -113,7 +113,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Special Data processing
 		else if (((i >> 2) & 0x3F) == 0b010001) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
+			thumblut[i] = b(&Arm::executeThumbSpecialDataProcessing);
 		}
 		//Load from literal pool
 		else if (((i >> 3) & 0x1F) == 0b01001) {
