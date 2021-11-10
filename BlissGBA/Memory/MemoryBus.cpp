@@ -5,7 +5,7 @@ MemoryBus::MemoryBus()
 	genMem.zero();
 	displayMem.zero();
 
-	genMem.loadBios("roms/gba_bios.bin");
+	genMem.loadBios("roms/bios.bin");
 }
 
 void MemoryBus::loadGamePak(const std::string& file)
