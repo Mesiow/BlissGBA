@@ -255,6 +255,12 @@ u8 ThumbInstruction::imm3()
     return imm3;
 }
 
+u8 ThumbInstruction::imm7()
+{
+    u8 imm7 = (this->encoding) & 0x7F;
+    return imm7;
+}
+
 u8 ThumbInstruction::H()
 {
     u8 H = ((this->encoding) >> 11) & 0x3;

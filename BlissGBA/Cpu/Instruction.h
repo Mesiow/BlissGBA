@@ -58,6 +58,7 @@ struct ThumbInstruction {
 	u8 imm8();
 	u8 imm5();
 	u8 imm3();
+	u8 imm7();
 	u8 H();
 	u8 offset5(); //immediate value
 	u8 rs(); //source register
