@@ -1607,7 +1607,16 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
-	
+	LR_svc = R15 - 4;
+	SPSR_svc = CPSR;
+
+	enterSupervisorMode();
+	clearFlag(T);
+	setFlag(I);
+
+	R15 = 0x8;
+	flushPipeline();
+
 	return 1;
 }
 
@@ -2163,7 +2172,7 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 
 u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
-	LR_svc = R15;
+	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;
 
 	enterSupervisorMode();
