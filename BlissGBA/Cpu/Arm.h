@@ -10,6 +10,8 @@ using namespace std::placeholders;
 /*
 	The ARM7TDMI is a 32bit RISC (Reduced Instruction Set Computer) CPU, 
 	designed by ARM (Advanced RISC Machines)
+
+	*uses the armv4 ISA
 */
 
 //Current Program Status Register (CPSR) bits
@@ -191,6 +193,7 @@ public:
 	u8 executeThumbBranchExchange(ThumbInstruction& ins);
 	u8 executeThumbSpecialDataProcessing(ThumbInstruction& ins);
 	u8 executeThumbAddSPOrPC(ThumbInstruction& ins);
+	u8 executeThumbMisc(ThumbInstruction& ins);
 
 	u8 handleUndefinedThumbIns(ThumbInstruction& ins);
 
@@ -272,12 +275,14 @@ private:
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate); //3 bit immediate
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rd, u8 immediate); //large immediate
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rd); //hi registers
-	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rd, bool pc);
+	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rd, bool pc); //add sp/pc
+	u8 thumbOpADD(ThumbInstruction& ins, u8 immediate7); //increment SP
 	u8 thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn);
 	u8 thumbOpCMP(ThumbInstruction& ins, u8 immediate);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate);
-	u8 thumbOpSUB(ThumbInstruction& ins, u8 immediate);
+	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rd, u8 immediate); //large immediate
+	u8 thumbOpSUB(ThumbInstruction& ins, u8 immediate7); //decrement SP
 	u8 thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpSTMIA(ThumbInstruction& ins);
 	u8 thumbOpLDMIA(ThumbInstruction& ins);

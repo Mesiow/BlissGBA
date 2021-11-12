@@ -1046,7 +1046,7 @@ u8 Arm::executeThumbDataProcessingImm(ThumbInstruction& ins)
 		case 0b00: thumbOpMOV(ins, ins.imm8()); break;
 		case 0b01: thumbOpCMP(ins, ins.imm8()); break;
 		case 0b10: thumbOpADD(ins, ins.rdUpper(), ins.imm8()); break;
-		case 0b11: thumbOpSUB(ins, ins.imm8()); break;
+		case 0b11: thumbOpSUB(ins, ins.rdUpper(), ins.imm8()); break;
 	}
 
 	return 1;
@@ -1160,6 +1160,27 @@ u8 Arm::executeThumbAddSPOrPC(ThumbInstruction& ins)
 		thumbOpADD(ins, rd, true);
 	else
 		thumbOpADD(ins, rd, false);
+
+	return 1;
+}
+
+u8 Arm::executeThumbMisc(ThumbInstruction& ins)
+{
+	bool add_sub_sp = (((ins.encoding >> 8) & 0xF) == 0b0000);
+	bool push_pop_reg_list = (((ins.encoding >> 9) & 0x3) == 0b10);
+
+	if (add_sub_sp) {
+		u8 opc = ((ins.encoding) >> 7) & 0x1;
+		//Misc Add/Sub SP
+		if (opc == 0x0) {
+			thumbOpADD(ins, ins.imm7());
+		}else{
+			thumbOpSUB(ins, ins.imm7());
+		}
+	}
+	else if (push_pop_reg_list) {
+
+	}
 
 	return 1;
 }
@@ -1946,6 +1967,16 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rd, bool pc)
 	return 1;
 }
 
+u8 Arm::thumbOpADD(ThumbInstruction& ins, u8 immediate7)
+{
+	u32 sp = getRegister(RegisterID{ R13_ID });
+
+	sp = sp + (immediate7 * 4);
+	writeRegister(RegisterID{ R13_ID }, sp);
+
+	return 1;
+}
+
 u8 Arm::thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn)
 {
 	u32 reg_rm = getRegister(rm);
@@ -2009,9 +2040,8 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	return 1;
 }
 
-u8 Arm::thumbOpSUB(ThumbInstruction& ins, u8 immediate)
+u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rd, u8 immediate)
 {
-	RegisterID rd = ins.rdUpper();
 	u32 reg_rd = getRegister(rd);
 
 	u32 src_reg = reg_rd;
@@ -2026,6 +2056,16 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, u8 immediate)
 	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 	((u64)immediate > src_reg) ? clearFlag(C) : setFlag(C);
 	(overflow == true) ? setFlag(V) : clearFlag(V);
+
+	return 1;
+}
+
+u8 Arm::thumbOpSUB(ThumbInstruction& ins, u8 immediate7)
+{
+	u32 sp = getRegister(RegisterID{ R13_ID });
+
+	sp = sp - (immediate7 * 4);
+	writeRegister(RegisterID{ R13_ID }, sp);
 
 	return 1;
 }
