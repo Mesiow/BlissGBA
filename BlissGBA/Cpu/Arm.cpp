@@ -1032,8 +1032,9 @@ u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
 u8 Arm::executeThumbShiftByImm(ThumbInstruction& ins)
 {
 	u8 opcode = ins.opcode2();
-	if (opcode == 0b00) {
-		thumbOpLSL(ins);
+	switch (opcode) {
+		case 0b00: thumbOpLSL(ins, ins.imm5()); break;
+		case 0b10: thumbOpASR(ins, ins.imm5()); break;
 	}
 
 	return 1;
@@ -1838,24 +1839,57 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins)
 	return 1;
 }
 
-u8 Arm::thumbOpLSL(ThumbInstruction& ins)
+u8 Arm::thumbOpASR(ThumbInstruction& ins, u8 immediate5)
 {
 	RegisterID rd = ins.rdLower();
 	RegisterID rm = ins.rmLower();
-	u8 imm5 = ins.imm5();
+
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rm = getRegister(rm);
+
+	if (immediate5 == 0) {
+		bool rm_sign_bit = (reg_rm >> 31) & 0x1;
+		rm_sign_bit ? setFlag(C) : clearFlag(C);
+
+		if (rm_sign_bit == 0) {
+			writeRegister(rd, 0x0);
+		}
+		else {
+			writeRegister(rd, 0xFFFFFFFF);
+		}
+	}
+	//imm5 > 0
+	else {
+		u8 shifter_carry_out = 0;
+		reg_rd = asr(reg_rm, immediate5, shifter_carry_out);
+
+		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
+		writeRegister(rd, reg_rd);
+	}
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLSL(ThumbInstruction& ins, u8 immediate5)
+{
+	RegisterID rd = ins.rdLower();
+	RegisterID rm = ins.rmLower();
 
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rm = getRegister(rm);
 
 	//if zero, Simply load the register
-	if (imm5 == 0) {
+	if (immediate5 == 0) {
 		//C flag unaffected
 		writeRegister(rd, reg_rm);
 	}
 	//imm5 > 0
 	else {
 		u8 shifter_carry_out = 0;
-		reg_rd = lsl(reg_rm, imm5, shifter_carry_out);
+		reg_rd = lsl(reg_rm, immediate5, shifter_carry_out);
 
 		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 		writeRegister(rd, reg_rd);
