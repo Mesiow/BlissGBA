@@ -1055,7 +1055,19 @@ u8 Arm::executeThumbDataProcessingImm(ThumbInstruction& ins)
 u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 {
 	u8 opcode = ins.opcode5();
+
+	RegisterID rm = ins.rmLower();
+	RegisterID rd = ins.rdLower();
+
 	switch (opcode) {
+		case 0b0000: {
+			thumbOpAND(ins, rm, rd);
+		}
+		break;
+		case 0b0101: {
+			thumbOpADC(ins, rm, rd);
+		}
+		break;
 		case 0b1010: {
 			RegisterID rm = ins.rmLower();
 			RegisterID rn = ins.rnLower();
@@ -1063,8 +1075,6 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 		}
 		break;
 		case 0b1110: {
-			RegisterID rm = ins.rmLower();
-			RegisterID rd = ins.rdLower();
 			thumbOpBIC(ins, rm, rd);
 		}
 		break;
@@ -1889,6 +1899,22 @@ u8 Arm::thumbOpMOV(ThumbInstruction& ins, u8 immediate)
 	return 1;
 }
 
+u8 Arm::thumbOpADC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	u32 result = reg_rd + reg_rm + getFlag(C);
+	writeRegister(rd, result);
+
+	bool carry = carryFrom(reg_rd, reg_rm + getFlag(C));
+	bool overflow = overflowFromAdd(reg_rd, reg_rm + getFlag(C));
+
+	setCC(result, !carry, overflow);
+
+	return 1;
+}
+
 u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
 {
 	u32 reg_rm = getRegister(rm);
@@ -1982,6 +2008,20 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, u8 immediate7)
 
 	sp = sp + (immediate7 * 4);
 	writeRegister(RegisterID{ R13_ID }, sp);
+
+	return 1;
+}
+
+u8 Arm::thumbOpAND(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rd & reg_rm;
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 
 	return 1;
 }

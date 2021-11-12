@@ -271,12 +271,14 @@ private:
 	u8 thumbOpLSL(ThumbInstruction& ins);
 	u8 thumbOpMOV(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpMOV(ThumbInstruction& ins, u8 immediate);
+	u8 thumbOpADC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd); //register add
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate); //3 bit immediate
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rd, u8 immediate); //large immediate
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rd); //hi registers
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rd, bool pc); //add sp/pc
 	u8 thumbOpADD(ThumbInstruction& ins, u8 immediate7); //increment SP
+	u8 thumbOpAND(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn);
 	u8 thumbOpCMP(ThumbInstruction& ins, u8 immediate);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
