@@ -1045,6 +1045,7 @@ u8 Arm::executeThumbDataProcessingImm(ThumbInstruction& ins)
 	switch (opcode) {
 		case 0b00: thumbOpMOV(ins, ins.imm8()); break;
 		case 0b01: thumbOpCMP(ins, ins.imm8()); break;
+		case 0b10: thumbOpADD(ins, ins.rdUpper(), ins.imm8()); break;
 		case 0b11: thumbOpSUB(ins, ins.imm8()); break;
 	}
 
@@ -1130,12 +1131,20 @@ u8 Arm::executeThumbBranchExchange(ThumbInstruction& ins)
 
 u8 Arm::executeThumbSpecialDataProcessing(ThumbInstruction& ins)
 {
+	//Hi registers
 	u8 opcode = ins.opcode();
+
+	RegisterID rm = ins.rmLower();
+	RegisterID rd = ins.rdLower();
+
 	switch (opcode) {
+		case 0b00: {
+			thumbOpADD(ins, rm, rd);
+		}
+		break;
 		case 0b10: {
-			RegisterID rm = ins.rmLower();
-			RegisterID rd = ins.rdLower();
-			thumbOpMOV(ins, rm, rd); //Hi regs
+			
+			thumbOpMOV(ins, rm, rd);
 		}
 		break;
 	}
@@ -1879,6 +1888,41 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	bool overflow = overflowFromAdd(reg_rn, immediate);
 
 	setCC(reg_rd, !carry, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rd, u8 immediate)
+{
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rd + immediate;
+	writeRegister(rd, reg_rd);
+
+	bool carry = carryFrom(reg_rd, immediate);
+	bool overflow = overflowFromAdd(reg_rd, immediate);
+
+	setCC(reg_rd, !carry, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u8 h1 = ins.h1();
+	u8 h2 = ins.h2();
+
+	RegisterID actual_reg_rm_id;
+	actual_reg_rm_id.id = (h2 << 3) | rm.id;
+
+	RegisterID actual_reg_rd_id;
+	actual_reg_rd_id.id = (h1 << 3) | rd.id;
+
+	u32 reg_rm = getRegister(actual_reg_rm_id);
+	u32 reg_rd = getRegister(actual_reg_rd_id);
+
+	reg_rd = reg_rd + reg_rm;
+	writeRegister(actual_reg_rd_id, reg_rd);
 
 	return 1;
 }
