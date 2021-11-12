@@ -141,7 +141,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Misc
 		else if (((i >> 4) & 0xF) == 0b1011) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
+			thumblut[i] = b(&Arm::executeThumbMisc);
 		}
 		//Load/Store multiple
 		else if (((i >> 4) & 0xF) == 0b1100) {
