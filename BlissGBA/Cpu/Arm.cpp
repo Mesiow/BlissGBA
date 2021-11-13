@@ -1065,6 +1065,7 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 	switch (opcode) {
 		case 0b0000: thumbOpAND(ins, rm, rd); break;
 		case 0b0001: thumbOpEOR(ins, rm, rd); break;
+		case 0b0010: thumbOpLSL(ins, rs, rd); break;
 		case 0b0100: thumbOpASR(ins, rs, rd); break;
 		case 0b0101: thumbOpADC(ins, rm, rd); break;
 		case 0b1010: thumbOpCMP(ins, rm, rn, false); break;
@@ -1919,6 +1920,39 @@ u8 Arm::thumbOpLSL(ThumbInstruction& ins, u8 immediate5)
 	}
 	writeRegister(rd, reg_rd);
 	
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLSL(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
+{
+	u32 reg_rs = getRegister(rs);
+	u32 reg_rd = getRegister(rd);
+
+	u8 shift_amount = reg_rs & 0xFF;
+	if (shift_amount == 0) {
+		//C flag unaffected
+		//rd unaffected
+	}
+	else if (shift_amount < 32) {
+		u8 shifter_carry_out = 0;
+		reg_rd = lsl(reg_rd, shift_amount, shifter_carry_out);
+
+		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
+	}
+	else if (shift_amount == 32) {
+		(reg_rd & 0x1) ? setFlag(C) : clearFlag(C);
+		reg_rd = 0x0;
+	}
+	//shift_amount > 32
+	else {
+		clearFlag(C);
+		reg_rd = 0x0;
+	}
+	writeRegister(rd, reg_rd);
+
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 
