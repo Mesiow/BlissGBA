@@ -1034,6 +1034,7 @@ u8 Arm::executeThumbShiftByImm(ThumbInstruction& ins)
 	u8 opcode = ins.opcode2();
 	switch (opcode) {
 		case 0b00: thumbOpLSL(ins, ins.imm5()); break;
+		case 0b01: thumbOpLSR(ins, ins.imm5()); break;
 		case 0b10: thumbOpASR(ins, ins.imm5()); break;
 	}
 
@@ -1944,6 +1945,68 @@ u8 Arm::thumbOpLSL(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
 	}
 	else if (shift_amount == 32) {
 		(reg_rd & 0x1) ? setFlag(C) : clearFlag(C);
+		reg_rd = 0x0;
+	}
+	//shift_amount > 32
+	else {
+		clearFlag(C);
+		reg_rd = 0x0;
+	}
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLSR(ThumbInstruction& ins, u8 immediate5)
+{
+	RegisterID rm = ins.rmLower();
+	RegisterID rd = ins.rdLower();
+
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	//shift by 32
+	if (immediate5 == 0) {
+		(reg_rd >> 31) & 0x1 ? setFlag(C) : clearFlag(C);
+		reg_rd = 0x0;
+	}
+	//imm5 > 0
+	else {
+		u8 shifter_carry_out = 0;
+		reg_rd = lsr(reg_rm, immediate5, shifter_carry_out);
+
+		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
+	}
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLSR(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
+{
+	u32 reg_rs = getRegister(rs);
+	u32 reg_rd = getRegister(rd);
+
+	u8 shift_amount = reg_rs & 0xFF;
+
+	if (shift_amount == 0) {
+		//C flag unaffected
+		//rd unaffected
+	}
+	else if (shift_amount < 32) {
+		u8 shifter_carry_out = 0;
+		reg_rd = lsr(reg_rd, shift_amount, shifter_carry_out);
+
+		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
+	}
+	else if (shift_amount == 32) {
+		(reg_rd >> 31) & 0x1 ? setFlag(C) : clearFlag(C);
 		reg_rd = 0x0;
 	}
 	//shift_amount > 32

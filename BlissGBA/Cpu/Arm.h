@@ -272,6 +272,8 @@ private:
 	u8 thumbOpASR(ThumbInstruction& ins, RegisterID rs, RegisterID rd);
 	u8 thumbOpLSL(ThumbInstruction& ins, u8 immediate5);
 	u8 thumbOpLSL(ThumbInstruction& ins, RegisterID rs, RegisterID rd);
+	u8 thumbOpLSR(ThumbInstruction& ins, u8 immediate5);
+	u8 thumbOpLSR(ThumbInstruction& ins, RegisterID rs, RegisterID rd);
 	u8 thumbOpMOV(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpMOV(ThumbInstruction& ins, u8 immediate);
 	u8 thumbOpADC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
