@@ -1069,9 +1069,11 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 		case 0b0010: thumbOpLSL(ins, rs, rd); break;
 		case 0b0100: thumbOpASR(ins, rs, rd); break;
 		case 0b0101: thumbOpADC(ins, rm, rd); break;
+		case 0b0111: thumbOpROR(ins, rs, rd); break;
 		case 0b1001: thumbOpNEG(ins, rm, rd); break;
 		case 0b1010: thumbOpCMP(ins, rm, rn, false); break;
 		case 0b1011: thumbOpCMN(ins, rm, rn); break;
+		case 0b1100: thumbOpORR(ins, rm, rd); break;
 		case 0b1101: thumbOpMUL(ins, rm, rd); break;
 		case 0b1110: thumbOpBIC(ins, rm, rd); break;
 		case 0b1111: thumbOpMVN(ins, rm, rd); break;
@@ -2090,12 +2092,57 @@ u8 Arm::thumbOpNEG(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	return 1;
 }
 
+u8 Arm::thumbOpORR(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rd | reg_rm;
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
 u8 Arm::thumbOpMVN(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 {
 	u32 reg_rm = getRegister(rm);
 	u32 reg_rd = getRegister(rd);
 
 	reg_rd = ~(reg_rm);
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpROR(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
+{
+	u32 reg_rs = getRegister(rs);
+	u32 reg_rd = getRegister(rd);
+
+	u8 rotate_amount = reg_rs & 0xFF;
+	u8 rot_lower = rotate_amount & 0x1F;
+	if (rotate_amount == 0) {
+		//C flag unaffected
+		//rd unaffected
+	}
+	else if (rot_lower == 0) {
+		(reg_rd >> 31) & 0x1 ? setFlag(C) : clearFlag(C);
+		//rd unaffected
+	}
+	//rot_lower > 0
+	else {
+		u32 c = (rot_lower - 1);
+		c = (reg_rd >> c) & 0x1;
+		(c == 1) ? setFlag(C) : clearFlag(C);
+
+		reg_rd = ror(reg_rd, rot_lower);
+	}
 	writeRegister(rd, reg_rd);
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
