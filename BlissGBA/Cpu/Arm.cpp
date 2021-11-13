@@ -1066,7 +1066,7 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 		case 0b0000: thumbOpAND(ins, rm, rd); break;
 		case 0b0100: thumbOpASR(ins, rs, rd); break;
 		case 0b0101: thumbOpADC(ins, rm, rd); break;
-		case 0b1010: thumbOpCMP(ins, rm, rn); break;
+		case 0b1010: thumbOpCMP(ins, rm, rn, false); break;
 		case 0b1011: thumbOpCMN(ins, rm, rn); break;
 		case 0b1110: thumbOpBIC(ins, rm, rd); break;
 
@@ -1137,18 +1137,13 @@ u8 Arm::executeThumbSpecialDataProcessing(ThumbInstruction& ins)
 	u8 opcode = ins.opcode();
 
 	RegisterID rm = ins.rmLower();
+	RegisterID rn = ins.rnLower();
 	RegisterID rd = ins.rdLower();
 
 	switch (opcode) {
-		case 0b00: {
-			thumbOpADD(ins, rm, rd);
-		}
-		break;
-		case 0b10: {
-			
-			thumbOpMOV(ins, rm, rd);
-		}
-		break;
+		case 0b00: thumbOpADD(ins, rm, rd); break;
+		case 0b01: thumbOpCMP(ins, rm, rn, true); break;
+		case 0b10: thumbOpMOV(ins, rm, rd); break;
 	}
 
 	return 1;
@@ -2107,17 +2102,40 @@ u8 Arm::thumbOpCMN(ThumbInstruction& ins, RegisterID rm, RegisterID rn)
 	return 1;
 }
 
-u8 Arm::thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn)
+u8 Arm::thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn, bool hiRegisters)
 {
-	u32 reg_rm = getRegister(rm);
-	u32 reg_rn = getRegister(rn);
+	if (hiRegisters) {
+		u8 h1 = ins.h1();
+		u8 h2 = ins.h2();
 
-	u32 result = reg_rn - reg_rm;
+		RegisterID actual_reg_rn_id;
+		actual_reg_rn_id.id = (h1 << 3) | rn.id;
 
-	bool borrow = borrowFrom(reg_rn, reg_rm);
-	bool overflow = overflowFromSub(reg_rn, reg_rm);
+		RegisterID actual_reg_rm_id;
+		actual_reg_rm_id.id = (h2 << 3) | rm.id;
 
-	setCC(result, borrow, overflow);
+		u32 reg_rn = getRegister(actual_reg_rn_id);
+		u32 reg_rm = getRegister(actual_reg_rm_id);
+		
+		u32 result = reg_rn - reg_rm;
+
+		bool borrow = borrowFrom(reg_rn, reg_rm);
+		bool overflow = overflowFromSub(reg_rn, reg_rm);
+
+		setCC(result, borrow, overflow);
+	}
+	else {
+
+		u32 reg_rm = getRegister(rm);
+		u32 reg_rn = getRegister(rn);
+
+		u32 result = reg_rn - reg_rm;
+
+		bool borrow = borrowFrom(reg_rn, reg_rm);
+		bool overflow = overflowFromSub(reg_rn, reg_rm);
+
+		setCC(result, borrow, overflow);
+	}
 
 	return 1;
 }

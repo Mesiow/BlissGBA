@@ -282,8 +282,8 @@ private:
 	u8 thumbOpADD(ThumbInstruction& ins, u8 immediate7); //increment SP
 	u8 thumbOpAND(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpCMN(ThumbInstruction& ins, RegisterID rm, RegisterID rn);
-	u8 thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn);
-	u8 thumbOpCMP(ThumbInstruction& ins, u8 immediate);
+	u8 thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn, bool hiRegisters); //register
+	u8 thumbOpCMP(ThumbInstruction& ins, u8 immediate); //immediate
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate);
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rd, u8 immediate); //large immediate
