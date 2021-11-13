@@ -2092,13 +2092,25 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	u32 reg_rn = getRegister(rn);
 	u32 reg_rd = getRegister(rd);
 
-	reg_rd = reg_rn + immediate;
-	writeRegister(rd, reg_rd);
+	//it's a mov encoded as add rd, rn, #0
+	if (immediate == 0) {
+		reg_rd = reg_rn;
+		writeRegister(rd, reg_rd);
 
-	bool carry = carryFrom(reg_rn, immediate);
-	bool overflow = overflowFromAdd(reg_rn, immediate);
+		(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+		clearFlag(C);
+		clearFlag(V);
+	}
+	else {
+		reg_rd = reg_rn + immediate;
+		writeRegister(rd, reg_rd);
 
-	setCC(reg_rd, !carry, overflow);
+		bool carry = carryFrom(reg_rn, immediate);
+		bool overflow = overflowFromAdd(reg_rn, immediate);
+
+		setCC(reg_rd, !carry, overflow);
+	}
 
 	return 1;
 }
