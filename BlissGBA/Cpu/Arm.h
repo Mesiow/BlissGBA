@@ -277,6 +277,7 @@ private:
 	u8 thumbOpMOV(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpMOV(ThumbInstruction& ins, u8 immediate);
 	u8 thumbOpMUL(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
+	u8 thumbOpNEG(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpMVN(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpADC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
 	u8 thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd); //register add

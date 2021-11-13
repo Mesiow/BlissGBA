@@ -1069,6 +1069,7 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 		case 0b0010: thumbOpLSL(ins, rs, rd); break;
 		case 0b0100: thumbOpASR(ins, rs, rd); break;
 		case 0b0101: thumbOpADC(ins, rm, rd); break;
+		case 0b1001: thumbOpNEG(ins, rm, rd); break;
 		case 0b1010: thumbOpCMP(ins, rm, rn, false); break;
 		case 0b1011: thumbOpCMN(ins, rm, rn); break;
 		case 0b1101: thumbOpMUL(ins, rm, rd); break;
@@ -2066,6 +2067,25 @@ u8 Arm::thumbOpMUL(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpNEG(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = 0 - reg_rm;
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	bool borrow = borrowFrom(0, reg_rm);
+	bool overflow = overflowFromSub(0, reg_rm);
+
+	setCC(reg_rd, borrow, overflow);
 
 	return 1;
 }
