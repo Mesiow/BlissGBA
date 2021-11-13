@@ -1064,12 +1064,12 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 
 	switch (opcode) {
 		case 0b0000: thumbOpAND(ins, rm, rd); break;
+		case 0b0001: thumbOpEOR(ins, rm, rd); break;
 		case 0b0100: thumbOpASR(ins, rs, rd); break;
 		case 0b0101: thumbOpADC(ins, rm, rd); break;
 		case 0b1010: thumbOpCMP(ins, rm, rn, false); break;
 		case 0b1011: thumbOpCMN(ins, rm, rn); break;
 		case 0b1110: thumbOpBIC(ins, rm, rd); break;
-
 	}
 
 	return 1;
@@ -2151,6 +2151,20 @@ u8 Arm::thumbOpCMP(ThumbInstruction& ins, u8 immediate)
 	bool overflow = overflowFromSub(reg_rn, immediate);
 
 	setCC(result, borrow, overflow);
+
+	return 1;
+}
+
+u8 Arm::thumbOpEOR(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rd ^ reg_rm;
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 
 	return 1;
 }
