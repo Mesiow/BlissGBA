@@ -1071,7 +1071,9 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 		case 0b0101: thumbOpADC(ins, rm, rd); break;
 		case 0b1010: thumbOpCMP(ins, rm, rn, false); break;
 		case 0b1011: thumbOpCMN(ins, rm, rn); break;
+		case 0b1101: thumbOpMUL(ins, rm, rd); break;
 		case 0b1110: thumbOpBIC(ins, rm, rd); break;
+		case 0b1111: thumbOpMVN(ins, rm, rd); break;
 	}
 
 	return 1;
@@ -2051,6 +2053,34 @@ u8 Arm::thumbOpMOV(ThumbInstruction& ins, u8 immediate)
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
 	
+	return 1;
+}
+
+u8 Arm::thumbOpMUL(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = reg_rm * reg_rd;
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpMVN(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rd = getRegister(rd);
+
+	reg_rd = ~(reg_rm);
+	writeRegister(rd, reg_rd);
+
+	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
 	return 1;
 }
 
