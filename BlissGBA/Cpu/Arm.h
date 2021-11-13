@@ -299,6 +299,7 @@ private:
 	u8 thumbOpSUB(ThumbInstruction& ins, RegisterID rd, u8 immediate); //large immediate
 	u8 thumbOpSUB(ThumbInstruction& ins, u8 immediate7); //decrement SP
 	u8 thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd);
+	u8 thumbOpTST(ThumbInstruction& ins, RegisterID rm, RegisterID rn);
 	u8 thumbOpSTMIA(ThumbInstruction& ins);
 	u8 thumbOpLDMIA(ThumbInstruction& ins);
 	u8 thumbOpBX(ThumbInstruction& ins);

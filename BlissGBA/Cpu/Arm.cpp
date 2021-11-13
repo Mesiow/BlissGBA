@@ -1067,10 +1067,12 @@ u8 Arm::executeThumbDataProcessingReg(ThumbInstruction& ins)
 		case 0b0000: thumbOpAND(ins, rm, rd); break;
 		case 0b0001: thumbOpEOR(ins, rm, rd); break;
 		case 0b0010: thumbOpLSL(ins, rs, rd); break;
+		case 0b0011: thumbOpLSR(ins, rs, rd); break;
 		case 0b0100: thumbOpASR(ins, rs, rd); break;
 		case 0b0101: thumbOpADC(ins, rm, rd); break;
 		case 0b0110: thumbOpSBC(ins, rm, rd); break;
 		case 0b0111: thumbOpROR(ins, rs, rd); break;
+		case 0b1000: thumbOpTST(ins, rm, rn); break;
 		case 0b1001: thumbOpNEG(ins, rm, rd); break;
 		case 0b1010: thumbOpCMP(ins, rm, rn, false); break;
 		case 0b1011: thumbOpCMN(ins, rm, rn); break;
@@ -2465,6 +2467,19 @@ u8 Arm::thumbOpBIC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 	(reg_rd == 0) ? setFlag(Z) : clearFlag(Z);
+
+	return 1;
+}
+
+u8 Arm::thumbOpTST(ThumbInstruction& ins, RegisterID rm, RegisterID rn)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+
+	u32 result = reg_rn & reg_rm;
+
+	(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+	(result == 0) ? setFlag(Z) : clearFlag(Z);
 
 	return 1;
 }
