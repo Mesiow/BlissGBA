@@ -316,6 +316,13 @@ RegisterID ThumbInstruction::rmLower()
     return rm;
 }
 
+RegisterID ThumbInstruction::rs()
+{
+    RegisterID rs;
+    rs.id = ((this->encoding) >> 3) & 0x7;
+    return rs;
+}
+
 
 u8 ThumbInstruction::opcode3()
 {

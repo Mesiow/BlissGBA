@@ -61,7 +61,6 @@ struct ThumbInstruction {
 	u8 imm7();
 	u8 H();
 	u8 offset5(); //immediate value
-	u8 rs(); //source register
 	RegisterID rdUpper(); //destination register located at bits 8 - 10
 	RegisterID rdLower(); //destination register located at bits 0 - 2
 	RegisterID rnUpper(); //register located at bits 8 - 10
@@ -69,6 +68,7 @@ struct ThumbInstruction {
 	RegisterID rnLower(); //register located at bits 0 - 2
 	RegisterID rmUpper(); //register located at bits 6 - 8
 	RegisterID rmLower(); //register located at bits 3 - 5
+	RegisterID rs(); //register that contains shift at bits 3 - 5
 	u8 opcode3(); //bits 9 - 11 for load/store register offset (takes up 3 bits)
 	u8 opcode2(); //bits 11 - 12 
 	u8 opcode5(); //bits 6 - 9
