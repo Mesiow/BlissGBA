@@ -122,7 +122,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Load/Store Word/Byte imm offset
 		else if (((i >> 5) & 0x7) == 0b011) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
+			thumblut[i] = b(&Arm::executeThumbLoadStoreWordByteImmOffset);
 		}
 		//Load/Store halfword immediate offset
 		else if (((i >> 4) & 0xF) == 0b1000) {
