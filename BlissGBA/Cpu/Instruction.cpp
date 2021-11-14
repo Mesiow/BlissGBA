@@ -354,6 +354,12 @@ u8 ThumbInstruction::opc()
     return opc;
 }
 
+u8 ThumbInstruction::B()
+{
+    u8 B = ((this->encoding) >> 12) & 0x1;
+    return B;
+}
+
 u8 ThumbInstruction::L()
 {
     u8 L = ((this->encoding) >> 11) & 0x1;
