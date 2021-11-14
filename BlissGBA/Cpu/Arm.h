@@ -184,6 +184,7 @@ public:
 	u8 executeThumbUnconditionalBranch(ThumbInstruction& ins);
 	u8 executeThumbLoadFromPool(ThumbInstruction& ins);
 	u8 executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins);
+	u8 executeThumbLoadStoreHalfwordImmOffset(ThumbInstruction& ins);
 	u8 executeThumbShiftByImm(ThumbInstruction& ins);
 	u8 executeThumbDataProcessingImm(ThumbInstruction& ins);
 	u8 executeThumbDataProcessingReg(ThumbInstruction& ins);
@@ -304,6 +305,9 @@ private:
 	u8 thumbOpLDMIA(ThumbInstruction& ins);
 	u8 thumbOpBX(ThumbInstruction& ins);
 	u8 thumbOpSWI(ThumbInstruction& ins);
+
+	u8 thumbOpLDRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
+	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
 
 public:
 	State state;

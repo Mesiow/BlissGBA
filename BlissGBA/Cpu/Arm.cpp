@@ -1029,6 +1029,24 @@ u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
 	return 1;
 }
 
+u8 Arm::executeThumbLoadStoreHalfwordImmOffset(ThumbInstruction& ins)
+{
+	bool load = (ins.L() == 0x1);
+
+	RegisterID rn = ins.rnMiddle();
+	RegisterID rd = ins.rdLower();
+	u8 imm5 = ins.imm5();
+
+	if (load) {
+		thumbOpLDRH(ins, rn, rd, imm5);
+	}
+	else {
+		thumbOpSTRH(ins, rn, rd, imm5);
+	}
+
+	return 1;
+}
+
 u8 Arm::executeThumbShiftByImm(ThumbInstruction& ins)
 {
 	u8 opcode = ins.opcode2();
@@ -2572,6 +2590,34 @@ u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 
 	R15 = 0x8; //jump to bios
 	flushPipeline();
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5)
+{
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + (immediate5 * 2);
+	if ((address & 0x1) == 0x0) { //if aligned
+		u16 value = mbus->readU16(address);
+		reg_rd = value;
+		writeRegister(rd, reg_rd);
+	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5)
+{
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn = (immediate5 * 2);
+	if ((address & 0x3) == 0b00) {
+		mbus->writeU16(address, reg_rd & 0xFFFF);
+	}
 
 	return 1;
 }
