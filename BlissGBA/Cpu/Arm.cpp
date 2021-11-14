@@ -1019,11 +1019,15 @@ u8 Arm::executeThumbLoadFromPool(ThumbInstruction& ins)
 
 u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
 {
+	RegisterID rm = ins.rmUpper();
+	RegisterID rn = ins.rnMiddle();
+	RegisterID rd = ins.rdLower();
+
 	u8 opcode = ins.opcode3();
 	switch (opcode) {
-		case 0b100: 
-			thumbOpLDR(ins);
-			break;
+		case 0b001: thumbOpSTRH(ins, rm, rn, rd); break;
+		case 0b100: thumbOpLDR(ins); break;
+		case 0b101: thumbOpLDRH(ins, rn, rn, rd); break;
 	}
 
 	return 1;
@@ -1843,9 +1847,8 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins)
 	u32 reg_rm = getRegister(rm);
 	u32 address = reg_rn + reg_rm;
 
-	u32 value;
 	if ((address & 0x3) == 0b00) { //If the address is word aligned, read the value from memory
-		value = mbus->readU32(address);
+		u32 value = mbus->readU32(address);
 		writeRegister(rd, value);
 	}
 
@@ -2600,7 +2603,23 @@ u8 Arm::thumbOpLDRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + (immediate5 * 2);
-	if ((address & 0x1) == 0x0) { //if aligned
+	if ((address & 0x1) == 0b0) { //if 16 bit aligned
+		u16 value = mbus->readU16(address);
+		reg_rd = value;
+		writeRegister(rd, reg_rd);
+	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + reg_rm;
+	if ((address & 0x1) == 0b0) {
 		u16 value = mbus->readU16(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
@@ -2615,7 +2634,21 @@ u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn = (immediate5 * 2);
-	if ((address & 0x3) == 0b00) {
+	if ((address & 0x1) == 0b0) { 
+		mbus->writeU16(address, reg_rd & 0xFFFF);
+	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + reg_rm;
+	if ((address & 0x1) == 0b0) {
 		mbus->writeU16(address, reg_rd & 0xFFFF);
 	}
 

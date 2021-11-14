@@ -306,8 +306,11 @@ private:
 	u8 thumbOpBX(ThumbInstruction& ins);
 	u8 thumbOpSWI(ThumbInstruction& ins);
 
-	u8 thumbOpLDRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
+	u8 thumbOpLDRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5); //immediate offset
+	u8 thumbOpLDRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd); //register offset
 	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
+	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
+
 
 public:
 	State state;
