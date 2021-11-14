@@ -184,6 +184,7 @@ public:
 	u8 executeThumbUnconditionalBranch(ThumbInstruction& ins);
 	u8 executeThumbLoadFromPool(ThumbInstruction& ins);
 	u8 executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins);
+	u8 executeThumbLoadStoreWordByteImmOffset(ThumbInstruction& ins);
 	u8 executeThumbLoadStoreHalfwordImmOffset(ThumbInstruction& ins);
 	u8 executeThumbShiftByImm(ThumbInstruction& ins);
 	u8 executeThumbDataProcessingImm(ThumbInstruction& ins);
@@ -268,7 +269,6 @@ private:
 	u8 thumbOpB(ThumbInstruction& ins);
 	u8 thumbOpBL(ThumbInstruction& ins);
 	u8 thumbOpLDRPool(ThumbInstruction& ins);
-	u8 thumbOpLDR(ThumbInstruction& ins);
 	u8 thumbOpASR(ThumbInstruction& ins, u8 immediate5);
 	u8 thumbOpASR(ThumbInstruction& ins, RegisterID rs, RegisterID rd);
 	u8 thumbOpLSL(ThumbInstruction& ins, u8 immediate5);
@@ -306,6 +306,8 @@ private:
 	u8 thumbOpBX(ThumbInstruction& ins);
 	u8 thumbOpSWI(ThumbInstruction& ins);
 
+	u8 thumbOpLDR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5); //immediate offset
+	u8 thumbOpLDR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd); //register offset
 	u8 thumbOpLDRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5); //immediate offset
 	u8 thumbOpLDRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd); //register offset
 	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);

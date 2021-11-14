@@ -1026,8 +1026,22 @@ u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
 	u8 opcode = ins.opcode3();
 	switch (opcode) {
 		case 0b001: thumbOpSTRH(ins, rm, rn, rd); break;
-		case 0b100: thumbOpLDR(ins); break;
+		case 0b100: thumbOpLDR(ins, rm, rn, rd); break;
 		case 0b101: thumbOpLDRH(ins, rn, rn, rd); break;
+	}
+
+	return 1;
+}
+
+u8 Arm::executeThumbLoadStoreWordByteImmOffset(ThumbInstruction& ins)
+{
+	RegisterID rn = ins.rnMiddle();
+	RegisterID rd = ins.rdLower();
+	u8 imm5 = ins.imm5();
+
+	u8 bl = (ins.B() << 1) | ins.L();
+	switch (bl) {
+		case 0b01: thumbOpLDR(ins, rn, rd, imm5); break;
 	}
 
 	return 1;
@@ -1837,24 +1851,6 @@ u8 Arm::thumbOpLDRPool(ThumbInstruction& ins)
 	return 1;
 }
 
-u8 Arm::thumbOpLDR(ThumbInstruction& ins)
-{
-	RegisterID rd = ins.rdLower();
-	RegisterID rn = ins.rnMiddle();
-	RegisterID rm = ins.rmUpper();
-
-	u32 reg_rn = getRegister(rn);
-	u32 reg_rm = getRegister(rm);
-	u32 address = reg_rn + reg_rm;
-
-	if ((address & 0x3) == 0b00) { //If the address is word aligned, read the value from memory
-		u32 value = mbus->readU32(address);
-		writeRegister(rd, value);
-	}
-
-
-	return 1;
-}
 
 u8 Arm::thumbOpASR(ThumbInstruction& ins, u8 immediate5)
 {
@@ -2593,6 +2589,38 @@ u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 
 	R15 = 0x8; //jump to bios
 	flushPipeline();
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5)
+{
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + (immediate5 * 4);
+	if ((address & 0x3) == 0b00) {
+		u32 value = mbus->readU32(address);
+		reg_rd = value;
+		writeRegister(rd, reg_rd);
+	}
+
+	return 1;
+}
+
+
+u8 Arm::thumbOpLDR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + reg_rm;
+	if ((address & 0x3) == 0b00) { //if word aligned
+		u32 value = mbus->readU32(address);
+		reg_rd = value;
+		writeRegister(rd, reg_rd);
+	}
 
 	return 1;
 }
