@@ -1026,9 +1026,11 @@ u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
 	u8 opcode = ins.opcode3();
 	switch (opcode) {
 		case 0b001: thumbOpSTRH(ins, rm, rn, rd); break;
+		case 0b011: thumbOpLDRSB(ins, rm, rn, rd); break;
 		case 0b100: thumbOpLDR(ins, rm, rn, rd); break;
 		case 0b101: thumbOpLDRH(ins, rn, rn, rd); break;
 		case 0b110: thumbOpLDRB(ins, rm, rn, rd); break;
+		case 0b111: thumbOpLDRSH(ins, rm, rn, rd); break;
 	}
 
 	return 1;
@@ -1692,7 +1694,7 @@ u8 Arm::opLDRH(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	s8 value = (s8)mbus->readU8(address);
+	u32 value = (s8)mbus->readU8(address);
 	value = signExtend32(value, 8);
 	writeRegister(rd, value);
 
@@ -1701,7 +1703,7 @@ u8 Arm::opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	s16 value = (s16)mbus->readU16(address);
+	u32 value = (s16)mbus->readU16(address);
 	value = signExtend32(value, 16);
 	writeRegister(rd, value);
 
@@ -2658,7 +2660,7 @@ u8 Arm::thumbOpLDRB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + immediate5;
-	u32 value = mbus->readU8(address);
+	u8 value = mbus->readU8(address);
 	reg_rd = value;
 
 	writeRegister(rd, reg_rd);
@@ -2673,10 +2675,44 @@ u8 Arm::thumbOpLDRB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
-	u32 value = mbus->readU8(address);
+	u8 value = mbus->readU8(address);
 	reg_rd = value;
 
 	writeRegister(rd, reg_rd);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDRSB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + reg_rm;
+	u32 value = (s8)mbus->readU8(address);
+	value = signExtend32(value, 8);
+
+	reg_rd = value;
+	writeRegister(rd, reg_rd);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDRSH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + reg_rm;
+	if ((address & 0x1) == 0b0) {
+		u32 value = (s16)mbus->readU16(address);
+		value = signExtend16(value, 16);
+		reg_rd = value;
+
+		writeRegister(rd, reg_rd);
+	}
 
 	return 1;
 }
