@@ -1,8 +1,6 @@
 #include "Arm.h"
 #include "../Memory/MemoryBus.h"
 
-
-
 void Arm::mapArmOpcodes()
 {
 	for (s32 i = 0; i < 4096; i++) {
@@ -80,7 +78,6 @@ void Arm::mapArmOpcodes()
 		else {
 			armlut[i] = b(&Arm::handleUndefinedIns);
 		}
-		
 	}
 }
 
@@ -129,7 +126,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Load/Store halfword immediate offset
 		else if (((i >> 4) & 0xF) == 0b1000) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
+			thumblut[i] = b(&Arm::executeThumbLoadStoreHalfwordImmOffset);
 		}
 		//Load/Store to/from stack
 		else if (((i >> 4) & 0xF) == 0b1001) {
@@ -188,5 +185,4 @@ void Arm::mapThumbOpcodes()
 			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 	}
-
 }
