@@ -164,20 +164,8 @@ void Arm::mapThumbOpcodes()
 			(((i >> 3) & 0x3) == 0b01))) {
 			thumblut[i] = b(&Arm::executeThumbUnconditionalBranch);
 		}
-		//BLX suffix
-		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x0)) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
-		}
 		//Undefined instruction
 		else if ((((i >> 5) & 0x1F) == 0b11101) && ((i & 0x1) == 0x1)) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
-		}
-		//BL/BLX prefix
-		else if (((i >> 5) & 0x1F) == 0b11110) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
-		}
-		//BL suffix
-		else if (((i >> 5) & 0x1F) == 0b11111) {
 			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
 		}
 		//Undefined

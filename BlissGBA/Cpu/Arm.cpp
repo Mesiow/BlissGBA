@@ -1669,6 +1669,7 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
+	printf("ARM mode SWI at address: 0x%08X", R15 - 8);
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
 
@@ -2108,12 +2109,21 @@ u8 Arm::thumbOpMOV(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	RegisterID actual_reg_rm;
 	actual_reg_rm.id = (h2 << 3) | rm.id;
 
+	u32 reg_rd = getRegister(rd);
+
 	RegisterID actual_reg_rd;
 	actual_reg_rd.id = (h1 << 3) | rd.id;
 
 	u32 reg_rm = getRegister(actual_reg_rm);
 
-	writeRegister(actual_reg_rd, reg_rm);
+	if (reg_rd == R15) {
+		writeRegister(actual_reg_rd, reg_rm);
+		flushThumbPipeline();
+	}
+	else
+		writeRegister(actual_reg_rd, reg_rm);
+
+	
 
 	return 1;
 }
@@ -2289,13 +2299,13 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rd, u8 immediate)
 {
 	u32 reg_rd = getRegister(rd);
 
-	reg_rd = reg_rd + immediate;
-	writeRegister(rd, reg_rd);
+	u32 result = reg_rd + immediate;
+	writeRegister(rd, result);
 
 	bool carry = carryFrom(reg_rd, immediate);
 	bool overflow = overflowFromAdd(reg_rd, immediate);
 
-	setCC(reg_rd, !carry, overflow);
+	setCC(result, !carry, overflow);
 
 	return 1;
 }
