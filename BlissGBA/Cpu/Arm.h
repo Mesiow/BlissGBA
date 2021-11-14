@@ -319,6 +319,8 @@ private:
 	u8 thumbOpLDRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd); //register offset
 	u8 thumbOpSTR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
 	u8 thumbOpSTR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
+	u8 thumbOpSTRB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
+	u8 thumbOpSTRB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
 	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 
