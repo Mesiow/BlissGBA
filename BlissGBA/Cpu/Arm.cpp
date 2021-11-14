@@ -1197,7 +1197,7 @@ u8 Arm::executeThumbSpecialDataProcessing(ThumbInstruction& ins)
 
 u8 Arm::executeThumbLoadStoreStack(ThumbInstruction& ins)
 {
-	thumbOp
+	thumbOpLDRStack(ins);
 
 	return 1;
 }
