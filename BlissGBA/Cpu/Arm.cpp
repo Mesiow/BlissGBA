@@ -1203,7 +1203,11 @@ u8 Arm::executeThumbSpecialDataProcessing(ThumbInstruction& ins)
 
 u8 Arm::executeThumbLoadStoreStack(ThumbInstruction& ins)
 {
-	thumbOpLDRStack(ins);
+	u8 L = ins.L();
+	if (L == 0x0)
+		thumbOpSTRStack(ins);
+	else
+		thumbOpLDRStack(ins);
 
 	return 1;
 }
@@ -1877,6 +1881,22 @@ u8 Arm::thumbOpLDRStack(ThumbInstruction& ins)
 		u32 value = mbus->readU32(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
+	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpSTRStack(ThumbInstruction& ins)
+{
+	RegisterID rd = ins.rdUpper();
+	u32 reg_rd = getRegister(rd);
+
+	u32 sp = getRegister(RegisterID{ R13_ID });
+	u8 imm8 = ins.imm8();
+
+	u32 address = sp + (imm8 * 4);
+	if ((address & 0x3) == 0b00) {
+		mbus->writeU32(address, reg_rd);
 	}
 
 	return 1;
