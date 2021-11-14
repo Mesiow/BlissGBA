@@ -1195,6 +1195,13 @@ u8 Arm::executeThumbSpecialDataProcessing(ThumbInstruction& ins)
 	return 1;
 }
 
+u8 Arm::executeThumbLoadStoreStack(ThumbInstruction& ins)
+{
+	thumbOp
+
+	return 1;
+}
+
 u8 Arm::executeThumbAddSPOrPC(ThumbInstruction& ins)
 {
 	u8 reg = ins.reg();
@@ -1842,11 +1849,29 @@ u8 Arm::thumbOpLDRPool(ThumbInstruction& ins)
 	RegisterID rd = ins.rdUpper();
 	u8 imm8 = ins.imm8();
 
-	//lower 2 bits of PC are disregarded/shifted left to word align
+	//lower 2 bits of PC are disregarded to word align
 	u32 address = (R15 & 0xFFFFFFFC) + (imm8 * 4);
 	u32 value = mbus->readU32(address);
 
 	writeRegister(rd, value);
+
+	return 1;
+}
+
+u8 Arm::thumbOpLDRStack(ThumbInstruction& ins)
+{
+	RegisterID rd = ins.rdUpper();
+	u32 reg_rd = getRegister(rd);
+
+	u32 sp = getRegister(RegisterID{ R13_ID });
+	u8 imm8 = ins.imm8();
+
+	u32 address = sp + (imm8 * 4);
+	if ((address & 0x3) == 0b00) {
+		u32 value = mbus->readU32(address);
+		reg_rd = value;
+		writeRegister(rd, reg_rd);
+	}
 
 	return 1;
 }

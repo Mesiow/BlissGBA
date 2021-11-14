@@ -194,6 +194,7 @@ public:
 	u8 executeThumbLoadStoreMultiple(ThumbInstruction& ins);
 	u8 executeThumbBranchExchange(ThumbInstruction& ins);
 	u8 executeThumbSpecialDataProcessing(ThumbInstruction& ins);
+	u8 executeThumbLoadStoreStack(ThumbInstruction& ins);
 	u8 executeThumbAddSPOrPC(ThumbInstruction& ins);
 	u8 executeThumbMisc(ThumbInstruction& ins);
 
@@ -269,6 +270,7 @@ private:
 	u8 thumbOpB(ThumbInstruction& ins);
 	u8 thumbOpBL(ThumbInstruction& ins);
 	u8 thumbOpLDRPool(ThumbInstruction& ins);
+	u8 thumbOpLDRStack(ThumbInstruction& ins);
 	u8 thumbOpASR(ThumbInstruction& ins, u8 immediate5);
 	u8 thumbOpASR(ThumbInstruction& ins, RegisterID rs, RegisterID rd);
 	u8 thumbOpLSL(ThumbInstruction& ins, u8 immediate5);
