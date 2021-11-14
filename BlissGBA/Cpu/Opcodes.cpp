@@ -130,7 +130,7 @@ void Arm::mapThumbOpcodes()
 		}
 		//Load/Store to/from stack
 		else if (((i >> 4) & 0xF) == 0b1001) {
-			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
+			thumblut[i] = b(&Arm::executeThumbLoadStoreStack);
 		}
 		//Add to SP or PC
 		else if (((i >> 4) & 0xF) == 0b1010) {
