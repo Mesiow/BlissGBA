@@ -1025,6 +1025,7 @@ u8 Arm::executeThumbLoadStoreRegisterOffset(ThumbInstruction& ins)
 
 	u8 opcode = ins.opcode3();
 	switch (opcode) {
+		case 0b000: thumbOpSTR(ins, rm, rn, rd); break;
 		case 0b001: thumbOpSTRH(ins, rm, rn, rd); break;
 		case 0b011: thumbOpLDRSB(ins, rm, rn, rd); break;
 		case 0b100: thumbOpLDR(ins, rm, rn, rd); break;
@@ -1044,6 +1045,7 @@ u8 Arm::executeThumbLoadStoreWordByteImmOffset(ThumbInstruction& ins)
 
 	u8 bl = (ins.B() << 1) | ins.L();
 	switch (bl) {
+		case 0b00: thumbOpSTR(ins, rn, rd, imm5); break;
 		case 0b01: thumbOpLDR(ins, rn, rd, imm5); break;
 		case 0b11: thumbOpLDRB(ins, rn, rd, imm5); break;
 	}
@@ -2743,6 +2745,33 @@ u8 Arm::thumbOpLDRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 		u16 value = mbus->readU16(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
+	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpSTR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5)
+{
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + (immediate5 * 4);
+	if ((address & 0x3) == 0b00) {
+		mbus->writeU32(address, reg_rd);
+	}
+
+	return 1;
+}
+
+u8 Arm::thumbOpSTR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd)
+{
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+	u32 reg_rd = getRegister(rd);
+
+	u32 address = reg_rn + reg_rm;
+	if ((address & 0x3) == 0b00) {
+		mbus->writeU32(address, reg_rd);
 	}
 
 	return 1;
