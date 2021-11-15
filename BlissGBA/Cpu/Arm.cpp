@@ -51,7 +51,7 @@ void Arm::reset()
 	for (s32 i = 0; i < NUM_REGISTERS_FIQ; i++) registersFiq[i].value = 0x0;
 	
 	//System/User
-	LR = 0x00000000; //R14
+	LR = 0x08000000; //R14
 	R15 = 0x08000000;
 	SP = 0x03007F00; //R13
 	CPSR = 0x000000DF;
@@ -2840,7 +2840,7 @@ u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rn = getRegister(rn);
 	u32 reg_rd = getRegister(rd);
 
-	u32 address = reg_rn = (immediate5 * 2);
+	u32 address = reg_rn + (immediate5 * 2);
 	if ((address & 0x1) == 0b0) { 
 		mbus->writeU16(address, reg_rd & 0xFFFF);
 	}
