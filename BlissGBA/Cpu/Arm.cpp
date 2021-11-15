@@ -1265,12 +1265,15 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 	
-	if (rd.id == 0xF) {
+	u32 result = shifter_op;
+	if (reg_rd == R15) {
+		writeRegister(rd, result);
 		flushPipeline();
 	}
-	reg_rd = shifter_op;
-	writeRegister(rd, reg_rd);
-
+	else {
+		writeRegister(rd, result);
+	}
+	
 	if (flags) {
 		setCC(reg_rd, false, false, true, shifter_carry_out);
 	}
