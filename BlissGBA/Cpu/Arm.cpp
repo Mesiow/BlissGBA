@@ -630,7 +630,8 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit)
 
 	u8 msb = ((value >> 31) & 0x1);
 	value >>= shift;
-	value |= (msb << 31);
+	//fill top empty bits with all 1's
+	if (msb) value = signExtend32(value, (32 - shift));
 
 	return value;
 }
@@ -2119,7 +2120,7 @@ u8 Arm::thumbOpMOV(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	u32 reg_rd = getRegister(actual_reg_rd);
 	u32 reg_rm = getRegister(actual_reg_rm);
 
-	if (reg_rd == R15) {
+	if (actual_reg_rd.id == R15_ID) {
 		R15 = reg_rm & 0xFFFFFFFC;
 		flushThumbPipeline();
 	}
