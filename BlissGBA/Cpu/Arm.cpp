@@ -51,7 +51,7 @@ void Arm::reset()
 	for (s32 i = 0; i < NUM_REGISTERS_FIQ; i++) registersFiq[i].value = 0x0;
 	
 	//System/User
-	LR = 0x08000000; //R14
+	LR = 0x00000000; //R14
 	R15 = 0x08000000;
 	SP = 0x03007F00; //R13
 	CPSR = 0x000000DF;
@@ -1672,6 +1672,11 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
+	u8 swi_number = (ins.encoding >> 16) & 0xFF;
+	if (swi_number == 0x6) {
+		printf("Failed test: 0x%08X\n", registers[0].value);
+	}
+	
 	printf("ARM mode SWI at address: 0x%08X", R15 - 8);
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
@@ -2108,21 +2113,18 @@ u8 Arm::thumbOpMOV(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	RegisterID actual_reg_rm;
 	actual_reg_rm.id = (h2 << 3) | rm.id;
 
-	u32 reg_rd = getRegister(rd);
-
 	RegisterID actual_reg_rd;
 	actual_reg_rd.id = (h1 << 3) | rd.id;
 
+	u32 reg_rd = getRegister(actual_reg_rd);
 	u32 reg_rm = getRegister(actual_reg_rm);
 
 	if (reg_rd == R15) {
-		writeRegister(actual_reg_rd, reg_rm);
+		R15 = reg_rm & 0xFFFFFFFC;
 		flushThumbPipeline();
 	}
 	else
 		writeRegister(actual_reg_rd, reg_rm);
-
-	
 
 	return 1;
 }
