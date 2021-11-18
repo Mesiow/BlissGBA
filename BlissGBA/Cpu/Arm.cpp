@@ -254,38 +254,14 @@ u8 Arm::borrowFrom(u32 op1, u32 op2)
 
 u8 Arm::overflowFromAdd(u32 op1, u32 op2)
 {
-	u32 signBit = 0x80000000;
-	bool negative = ((op1 & signBit) && (op2 & signBit));
-	bool positive = (((op1 & signBit) == 0) && ((op2 & signBit) == 0));
-
-	if (positive) {
-		s64 result = (s64)op1 + (s64)op2;
-		if (result & signBit) return true;
-	}
-	if (negative) {
-		s64 result = (s64)op1 + (s64)op2;
-		if ((result & signBit) == 0) return true;
-	}
-	return false;
+	s64 result = op1 + op2;
+	return (~(op1 ^ op2) & ((op1 ^ result)) & 0x80000000) != 0;
 }
 
 u8 Arm::overflowFromSub(u32 op1, u32 op2) 
 {
-	u32 signBit = 0x80000000;
-	//subtracting a negative (5 - (-2))
-	bool negative = (((op1 & signBit) == 0) && (op2 & signBit));
-	//subtracting a positive (-5 - 2)
-	bool positive = ((op1 & signBit) && ((op2 & signBit) == 0));
-
-	if (positive) {
-		s64 result = op1 - op2;
-		if (result & signBit) return true;
-	}
-	if (negative) {
-		s64 result = op1 - op2;
-		if ((result & signBit) == 0) return true;
-	}
-	return false;
+	s64 result = op1 - op2;
+	return ((op1 ^ op2) & ((op1 ^ result)) & 0x80000000) != 0;
 }
 
 u8 Arm::fetchOp(u32 encoding)
@@ -640,9 +616,11 @@ u32 Arm::ror(u32 value, u8 shift)
 {
 	u32 rotatedOut = getNthBits(value, 0, shift);
 	u32 rotatedIn = getNthBits(value, shift, 31);
-
-	u32 result = ((rotatedIn) | (rotatedOut << (32 - shift)));
-	return result;
+	
+	value >>= shift;
+	value |= (rotatedOut << (32 - shift));
+	//u32 result = ((rotatedIn) | (rotatedOut << (32 - shift)));
+	return value;
 }
 
 u32 Arm::rrx(u32 value, u8 &shiftedBit)
@@ -2241,7 +2219,7 @@ u8 Arm::thumbOpADC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	u32 reg_rm = getRegister(rm);
 	u32 reg_rd = getRegister(rd);
 
-	u32 result = reg_rd + reg_rm + getFlag(C);
+	u32 result = (reg_rd + reg_rm) + getFlag(C);
 	writeRegister(rd, result);
 
 	bool carry = carryFrom(reg_rd, reg_rm + getFlag(C));
@@ -2465,11 +2443,11 @@ u8 Arm::thumbOpSBC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	u32 reg_rm = getRegister(rm);
 	u32 reg_rd = getRegister(rd);
 
-	u32 result = reg_rd - reg_rm - (~getFlag(C));
+	u32 result = (reg_rd - reg_rm) - (!(getFlag(C)));
 	writeRegister(rd, result);
 
-	bool borrow = borrowFrom(reg_rd, reg_rm - (~getFlag(C)));
-	bool overflow = overflowFromSub(reg_rd, reg_rm - (~getFlag(C)));
+	bool borrow = borrowFrom(reg_rd, reg_rm - (!(getFlag(C))));
+	bool overflow = overflowFromSub(reg_rd, reg_rm - (!(getFlag(C))));
 
 	setCC(result, borrow, overflow);
 
