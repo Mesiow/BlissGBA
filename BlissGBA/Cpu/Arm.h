@@ -324,6 +324,9 @@ private:
 	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immediate5);
 	u8 thumbOpSTRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, RegisterID rd);
 
+	u8 thumbOpPUSH(ThumbInstruction& ins);
+	u8 thumbOpPOP(ThumbInstruction& ins);
+
 
 public:
 	State state;

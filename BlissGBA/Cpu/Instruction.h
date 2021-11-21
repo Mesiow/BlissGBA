@@ -76,7 +76,8 @@ struct ThumbInstruction {
 	u8 opc(); //bit 9 for add/sub reg/imm
 	u8 B(); //B bit for load/store instructions
 	u8 L(); //L bit for load/store instructions
-	u8 registerList(); //for stmia/ldmia
+	u8 registerList(); //for stmia/ldmia, push/pop
+	u8 R(); //bit to determine is LR in the register list to be pushed to the stack
 
 	//For high register calculations
 	u8 h1();

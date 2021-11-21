@@ -372,6 +372,12 @@ u8 ThumbInstruction::registerList()
     return rl;
 }
 
+u8 ThumbInstruction::R()
+{
+    u8 R = ((this->encoding) >> 8) & 0x1;
+    return R;
+}
+
 u8 ThumbInstruction::h1()
 {
     u8 h1 = ((this->encoding) >> 7) & 0x1;

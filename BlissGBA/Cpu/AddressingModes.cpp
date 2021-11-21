@@ -154,7 +154,7 @@ AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstructio
 		scaledRegOffset = false;
 	}
 
-	AddrModeLoadStoreResult result;
+	AddrModeLoadStoreResult result = { AddrModeLoadStoreType::NONE, 0, 0, 0 };
 	u32 address;
 	if (P == 0x1) {
 		if (scaledRegOffset) {
@@ -218,7 +218,7 @@ AddrModeLoadStoreResult AddressingMode3::immOffsetIndex(ArmInstruction& ins)
 	u8 immH = ins.immedH();
 	u8 immL = ins.immedL();
 
-	AddrModeLoadStoreResult result;
+	AddrModeLoadStoreResult result = { AddrModeLoadStoreType::NONE, 0, 0, 0 };
 	u32 address;
 	u8 offset_8 = (immH << 4) | immL;
 	if (P == 0x1) {
@@ -262,7 +262,7 @@ AddrModeLoadStoreResult AddressingMode3::registerOffsetIndex(ArmInstruction& ins
 	u8 W = ins.W();
 	u8 U = ins.U();
 
-	AddrModeLoadStoreResult result;
+	AddrModeLoadStoreResult result = { AddrModeLoadStoreType::NONE, 0, 0, 0 };
 	u32 address;
 	if (P == 0x1) {
 		//Pre-indexed addressing (mem address is written back to the base register)
