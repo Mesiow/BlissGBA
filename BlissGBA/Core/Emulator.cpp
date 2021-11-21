@@ -10,6 +10,7 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	debug.running = &running;
 	debug.showDebugger = &showDebugger;
 
+	//Running thumb.gba,currently fails  at address 080005D0 (add r0, =value)
 	mbus.loadGamePak("test_roms/gba-tests-master/thumb/thumb.gba");
 	reset();
 }

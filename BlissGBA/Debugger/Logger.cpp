@@ -123,10 +123,6 @@ void Comparer::compareAgainstFile()
 				printf("Logs value: 0x%08X\n", state->regs[i]);
 				printf("Instruction #: %d\n", instructionCounter);
 
-				printf("\nArm Register State:\n");
-				for (int i = 0; i < 13; i++) {
-					printf("R%d: 0x%08X\n", i, cpu.getRegister(RegisterID{ (u8)i }));
-				}
 				printRegisterStatus();
 
 				assert(false);
@@ -138,10 +134,6 @@ void Comparer::compareAgainstFile()
 				printf("Logs value: 0x%08X\n", state->regs[i]);
 				printf("Instruction #: %d\n", instructionCounter);
 
-				printf("\nThumb Register State:\n");
-				for (int i = 0; i < 13; i++) {
-					printf("R%d: 0x%08X\n", i, cpu.getRegister(RegisterID{ (u8)i }));
-				}
 				printRegisterStatus();
 
 				assert(false);
@@ -157,6 +149,14 @@ void Comparer::compareAgainstFile()
 		printf("Our value: 0x%08X\n", r13);
 		printf("Logs value: 0x%08X\n", state->sp);
 		printf("Instruction #: %d\n", instructionCounter);
+		if (cpu.getState() == State::ARM) {
+			printf("\nArm Register State:\n");
+			printRegisterStatus();
+		}
+		else {
+			printf("\nThumb Register State:\n");
+			printRegisterStatus();
+		}
 		assert(false);
 	}
 	u32 r14 = cpu.getRegister(RegisterID{ R14_ID });
@@ -166,6 +166,14 @@ void Comparer::compareAgainstFile()
 		printf("Our value: 0x%08X\n", r14);
 		printf("Logs value: 0x%08X\n", state->lr);
 		printf("Instruction #: %d\n", instructionCounter);
+		if (cpu.getState() == State::ARM) {
+			printf("\nArm Register State:\n");
+			printRegisterStatus();
+		}
+		else {
+			printf("\nThumb Register State:\n");
+			printRegisterStatus();
+		}
 		assert(false);
 	}
 	if (cpu.R15 != state->r15) {
@@ -174,6 +182,14 @@ void Comparer::compareAgainstFile()
 		printf("Our value: 0x%08X\n", cpu.R15);
 		printf("Logs value: 0x%08X\n", state->r15);
 		printf("Instruction #: %d\n", instructionCounter);
+		if (cpu.getState() == State::ARM) {
+			printf("\nArm Register State:\n");
+			printRegisterStatus();
+		}
+		else {
+			printf("\nThumb Register State:\n");
+			printRegisterStatus();
+		}
 		assert(false);
 	}
 	if (cpu.CPSR != state->cpsr) {
@@ -182,6 +198,14 @@ void Comparer::compareAgainstFile()
 		printf("Our value: 0x%08X\n", cpu.CPSR);
 		printf("Logs value: 0x%08X\n", state->cpsr);
 		printf("Instruction #: %d\n", instructionCounter);
+		if (cpu.getState() == State::ARM) {
+			printf("\nArm Register State:\n");
+			printRegisterStatus();
+		}
+		else {
+			printf("\nThumb Register State:\n");
+			printRegisterStatus();
+		}
 		assert(false);
 	}
 	u32 spsr = cpu.getSPSR();
@@ -191,6 +215,15 @@ void Comparer::compareAgainstFile()
 		printf("Our value: 0x%08X\n", spsr);
 		printf("Logs value: 0x%08X\n", state->spsr);
 		printf("Instruction #: %d\n", instructionCounter);
+
+		if (cpu.getState() == State::ARM) {
+			printf("\nArm Register State:\n");
+			printRegisterStatus();
+		}
+		else {
+			printf("\nThumb Register State:\n");
+			printRegisterStatus();
+		}
 		assert(false);
 	}
 
@@ -202,6 +235,10 @@ void Comparer::compareAgainstFile()
 
 void Comparer::printRegisterStatus()
 {
+	for(int i = 0; i < 13; i++) {
+		printf("R%d: 0x%08X\n", i, cpu.getRegister(RegisterID{ (u8)i }));
+	}
+
 	u32 r13 = cpu.getRegister(RegisterID{ R13_ID });
 	printf("R13: 0x%08X\n", r13);
 

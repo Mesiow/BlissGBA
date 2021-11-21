@@ -36,6 +36,9 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showLoggerSetup = false;
     compareAgainstFile = false;
 
+    stepCountStr = "1";
+    stepCount = 1;
+
     //shift and h
     showKeys[0] = false; showKeys[1] = false;
     memset(addressBufferText, 0, sizeof(addressBufferText));
@@ -471,7 +474,8 @@ void DebugUI::renderEmuButtons()
     }
     ImGui::SameLine();
     if (ImGui::Button("Step")) {
-        cpu->clock();
+        for(int i = 0; i < stepCount; i++)
+            cpu->clock();
 
         if (logger.isActive()) {
             logger.writeFile();
@@ -484,6 +488,26 @@ void DebugUI::renderEmuButtons()
     ImGui::SameLine();
     if (ImGui::Button("Reset")) {
         emu->reset();
+    }
+
+    static const char * list[20] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
+    };
+    static int selectedItem = 0;
+    static bool selected[20];
+
+    if (ImGui::BeginCombo("Step Count", stepCountStr.c_str())) {
+        for (int i = 0; i < IM_ARRAYSIZE(list); i++) {
+            ImGui::Selectable(list[i], &selected[i]);
+            if (selected[i]) {
+                stepCountStr = list[i];
+                stepCount = atoi(stepCountStr.c_str());
+                for (int x = 0; x < 20; x++) {
+                    if (x != i) selected[x] = false;
+                }
+            }
+        }
+        ImGui::EndCombo();
     }
     
     ImGui::NewLine();

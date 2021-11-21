@@ -74,6 +74,8 @@ struct DebugUI {
 	u32 armOpcodeToRunTo;
 	u16 thumbOpcodeToRunTo;
 	char opcodeBufferText[9];
+	std::string stepCountStr;
+	u32 stepCount;
 
 	sf::RenderWindow* window;
 
