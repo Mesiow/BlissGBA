@@ -2595,6 +2595,15 @@ u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
 
 	u32 end_address = reg_rn + (numSetBitsU8(reg_list) * 4) - 4;
 
+	//Empty list
+	if (reg_list == 0x0) {
+		mbus->writeU32(address, R15 + 2);
+		reg_rn += 0x40;
+	}
+
+	reg_rn += (numSetBitsU8(reg_list) * 4);
+	writeRegister(rn, reg_rn);
+
 	for (s32 i = 0; i <= 7; i++) {
 		bool included = testBit(reg_list, i);
 		if (included) {
@@ -2607,17 +2616,6 @@ u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
 
 		if (end_address == address - 4) break;
 	}
-
-	
-
-	//Empty list
-	if (reg_list == 0x0) {
-		mbus->writeU32(address, R15 + 2);
-		reg_rn += 0x40;
-	}
-
-	reg_rn += (numSetBitsU8(reg_list) * 4);
-	writeRegister(rn, reg_rn);
 
 	return 1;
 }
