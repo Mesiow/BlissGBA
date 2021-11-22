@@ -2590,8 +2590,9 @@ u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
 
 	u8 reg_list = ins.registerList();
 
+	u32 reg_base = reg_rn;
 	u32 address = reg_rn;
-	address &= 0xFFFFFFFE;
+	address &= 0xFFFFFFFC;
 
 	u32 end_address = reg_rn + (numSetBitsU8(reg_list) * 4) - 4;
 
@@ -2601,17 +2602,42 @@ u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
 		reg_rn += 0x40;
 	}
 
-	reg_rn += (numSetBitsU8(reg_list) * 4);
-	writeRegister(rn, reg_rn);
+	//Check if first reg in list is rb
+	s8 first_reg = -1;
+	for (s32 i = 0; i <= 7; i++) {
+		if (testBit(reg_list, i)) {
+			first_reg = i;
+			break;
+		}
+	}
+
+	//Is rb the first register in the list?
+	bool first = false;
+	if (rn.id == first_reg) {
+		first = true;
+	}
+
+	if (first == false) {
+		reg_rn += (numSetBitsU8(reg_list) * 4);
+		writeRegister(rn, reg_rn);
+	}
 
 	for (s32 i = 0; i <= 7; i++) {
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
-
+			
+			//If first, write the rb value to mem
 			u32 reg = getRegister(id);
 			mbus->writeU32(address, reg);
 			address += 4;
+
+			//then increment and writeback
+			if (first) {
+				reg_rn += (numSetBitsU8(reg_list) * 4);
+				writeRegister(rn, reg_rn);
+				first = false;
+			}
 		}
 
 		if (end_address == address - 4) break;
@@ -2628,9 +2654,31 @@ u8 Arm::thumbOpLDMIA(ThumbInstruction& ins)
 	u8 reg_list = ins.registerList();
 
 	u32 address = reg_rn;
-	address &= 0xFFFFFFFE;
+	address &= 0xFFFFFFFC;
 
 	u32 end_address = reg_rn + (numSetBitsU8(reg_list) * 4) - 4;
+
+	//Empty list
+	if (reg_list == 0x0) {
+		//Load value from reg_rn address into r15
+		u32 addr = mbus->readU32(address);
+		R15 = addr & 0xFFFFFFFE;
+		flushThumbPipeline();
+
+		reg_rn += 0x40;
+	}
+
+	//Check if first reg in list is rb
+	s8 first_reg = -1;
+	for (s32 i = 0; i <= 7; i++) {
+		if (testBit(reg_list, i)) {
+			first_reg = i;
+			break;
+		}
+	}
+
+	reg_rn += (numSetBitsU8(reg_list) * 4);
+	writeRegister(rn, reg_rn);
 
 	for (s32 i = 0; i <= 7; i++) {
 		bool included = testBit(reg_list, i);
@@ -2644,19 +2692,6 @@ u8 Arm::thumbOpLDMIA(ThumbInstruction& ins)
 
 		if (end_address == address - 4) break;
 	}
-	
-	//Empty list
-	if (reg_list == 0x0) {
-		//Load value from reg_rn address into r15
-		u32 addr = mbus->readU32(address);
-		R15 = addr & 0xFFFFFFFE;
-		flushThumbPipeline();
-
-		reg_rn += 0x40;
-	}
-
-	reg_rn += (numSetBitsU8(reg_list) * 4);
-	writeRegister(rn, reg_rn);
 
 	return 1;
 }
