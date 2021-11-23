@@ -1440,12 +1440,12 @@ u8 Arm::opSBC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-	u32 result = reg_rn - (shifter_op - !getFlag(C));
+	u32 result = (reg_rn - shifter_op) - (!(getFlag(C)));
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	borrow = borrowFrom(reg_rn, shifter_op - !getFlag(C));
-	overflow = overflowFromSub(reg_rn, shifter_op - !getFlag(C));
+	borrow = borrowFrom(reg_rn, (shifter_op - (!(getFlag(C)))));
+	overflow = overflowFromSub(reg_rn, (shifter_op - (!(getFlag(C)))));
 
 	if (flags) {
 		setCC(reg_rd, !borrow, overflow);
