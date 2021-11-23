@@ -86,7 +86,8 @@ void Ppu::renderBitmapMode4()
 		u32 index = ((currentScanline * SCREEN_WIDTH + x) * mode4.bpp);
 		u8 paletteIndex = readU8(VRAM_START_ADDR + index);
 
-		u16 palette = readU16(PRAM_START_ADDR + paletteIndex);
+		u32 pramAddr = PRAM_START_ADDR + (paletteIndex * 2);
+		u16 palette = readU16(pramAddr);
 
 		u8 red = getU8Color((palette & 0x1F));
 		u8 green = getU8Color((palette >> 5) & 0x1F);
