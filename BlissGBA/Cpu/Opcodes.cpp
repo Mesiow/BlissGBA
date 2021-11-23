@@ -20,7 +20,7 @@ void Arm::mapArmOpcodes()
 			armlut[i] = b(&Arm::opBX);
 		}
 		////MSR Immediate
-		else if (((i >> 7) == 0b00110) && ((i & 0xF) != 0b0000) && !testBit(i, 4)) {
+		else if (((i >> 7) == 0b00110) && (((i >> 4) & 0x3) == 0b10)) {
 			armlut[i] = b(&Arm::executeMSRImm);
 		}
 		//MSR Register
