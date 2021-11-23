@@ -1269,7 +1269,7 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	}
 	
 	if (flags) {
-		setCC(reg_rd, false, false, true, shifter_carry_out);
+		setCC(result, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
