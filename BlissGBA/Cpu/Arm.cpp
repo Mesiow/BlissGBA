@@ -1444,11 +1444,11 @@ u8 Arm::opSBC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	borrow = borrowFrom(reg_rn, (shifter_op - (!(getFlag(C)))));
-	overflow = overflowFromSub(reg_rn, (shifter_op - (!(getFlag(C)))));
+	borrow = borrowFrom(reg_rn - shifter_op, (!(getFlag(C))));
+	overflow = overflowFromSub(reg_rn - shifter_op, (!(getFlag(C))));
 
 	if (flags) {
-		setCC(reg_rd, !borrow, overflow);
+		setCC(reg_rd, borrow, overflow);
 	}
 
 	return 1;
