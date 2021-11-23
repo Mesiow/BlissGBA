@@ -90,7 +90,7 @@ enum class ProcessorMode : u8 {
 	SVC, //Supervisor (protected mode for the OS)
 	ABT, //Abort (Implements virtual memory/and or mem protection)
 	UND, //Undefined (supports software emulation of hardware co-processors)
-	SYS //System
+	SYS //System (privileged)
 };
 
 struct PSR {
@@ -135,6 +135,7 @@ public:
 	void setCC(u32 rd, bool borrow, bool overflow,
 		 bool shiftOut = false, u8 shifterCarryOut = 0);
 
+	bool currentModeHasSPSR();
 	ProcessorMode getProcessorMode();
 	State getState();
 	u8 getConditionCode(u8 cond);

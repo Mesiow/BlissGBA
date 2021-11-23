@@ -471,6 +471,15 @@ void Arm::setCC(u32 rd, bool borrow, bool overflow,
 	}
 }
 
+bool Arm::currentModeHasSPSR()
+{
+	return ((mode == ProcessorMode::FIQ) ||
+		(mode == ProcessorMode::IRQ) ||
+		(mode == ProcessorMode::SVC) ||
+		(mode == ProcessorMode::ABT) ||
+		(mode == ProcessorMode::UND));
+}
+
 ProcessorMode Arm::getProcessorMode()
 {
 	ProcessorMode mode = ProcessorMode::SYS;
@@ -927,10 +936,10 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	u8 PU = (ins.P() << 1) | ins.U();
 	AddrMode4Result result;
 	switch (PU) {
-	case 0b01: result = addrMode4.incrementAfter(ins); break;
-	case 0b11: result = addrMode4.incrementBefore(ins); break;
-	case 0b00: result = addrMode4.decrementAfter(ins); break;
-	case 0b10: result = addrMode4.decrementBefore(ins); break;
+		case 0b01: result = addrMode4.incrementAfter(ins); break;
+		case 0b11: result = addrMode4.incrementBefore(ins); break;
+		case 0b00: result = addrMode4.decrementAfter(ins); break;
+		case 0b10: result = addrMode4.decrementBefore(ins); break;
 	}
 
 	u16 reg_list = ins.registerList();
@@ -1767,14 +1776,14 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 	bool cpsr_write = (R == 0x0);
 
 	if (cpsr_write) {
-		if ((fm & 0x1) == 0x1) {
+		if (((fm & 0x1) == 0x1) && mode == ProcessorMode::SYS) {
 			u32 operand = value & 0xFF;
 			for (u32 i = 0; i <= 7; i++)
 				CPSR = resetBit(CPSR, i);
 
 			CPSR |= operand;
 		}
-		if (((fm >> 3) & 0x1) == 0x1) {
+		if ((((fm >> 3) & 0x1) == 0x1) && mode == ProcessorMode::SYS) {
 			u32 operand = (value >> V_BIT) & 0xF;
 			for (u32 i = 28; i <= 31; i++)
 				CPSR = resetBit(CPSR, i);
