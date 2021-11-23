@@ -91,17 +91,9 @@ void Comparer::openExistingFile(const std::string& fileName)
 			file.read((char*)fileBuffer, file_length);
 
 			state = reinterpret_cast<ExpectedState*>(fileBuffer);
-			////Skip first 2 instructions in log
+			////Skip first 2 instructions in sky's log
 			state += 2;
 			instructionCounter += 2;
-			/*for (int i = 0; i < 13; i++) {
-				printf("0x%08X\n", state->regs[i]);
-			}
-			printf("0x%08X\n", state->sp);
-			printf("0x%08X\n", state->lr);
-			printf("0x%08X\n", state->r15);
-			printf("0x%08X\n", state->cpsr);
-			printf("0x%08X\n", state->spsr);*/
 		}
 	}
 }
