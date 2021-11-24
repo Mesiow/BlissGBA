@@ -30,7 +30,7 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u32 rs_reg = cpu.getRegister(rs);
 
 		//The least significant byte of rs is the shift amount
-		rm_reg = cpu.shift(rs_reg, ((rs_reg) & 0xFF), shiftType, shiftedBit);
+		rm_reg = cpu.shift(rm_reg, ((rs_reg) & 0xFF), shiftType, shiftedBit);
 
 		return rm_reg;
 	}
