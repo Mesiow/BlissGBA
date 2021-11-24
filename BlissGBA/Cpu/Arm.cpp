@@ -591,12 +591,25 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit)
 
 u32 Arm::lsl(u32 value, u8 shift, u8& shiftedBit)
 {
-	//Save last carried out bit
-	shiftedBit = (31 - (shift - 1));
-	shiftedBit = ((value >> shiftedBit) & 0x1);
-
-	value <<= shift;
-	return value;
+	u32 result = 0;
+	if (shift < 32) {
+		if (shift != 0) {
+			//Save last carried out bit
+			shiftedBit = (31 - (shift - 1));
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+		}
+		result = value << shift;
+	}
+	else {
+		result = 0;
+		if (shift == 32) {
+			shiftedBit = value & 0x1;
+		}
+		else {
+			shiftedBit = 0;
+		}
+	}
+	return result;
 }
 
 u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit)
