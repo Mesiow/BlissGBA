@@ -39,7 +39,7 @@ void Ppu::reset()
 	mode4.framebuffer.loadFromImage(mode4.pixels);
 	mode4.frame = sf::Sprite(mode4.framebuffer);
 
-	float scaleFactor = 2;
+	float scaleFactor = 2.5;
 	mode3.frame.setScale(scaleFactor, scaleFactor);
 	mode4.frame.setScale(scaleFactor, scaleFactor);
 }
