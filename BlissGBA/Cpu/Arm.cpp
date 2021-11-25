@@ -490,7 +490,7 @@ void Arm::setCC(u32 rd, bool borrow, bool overflow,
 		}
 	}
 	else {
-		CPSR = SPSR;
+		CPSR = getSPSR();
 	}
 }
 
@@ -1524,11 +1524,17 @@ u8 Arm::opSUB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn - shifter_op;
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
+	if (reg_rd != R15) {
+		reg_rd = result;
+		writeRegister(rd, reg_rd);
 
-	borrow = borrowFrom(reg_rn, shifter_op);
-	overflow = overflowFromSub(reg_rn, shifter_op);
+		borrow = borrowFrom(reg_rn, shifter_op);
+		overflow = overflowFromSub(reg_rn, shifter_op);
+	}
+	else {
+		R15 = result & 0xFFFFFFFC;
+		flushPipeline();
+	}
 	
 	if (flags) {
 		setCC(reg_rd, borrow, overflow);
