@@ -30,7 +30,7 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u32 rs_reg = cpu.getRegister(rs);
 
 		//The least significant byte of rs is the shift amount
-		rm_reg = cpu.shift(rm_reg, ((rs_reg) & 0xFF), shiftType, shiftedBit);
+		rm_reg = cpu.shift(rm_reg, ((rs_reg) & 0xFF), shiftType, shiftedBit, false);
 
 		return rm_reg;
 	}
@@ -44,7 +44,7 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u32 rm_reg = cpu.getRegister(rm);
 		u32 rn_reg = cpu.getRegister(rn);
 
-		rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit);
+		rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit, true);
 
 		return rm_reg;
 	}
@@ -148,7 +148,7 @@ AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstructio
 	u32 address;
 	if (P == 0x1) {
 		if (scaledRegOffset) {
-			u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut);
+			u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut, false);
 			address = ((U == 0x1) ? rn_reg + index : rn_reg - index);
 		}
 		else {
@@ -173,7 +173,7 @@ AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstructio
 			//LDR, LDRB, STR or STRB (normal memory access performed)
 			address = rn_reg;
 			if (scaledRegOffset) {
-				u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut);
+				u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut, false);
 				result.rn = ((U == 0x1) ? rn_reg + index : rn_reg - index);
 			}
 			else {

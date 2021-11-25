@@ -145,9 +145,10 @@ public:
 	u32 readU32();
 	u32 fetchU32();
 
-	u32 shift(u32 value, u8 amount, u8 type, u8 &shiftedBit);
+	//If immediate == false, the value passed in is a register
+	u32 shift(u32 value, u8 amount, u8 type, u8 &shiftedBit, bool immediate);
 	u32 lsl(u32 value, u8 shift, u8& shiftedBit);
-	u32 lsr(u32 value, u8 shift, u8& shiftedBit);
+	u32 lsr(u32 value, u8 shift, u8& shiftedBit, bool immediate);
 	u32 asr(u32 value, u8 shift, u8& shiftedBit);
 	u32 ror(u32 value, u8 shift);
 	u32 rrx(u32 value, u8 &shiftedBit);
