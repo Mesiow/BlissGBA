@@ -614,11 +614,23 @@ u32 Arm::lsl(u32 value, u8 shift, u8& shiftedBit)
 
 u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit)
 {
-	shiftedBit = (shift - 1);
-	shiftedBit = ((value >> shiftedBit) & 0x1);
-
-	value >>= shift;
-	return value;
+	u32 result = 0;
+	//shift == 0 encoded as 32
+	if (shift == 0) {
+		result = 0;
+		shiftedBit = (value >> 31) & 0x1;
+	}
+	//shift > 32
+	else {
+		shiftedBit = (shift - 1);
+		shiftedBit = ((value >> shiftedBit) & 0x1);
+		
+		result = value >> shift;
+		if (shift > 32) {
+			result = 0;
+		}
+	}
+	return result;
 }
 
 u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit)
