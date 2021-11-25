@@ -446,6 +446,25 @@ void Arm::writeRegister(RegisterID reg, u32 value)
 	}
 }
 
+void Arm::writeSPSR(u32 spsr)
+{
+	if (mode == ProcessorMode::FIQ) {
+		SPSR_fiq = spsr;
+	}
+	else if (mode == ProcessorMode::IRQ) {
+		SPSR_irq = spsr;
+	}
+	else if (mode == ProcessorMode::SVC) {
+		SPSR_svc = spsr;
+	}
+	else if (mode == ProcessorMode::ABT) {
+		SPSR_abt = spsr;
+	}
+	else if (mode == ProcessorMode::UND) {
+		SPSR_und = spsr;
+	}
+}
+
 void Arm::writePC(u32 pc)
 {
 	R15 |= ((pc << 2) & 0xFFFFFFFF);
@@ -1934,18 +1953,24 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 	}
 	else { //spsr write
 		if ((fm & 0x1) == 0x1) {
+			u32 spsr = getSPSR();
 			u32 operand = value & 0xFF;
 			for (u32 i = 0; i <= 7; i++)
-				SPSR = resetBit(SPSR, i);
+				spsr = resetBit(SPSR, i);
 
-			SPSR |= operand;
+			spsr |= operand;
+
+			writeSPSR(spsr);
 		}
 		if (((fm >> 3) & 0x1) == 0x1) {
+			u32 spsr = getSPSR();
 			u32 operand = (value >> V_BIT) & 0xF;
 			for (u32 i = 28; i <= 31; i++)
-				SPSR = resetBit(SPSR, i);
+				spsr = resetBit(SPSR, i);
 
-			SPSR |= (operand << V_BIT);
+			spsr |= (operand << V_BIT);
+
+			writeSPSR(spsr);
 		}
 	}
 

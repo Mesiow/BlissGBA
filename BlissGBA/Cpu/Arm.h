@@ -129,6 +129,7 @@ public:
 
 	u32 getRegister(RegisterID reg);
 	void writeRegister(RegisterID reg, u32 value);
+	void writeSPSR(u32 spsr);
 	void writePC(u32 pc);
 
 	//Set condition codes (S bit)
