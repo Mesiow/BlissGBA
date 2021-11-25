@@ -44,18 +44,8 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u32 rm_reg = cpu.getRegister(rm);
 		u32 rn_reg = cpu.getRegister(rn);
 
-		if (shiftAmount == 0) {
-			shiftedBit = cpu.getFlag(C);
-			
-			u32 r15 = cpu.R15;
-			if ((rm_reg == r15) || (rn_reg == r15)) {
-				rm_reg = r15;
-			}
-			return rm_reg;
-		}
-		else {
-			rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit);
-		}
+		rm_reg = cpu.shift(rm_reg, shiftAmount, shiftType, shiftedBit);
+
 		return rm_reg;
 	}
 }
