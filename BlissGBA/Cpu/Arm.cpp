@@ -576,13 +576,10 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit, bool immediate)
 			break;
 
 		case 0b11: {
-			if (amount == 0) {
-				value = rrx(value, shiftedBit);
-				return value;
+			if (immediate) {
+				
 			}
-			value = ror(value, amount);
-			//Save last carried out bit
-			shiftedBit = (value >> 31) & 0x1;
+			value = ror(value, amount, shiftedBit, immediate);
 		}
 			break;
 	}
@@ -721,14 +718,58 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 	return result;
 }
 
+u32 Arm::ror(u32 value, u8 shift, u8 &shiftedBit, bool immediate)
+{
+	u32 result = 0;
+	if (immediate) {
+		if (shift == 0) {
+			result = rrx(value, shiftedBit);
+			return result;
+		}
+		else {
+			u32 rotatedOut = getNthBits(value, 0, shift);
+			u32 rotatedIn = getNthBits(value, shift, 31);
+
+			shiftedBit = (shift - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+
+			result = value >> shift;
+			result |= (rotatedOut << (32 - shift));
+		}
+	}
+	else {
+		//Register shift
+		if (shift == 0) {
+			result = value;
+			shiftedBit = getFlag(C);
+		}
+		else if ((shift & 0x1F) == 0) {
+			result = value;
+			shiftedBit = (value >> 31) & 0x1;
+		}
+		//rm[0-4] > 0
+		else {
+			u32 rotatedOut = getNthBits(value, 0, shift);
+			u32 rotatedIn = getNthBits(value, shift, 31);
+
+			shiftedBit = (shift - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+
+			result = value >> shift;
+			result |= (rotatedOut << (32 - shift));
+		}
+	}
+	return result;
+}
+
 u32 Arm::ror(u32 value, u8 shift)
 {
 	u32 rotatedOut = getNthBits(value, 0, shift);
 	u32 rotatedIn = getNthBits(value, shift, 31);
-	
+
 	value >>= shift;
 	value |= (rotatedOut << (32 - shift));
-	//u32 result = ((rotatedIn) | (rotatedOut << (32 - shift)));
+	
 	return value;
 }
 
