@@ -1963,7 +1963,7 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 		}
 	}
 	else { //spsr write
-		if ((fm & 0x1) == 0x1) {
+		if (((fm & 0x1) == 0x1) && currentModeHasSPSR()) {
 			u32 spsr = getSPSR();
 			u32 operand = value & 0xFF;
 			for (u32 i = 0; i <= 7; i++)
@@ -1973,7 +1973,7 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 
 			writeSPSR(spsr);
 		}
-		if (((fm >> 3) & 0x1) == 0x1) {
+		if ((((fm >> 3) & 0x1) == 0x1) && currentModeHasSPSR()) {
 			u32 spsr = getSPSR();
 			u32 operand = (value >> V_BIT) & 0xF;
 			for (u32 i = 28; i <= 31; i++)
