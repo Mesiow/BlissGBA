@@ -107,7 +107,8 @@ void Comparer::compareAgainstFile()
 		state_address = cpu.R15 - 4;
 
 	for (s32 i = 0; i < 13; i++) {
-		if (cpu.registers[i].value != state->regs[i]) {
+		u32 reg = cpu.getRegister(RegisterID{ (u8)i });
+		if (reg != state->regs[i]) {
 			if (cpu.getState() == State::ARM) {
 				printf("!!!CPU State Fails To Match Log!!! at address 0x%08X\n", state_address);
 				printf("Register %d does not match\n", i);
