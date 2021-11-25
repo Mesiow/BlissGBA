@@ -620,7 +620,7 @@ u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit)
 		result = 0;
 		shiftedBit = (value >> 31) & 0x1;
 	}
-	//shift > 32
+	//shift > 0
 	else {
 		shiftedBit = (shift - 1);
 		shiftedBit = ((value >> shiftedBit) & 0x1);
@@ -635,15 +635,36 @@ u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit)
 
 u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit)
 {
-	shiftedBit = (shift - 1);
-	shiftedBit = ((value >> shiftedBit) & 0x1);
+	u32 result = 0;
+	//shift == 0 encoded as 32
+	if (shift == 0) {
+		u8 rm_sign_bit = (value >> 31) & 0x1;
+		if (rm_sign_bit == 0) {
+			result = 0;
+			shiftedBit = (value >> 31) & 0x1;
+		}
+		//rm_sign_bit == 1
+		else {
+			result = 0xFFFFFFFF;
+			shiftedBit = (value >> 31) & 0x1;
+		}
+	}
+	//shift > 0
+	else {
+		if (shift == 31) {
+			if ((value >> 31) & 0x1) {
+				result = 0xFFFFFFFF;
+				shiftedBit = (value >> 31) & 0x1;
+			}
+		}
+		else {
+			shiftedBit = (shift - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
 
-	u8 msb = ((value >> 31) & 0x1);
-	value >>= shift;
-	//fill top empty bits with all 1's
-	if (msb) value = signExtend32(value, (32 - shift));
-
-	return value;
+			result = value >> shift;
+		}
+	}
+	return result;
 }
 
 u32 Arm::ror(u32 value, u8 shift)
