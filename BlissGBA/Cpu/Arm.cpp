@@ -572,7 +572,7 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit, bool immediate)
 			break;
 
 		case 0b10:
-			value = asr(value, amount, shiftedBit);
+			value = asr(value, amount, shiftedBit, immediate);
 			break;
 
 		case 0b11: {
@@ -659,35 +659,63 @@ u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 	return result;
 }
 
-u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit)
+u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 {
 	u32 result = 0;
-	//shift == 0 encoded as 32
-	if (shift == 0) {
-		u8 rm_sign_bit = (value >> 31) & 0x1;
-		if (rm_sign_bit == 0) {
-			result = 0;
-			shiftedBit = (value >> 31) & 0x1;
-		}
-		//rm_sign_bit == 1
-		else {
-			result = 0xFFFFFFFF;
-			shiftedBit = (value >> 31) & 0x1;
-		}
-	}
-	//shift > 0
-	else {
-		if (shift == 31) {
-			if ((value >> 31) & 0x1) {
+	if (immediate) {
+		//shift == 0 encoded as 32
+		if (shift == 0) {
+			u8 rm_sign_bit = (value >> 31) & 0x1;
+			if (rm_sign_bit == 0) {
+				result = 0;
+				shiftedBit = (value >> 31) & 0x1;
+			}
+			//rm_sign_bit == 1
+			else {
 				result = 0xFFFFFFFF;
 				shiftedBit = (value >> 31) & 0x1;
 			}
 		}
+		//shift > 0
 		else {
+			if (shift == 31) {
+				if ((value >> 31) & 0x1) {
+					result = 0xFFFFFFFF;
+					shiftedBit = (value >> 31) & 0x1;
+				}
+			}
+			else {
+				shiftedBit = (shift - 1);
+				shiftedBit = ((value >> shiftedBit) & 0x1);
+
+				result = value >> shift;
+			}
+		}
+	}
+	//Register shift
+	else {
+		//zero shift
+		if (shift == 0) {
+			result = value;
+			shiftedBit = getFlag(C);
+		}
+		else if (shift < 32) {
 			shiftedBit = (shift - 1);
 			shiftedBit = ((value >> shiftedBit) & 0x1);
 
 			result = value >> shift;
+		}
+		//shift >= 32
+		else {
+			u8 sign_bit_rm = (value >> 31) & 0x1;
+			if (sign_bit_rm == 0) {
+				result = 0;
+				shiftedBit = (value >> 31) & 0x1;
+			}
+			else {
+				result = 0xFFFFFFFF;
+				shiftedBit = (value >> 31) & 0x1;
+			}
 		}
 	}
 	return result;
@@ -2028,7 +2056,7 @@ u8 Arm::thumbOpASR(ThumbInstruction& ins, u8 immediate5)
 	//imm5 > 0
 	else {
 		u8 shifter_carry_out = 0;
-		reg_rd = asr(reg_rm, immediate5, shifter_carry_out);
+		reg_rd = asr(reg_rm, immediate5, shifter_carry_out, true);
 
 		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 	}
@@ -2053,7 +2081,7 @@ u8 Arm::thumbOpASR(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
 	}
 	else if (shift_amount < 32) {
 		u8 shifter_carry_out = 0;
-		reg_rd = asr(reg_rd, shift_amount, shifter_carry_out);
+		reg_rd = asr(reg_rd, shift_amount, shifter_carry_out, false);
 
 		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 	}
