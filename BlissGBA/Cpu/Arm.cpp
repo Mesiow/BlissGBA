@@ -1423,6 +1423,7 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 	
+	
 	u32 result = shifter_op;
 	if (reg_rd == R15) {
 		writeRegister(rd, result);

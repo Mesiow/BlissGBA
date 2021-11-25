@@ -29,6 +29,9 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 		u32 rm_reg = cpu.getRegister(rm);
 		u32 rs_reg = cpu.getRegister(rs);
 
+		//PC as operand 1 with shifted register
+		if (rm_reg == cpu.R15) rm_reg += 4;
+
 		//The least significant byte of rs is the shift amount
 		rm_reg = cpu.shift(rm_reg, ((rs_reg) & 0xFF), shiftType, shiftedBit, false);
 
