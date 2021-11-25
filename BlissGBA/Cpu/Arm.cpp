@@ -55,8 +55,12 @@ void Arm::reset()
 	R15 = 0x08000000;
 	SP = 0x03007F00; //R13
 	CPSR = 0x000000DF;
-	SPSR = 0x000000DF;
+	SPSR = CPSR;
 	SPSR_irq = 0x0;
+	SPSR_fiq = 0x0;
+	SPSR_svc = 0x0;
+	SPSR_abt = 0x0;
+	SPSR_und = 0x0;
 
 	SP_irq = 0x03007FA0;
 	SP_svc = 0x03007FE0;
@@ -1956,7 +1960,7 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 			u32 spsr = getSPSR();
 			u32 operand = value & 0xFF;
 			for (u32 i = 0; i <= 7; i++)
-				spsr = resetBit(SPSR, i);
+				spsr = resetBit(spsr, i);
 
 			spsr |= operand;
 
@@ -1966,7 +1970,7 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 			u32 spsr = getSPSR();
 			u32 operand = (value >> V_BIT) & 0xF;
 			for (u32 i = 28; i <= 31; i++)
-				spsr = resetBit(SPSR, i);
+				spsr = resetBit(spsr, i);
 
 			spsr |= (operand << V_BIT);
 
