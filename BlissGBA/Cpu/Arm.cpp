@@ -494,6 +494,16 @@ void Arm::setCC(u32 rd, bool borrow, bool overflow,
 	}
 }
 
+bool Arm::inPrivilegedMode()
+{
+	return ((mode == ProcessorMode::SYS) ||
+		(mode == ProcessorMode::IRQ) ||
+		(mode == ProcessorMode::FIQ) ||
+		(mode == ProcessorMode::SVC) ||
+		(mode == ProcessorMode::ABT) ||
+		(mode == ProcessorMode::UND));
+}
+
 bool Arm::currentModeHasSPSR()
 {
 	return ((mode == ProcessorMode::FIQ) ||
@@ -1967,14 +1977,14 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 	bool cpsr_write = (R == 0x0);
 
 	if (cpsr_write) {
-		if (((fm & 0x1) == 0x1) && mode == ProcessorMode::SYS) {
+		if (((fm & 0x1) == 0x1) && inPrivilegedMode()) {
 			u32 operand = value & 0xFF;
 			for (u32 i = 0; i <= 7; i++)
 				CPSR = resetBit(CPSR, i);
 
 			CPSR |= operand;
 		}
-		if ((((fm >> 3) & 0x1) == 0x1) && mode == ProcessorMode::SYS) {
+		if ((((fm >> 3) & 0x1) == 0x1)) {
 			u32 operand = (value >> V_BIT) & 0xF;
 			for (u32 i = 28; i <= 31; i++)
 				CPSR = resetBit(CPSR, i);

@@ -136,6 +136,7 @@ public:
 	void setCC(u32 rd, bool borrow, bool overflow,
 		 bool shiftOut = false, u8 shifterCarryOut = 0);
 
+	bool inPrivilegedMode();
 	bool currentModeHasSPSR();
 	ProcessorMode getProcessorMode();
 	State getState();
