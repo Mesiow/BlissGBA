@@ -1706,6 +1706,10 @@ u8 Arm::opCMP(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 
 	setCC(result, borrow, overflow);
 
+	if (rd.id == R15_ID) {
+		CPSR = getSPSR();
+	}
+
 	return 1;
 }
 
