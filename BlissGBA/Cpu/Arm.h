@@ -276,7 +276,10 @@ private:
 	//Multiplies
 	u8 opMUL(ArmInstruction &ins, RegisterID rd, RegisterID rm, RegisterID rs, bool flags);
 	u8 opMLA(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, bool flags);
-
+	u8 opSMLAL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags);
+	u8 opSMULL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags);
+	u8 opUMLAL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags);
+	u8 opUMULL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags);
 
 	//Thumb instructions
 

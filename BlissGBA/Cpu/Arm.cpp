@@ -1163,6 +1163,26 @@ u8 Arm::executeMSRReg(ArmInstruction& ins)
 
 u8 Arm::executeMultiplyLong(ArmInstruction& ins)
 {
+	u8 mull = (ins.encoding >> 21) & 0x7;
+	bool flags = ins.s();
+
+	u8 rdhi_id = (ins.encoding >> 16) & 0xF;
+	u8 rdlo_id = (ins.encoding >> 12) & 0xF;
+	u8 rs_id = (ins.encoding >> 8) & 0xF;
+	u8 rm_id = (ins.encoding) & 0xF;
+
+	RegisterID rdhi; rdhi.id = rdhi_id;
+	RegisterID rdlo; rdlo.id = rdlo_id;
+	RegisterID rs; rs.id = rs_id;
+	RegisterID rm; rm.id = rm_id;
+
+	switch (mull) {
+		case 0b100: opUMULL(ins, rdhi, rdlo, rm, rs, flags); break;
+		case 0b101: opUMLAL(ins, rdhi, rdlo, rm, rs, flags); break;
+		case 0b110: opSMULL(ins, rdhi, rdlo, rm, rs, flags); break;
+		case 0b111: opSMLAL(ins, rdhi, rdlo, rm, rs, flags); break;
+	}
+
 	return 1;
 }
 
@@ -2060,8 +2080,8 @@ u8 Arm::opMUL(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, 
 
 u8 Arm::opMLA(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, bool flags)
 {
-	u32 rn_id = (ins.encoding >> 12) & 0xF;
-	u32 reg_rn = getRegister(RegisterID{ rn_id });
+	u8 rn_id = (ins.encoding >> 12) & 0xF;
+	u32 reg_rn = getRegister(RegisterID{ (u8)rn_id });
 
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rm = getRegister(rm);
@@ -2074,6 +2094,44 @@ u8 Arm::opMLA(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, 
 	if (flags) {
 		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 		(result == 0) ? setFlag(Z) : clearFlag(Z);
+	}
+
+	return 1;
+}
+
+u8 Arm::opSMLAL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags)
+{
+	return 1;
+}
+
+u8 Arm::opSMULL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags)
+{
+	return 1;
+}
+
+u8 Arm::opUMLAL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags)
+{
+	return 1;
+}
+
+u8 Arm::opUMULL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags)
+{
+	u32 reg_rdhi = getRegister(rdhi);
+	u32 reg_rdlo = getRegister(rdlo);
+
+	s32 reg_rm = getRegister(rm);
+	s32 reg_rs = getRegister(rs);
+
+	u64 result = (u64)reg_rm * (u64)reg_rs;
+	reg_rdhi = (result >> 32);
+	reg_rdlo = (result & 0xFFFFFFFF);
+
+	writeRegister(rdhi, reg_rdhi);
+	writeRegister(rdlo, reg_rdlo);
+
+	if (flags) {
+		(reg_rdhi >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		((reg_rdhi == 0) && (reg_rdlo == 0)) ? setFlag(Z) : clearFlag(Z);
 	}
 
 	return 1;
