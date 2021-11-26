@@ -19,6 +19,10 @@ void Arm::mapArmOpcodes()
 		else if (i == 0b000100100001) {
 			armlut[i] = b(&Arm::opBX);
 		}
+		//MRS
+		else if (((i >> 7) == 0b00010) && (((i >> 4) & 0x3) == 0b00)) {
+			armlut[i] = b(&Arm::opMRS);
+		}
 		////MSR Immediate
 		else if (((i >> 7) == 0b00110) && (((i >> 4) & 0x3) == 0b10)) {
 			armlut[i] = b(&Arm::executeMSRImm);
