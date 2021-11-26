@@ -1161,6 +1161,18 @@ u8 Arm::executeMSRReg(ArmInstruction& ins)
 	return 1;
 }
 
+u8 Arm::executeMultiplyLong(ArmInstruction& ins)
+{
+	return 1;
+}
+
+u8 Arm::executeMultiply(ArmInstruction& ins)
+{
+	opMUL(ins, ins.s());
+
+	return 1;
+}
+
 u8 Arm::executeThumbUnconditionalBranch(ThumbInstruction& ins)
 {
 	u8 H = ins.H();
@@ -2013,6 +2025,28 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 
 			writeSPSR(spsr);
 		}
+	}
+
+	return 1;
+}
+
+u8 Arm::opMUL(ArmInstruction& ins, bool flags)
+{
+	u8 rd_id = (ins.encoding >> 16) & 0xF;
+	u8 rm_id = (ins.encoding) & 0xF;
+	u8 rs_id = (ins.encoding >> 8) & 0xF;
+
+	u32 reg_rd = getRegister(RegisterID{ rd_id });
+	u32 reg_rm = getRegister(RegisterID{ rm_id });
+	u32 reg_rs = getRegister(RegisterID{ rs_id });
+
+	u32 result = (reg_rm * reg_rs);
+	reg_rd = result;
+	writeRegister(RegisterID{ rd_id }, reg_rd);
+
+	if (flags) {
+		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
 	}
 
 	return 1;

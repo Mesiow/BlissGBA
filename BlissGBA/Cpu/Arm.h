@@ -185,6 +185,11 @@ public:
 	u8 executeMSRImm(ArmInstruction& ins);
 	u8 executeMSRReg(ArmInstruction& ins);
 
+	//Multiply
+	u8 executeMultiplyLong(ArmInstruction& ins);
+	u8 executeMultiply(ArmInstruction& ins);
+	
+
 	//Thumb
 	u8 executeThumbUnconditionalBranch(ThumbInstruction& ins);
 	u8 executeThumbLoadFromPool(ThumbInstruction& ins);
@@ -267,6 +272,9 @@ private:
 	//Status Register access instructions
 	u8 opMRS(ArmInstruction& ins);
 	u8 opMSR(ArmInstruction& ins, u32 value);
+
+	//Multiplies
+	u8 opMUL(ArmInstruction &ins, bool flags);
 
 
 	//Thumb instructions
