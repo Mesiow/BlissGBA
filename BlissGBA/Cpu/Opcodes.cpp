@@ -8,6 +8,14 @@ void Arm::mapArmOpcodes()
 		if ((i & 0xF00) == 0xF00) {
 			armlut[i] = b(&Arm::opSWI);
 		}
+		//Multiply long
+		else if ((i & 0xF8F) == 0x89) {
+			armlut[i] = b(&Arm::executeMultiplyLong);
+		}
+		//Multiply
+		else if ((i & 0xFCF) == 0x9) {
+			armlut[i] = b(&Arm::executeMultiply);
+		}
 		//Branch
 		else if ((i >> 8) == 0b1010) {
 			armlut[i] = b(&Arm::opB);
