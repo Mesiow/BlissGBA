@@ -264,8 +264,8 @@ private:
 	u8 opSTR(ArmInstruction& ins, RegisterID rd, u32 address);
 
 	//Status Register access instructions
+	u8 opMRS(ArmInstruction& ins);
 	u8 opMSR(ArmInstruction& ins, u32 value);
-
 
 
 	//Thumb instructions

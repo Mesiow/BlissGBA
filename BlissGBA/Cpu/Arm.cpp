@@ -1944,6 +1944,22 @@ u8 Arm::opSTR(ArmInstruction& ins, RegisterID rd, u32 address)
 	return 1;
 }
 
+u8 Arm::opMRS(ArmInstruction& ins)
+{
+	RegisterID rd = ins.rd();
+	u8 R = ins.R();
+
+	if (R == 0x1) {
+		u32 spsr = getSPSR();
+		writeRegister(rd, spsr);
+	}
+	else {
+		writeRegister(rd, CPSR);
+	}
+
+	return 1;
+}
+
 u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 {
 	u8 R = ins.R();
