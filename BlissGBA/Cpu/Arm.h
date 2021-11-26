@@ -274,7 +274,8 @@ private:
 	u8 opMSR(ArmInstruction& ins, u32 value);
 
 	//Multiplies
-	u8 opMUL(ArmInstruction &ins, bool flags);
+	u8 opMUL(ArmInstruction &ins, RegisterID rd, RegisterID rm, RegisterID rs, bool flags);
+	u8 opMLA(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, bool flags);
 
 
 	//Thumb instructions

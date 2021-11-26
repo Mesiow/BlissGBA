@@ -1168,7 +1168,17 @@ u8 Arm::executeMultiplyLong(ArmInstruction& ins)
 
 u8 Arm::executeMultiply(ArmInstruction& ins)
 {
-	opMUL(ins, ins.s());
+	u8 mul = (ins.encoding >> 21) & 0x1;
+	bool flags = ins.s();
+
+	u8 rd_id = (ins.encoding >> 16) & 0xF;
+	u8 rm_id = (ins.encoding) & 0xF;
+	u8 rs_id = (ins.encoding >> 8) & 0xF;
+
+	if (mul == 0x0)
+		opMUL(ins, RegisterID{ rd_id }, RegisterID{ rm_id }, RegisterID{ rs_id }, flags);
+	else
+		opMLA(ins, RegisterID{ rd_id }, RegisterID{ rm_id }, RegisterID{ rs_id }, flags);
 
 	return 1;
 }
@@ -2030,19 +2040,36 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 	return 1;
 }
 
-u8 Arm::opMUL(ArmInstruction& ins, bool flags)
+u8 Arm::opMUL(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, bool flags)
 {
-	u8 rd_id = (ins.encoding >> 16) & 0xF;
-	u8 rm_id = (ins.encoding) & 0xF;
-	u8 rs_id = (ins.encoding >> 8) & 0xF;
-
-	u32 reg_rd = getRegister(RegisterID{ rd_id });
-	u32 reg_rm = getRegister(RegisterID{ rm_id });
-	u32 reg_rs = getRegister(RegisterID{ rs_id });
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rs = getRegister(rs);
 
 	u32 result = (reg_rm * reg_rs);
 	reg_rd = result;
-	writeRegister(RegisterID{ rd_id }, reg_rd);
+	writeRegister(rd, reg_rd);
+
+	if (flags) {
+		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
+	}
+
+	return 1;
+}
+
+u8 Arm::opMLA(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, bool flags)
+{
+	u32 rn_id = (ins.encoding >> 12) & 0xF;
+	u32 reg_rn = getRegister(RegisterID{ rn_id });
+
+	u32 reg_rd = getRegister(rd);
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rs = getRegister(rs);
+
+	u32 result = (reg_rm * reg_rs + reg_rn);
+	reg_rd = result;
+	writeRegister(rd, result);
 
 	if (flags) {
 		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
