@@ -385,7 +385,6 @@ u32 Arm::getUserModeRegister(RegisterID reg)
 		if (reg.id == R15_ID) return R15;
 	}
 	else {
-		//return registers within r8 - r12 range
 		return registers[reg.id].value;
 	}
 }
@@ -460,6 +459,18 @@ void Arm::writeRegister(RegisterID reg, u32 value)
 				registers[reg.id].value = value;
 			}
 		}
+	}
+}
+
+void Arm::writeUserModeRegister(RegisterID reg, u32 value)
+{
+	if (reg.id >= R13_ID) {
+		if (reg.id == R13_ID) SP = value;
+		if (reg.id == R14_ID) LR = value;
+		if (reg.id == R15_ID) R15 = value;
+	}
+	else {
+		registers[reg.id].value = value;
 	}
 }
 
@@ -1095,9 +1106,15 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
-
 			u32 value = mbus->readU32(addr);
-			writeRegister(id, value);
+			//Load user mode registers
+			if (S == 0x1) {
+				writeUserModeRegister(id, value);
+			}
+			//Load registers of current mode
+			else {
+				writeRegister(id, value);
+			}
 			addr += 4;
 		}
 
