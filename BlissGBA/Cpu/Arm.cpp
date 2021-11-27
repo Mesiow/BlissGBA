@@ -1097,16 +1097,26 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	}
 
 	u16 reg_list = ins.registerList();
-	u32 addr = result.startAddress;
+	u32 address = result.startAddress;
 	u32 end = result.endAddress;
 
-	addr &= 0xFFFFFFFC;
+	address &= 0xFFFFFFFC;
+
+	//Empty list
+	if (reg_list == 0x0) {
+		//Load value from reg_rn address into r15
+		u32 addr = mbus->readU32(address);
+		R15 = addr & 0xFFFFFFFC;
+		flushPipeline();
+
+		result.rn += 0x40;
+	}
 
 	for (s32 i = 0; i <= 14; i++) {
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
-			u32 value = mbus->readU32(addr);
+			u32 value = mbus->readU32(address);
 			//Load user mode registers
 			if (S == 0x1) {
 				writeUserModeRegister(id, value);
@@ -1115,15 +1125,15 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 			else {
 				writeRegister(id, value);
 			}
-			addr += 4;
+			address += 4;
 		}
 
-		if (end == addr - 4) break;
+		if (end == address - 4) break;
 	}
 
 	//R15
 	if (testBit(reg_list, 15)) {
-		u32 value = mbus->readU32(addr);
+		u32 value = mbus->readU32(address);
 		R15 = value & 0xFFFFFFFC;
 		flushPipeline();
 
