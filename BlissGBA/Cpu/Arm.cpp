@@ -1076,6 +1076,8 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	u32 addr = result.startAddress;
 	u32 end = result.endAddress;
 
+	addr &= 0xFFFFFFFC;
+
 	for (s32 i = 0; i <= 14; i++) {
 		bool included = testBit(reg_list, i);
 		if (included) {
@@ -1123,7 +1125,9 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	u32 addr = result.startAddress;
 	u32 end = result.endAddress;
 
-	for (s32 i = 0; i <= 15; i++) {
+	addr &= 0xFFFFFFFC;
+
+	for (s32 i = 0; i <= 14; i++) {
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
@@ -1134,6 +1138,11 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		}
 
 		if (end == addr - 4) break;
+	}
+
+	//If R15 is to be stored, store 4 ahead (R15 + 4) to memory
+	if (testBit(reg_list, 15)) {
+		mbus->writeU32(addr, R15 + 4);
 	}
 
 	if (result.writeback) {
