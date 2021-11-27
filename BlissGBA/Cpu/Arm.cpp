@@ -921,25 +921,47 @@ u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
 		reg_rn = result.address;
 	}
 
+	bool immPostIndex = (result.type == AddrModeLoadStoreType::POSTINDEX);
 	bool useImmediateOffset = (result.type == AddrModeLoadStoreType::OFFSET);
-	u32 address = result.address; //imm offset (no writeback to register rn)
+	//imm offset (no writeback to register rn) or base reg as address (immediate post index)
+	u32 address = result.address;
 
 	if (load) {
 		//LDR, LDRB
 		if (byte) {
-			(useImmediateOffset == true) ? opLDRB(ins, rd, address) : opLDRB(ins, rd, reg_rn);
+			if (useImmediateOffset)
+				opLDRB(ins, rd, address);
+			else { 
+				if (immPostIndex) opLDRB(ins, rd, address);
+				else opLDRB(ins, rd, reg_rn); 
+			}
 		}
 		else {
-			(useImmediateOffset == true) ? opLDR(ins, rd, address) : opLDR(ins, rd, reg_rn);
+			if (useImmediateOffset)
+				opLDR(ins, rd, address);
+			else {
+				if (immPostIndex) opLDR(ins, rd, address);
+				else opLDR(ins, rd, reg_rn);
+			}
 		}
 	}
 	else {
 		//STR, STRB
 		if (byte) {
-			(useImmediateOffset == true) ? opSTRB(ins, rd, address) : opSTRB(ins, rd, reg_rn);
+			if (useImmediateOffset)
+				opSTRB(ins, rd, address);
+			else {
+				if (immPostIndex) opSTRB(ins, rd, address);
+				else opSTRB(ins, rd, reg_rn);
+			}
 		}
 		else {
-			(useImmediateOffset == true) ? opSTR(ins, rd, address) : opSTR(ins, rd, reg_rn);
+			if (useImmediateOffset)
+				opSTR(ins, rd, address);
+			else {
+				if (immPostIndex) opSTR(ins, rd, address);
+				else opSTR(ins, rd, reg_rn);
+			}
 		}
 	}
 
@@ -951,6 +973,9 @@ u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
 	//Both write back after
 	if (result.type == AddrModeLoadStoreType::PREINDEXED ||
 		result.type == AddrModeLoadStoreType::POSTINDEX) {
+		//Don't write back if reg base == reg dest
+		if (load && (rd.id == rn.id)) return 1;
+
 		writeRegister(rn, reg_rn);
 	}
 
