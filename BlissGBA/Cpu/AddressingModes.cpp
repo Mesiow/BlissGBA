@@ -356,7 +356,7 @@ AddrMode4Result AddressingMode4::decrementAfter(ArmInstruction& ins)
 	u32 reg_rn = cpu.getRegister(rn);
 	u16 reg_list = ins.registerList();
 
-	u32 start_address = reg_rn - ((numSetBitsU16(reg_list) * 4) + 4);
+	u32 start_address = reg_rn - (numSetBitsU16(reg_list) * 4) + 4;
 	u32 end_address = reg_rn;
 
 	result.startAddress = start_address;
