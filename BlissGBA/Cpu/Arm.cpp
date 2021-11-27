@@ -1163,10 +1163,16 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	}
 
 	u16 reg_list = ins.registerList();
-	u32 addr = result.startAddress;
+	u32 address = result.startAddress;
 	u32 end = result.endAddress;
 
-	addr &= 0xFFFFFFFC;
+	address &= 0xFFFFFFFC;
+
+	//Empty list
+	if (reg_list == 0x0) {
+		mbus->writeU32(address, R15 + 4);
+		result.rn += 0x40;
+	}
 
 	for (s32 i = 0; i <= 14; i++) {
 		bool included = testBit(reg_list, i);
@@ -1175,23 +1181,23 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 			//Store user mode registers only
 			if (S == 0x1) {
 				u32 reg_usr = getUserModeRegister(id);
-				mbus->writeU32(addr, reg_usr);
+				mbus->writeU32(address, reg_usr);
 			}
 			//Store registers of current mode
 			else {
 				u32 reg = getRegister(id);
-				mbus->writeU32(addr, reg);
+				mbus->writeU32(address, reg);
 			}
-			addr += 4;
+			address += 4;
 		}
 
-		if (end == addr - 4) break;
+		if (end == address - 4) break;
 	}
 
 	bool store_pc = testBit(reg_list, 15);
 	//If R15 is to be stored, store 4 ahead (R15 + 4) to memory
 	if (store_pc) {
-		mbus->writeU32(addr, R15 + 4);
+		mbus->writeU32(address, R15 + 4);
 	}
 
 	if (result.writeback) {
