@@ -916,10 +916,9 @@ u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
 	bool byte = (ins.B() == 0x1); //true == byte, false == word (transfer quantity)
 	bool load = (ins.L() == 0x1); //load or store
 
-	//Write back before
+	//Modify before
 	if (result.type == AddrModeLoadStoreType::PREINDEXED) {
 		reg_rn = result.address;
-		writeRegister(rn, reg_rn);
 	}
 
 	bool useImmediateOffset = (result.type == AddrModeLoadStoreType::OFFSET);
@@ -944,12 +943,16 @@ u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
 		}
 	}
 
-	//Write back after
+	//Modify after
 	if (result.type == AddrModeLoadStoreType::POSTINDEX) {
 		reg_rn = result.rn;
-		writeRegister(rn, reg_rn);
 	}
 
+	//Both write back after
+	if (result.type == AddrModeLoadStoreType::PREINDEXED ||
+		result.type == AddrModeLoadStoreType::POSTINDEX) {
+		writeRegister(rn, reg_rn);
+	}
 
 	return 1;
 }
