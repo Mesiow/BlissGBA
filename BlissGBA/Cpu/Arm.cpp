@@ -377,6 +377,19 @@ u32 Arm::getRegister(RegisterID reg)
 	}
 }
 
+u32 Arm::getUserModeRegister(RegisterID reg)
+{
+	if (reg.id >= R13_ID) {
+		if (reg.id == R13_ID) return SP;
+		if (reg.id == R14_ID) return LR;
+		if (reg.id == R15_ID) return R15;
+	}
+	else {
+		//return registers within r8 - r12 range
+		return registers[reg.id].value;
+	}
+}
+
 void Arm::writeRegister(RegisterID reg, u32 value)
 {
 	//Registers r0 - r7 remain the same for all states
@@ -1113,6 +1126,7 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 u8 Arm::executeSTM(ArmInstruction& ins)
 {
 	u8 PU = (ins.P() << 1) | ins.U();
+	u8 S = ins.S_bit22();
 	AddrMode4Result result;
 	switch (PU) {
 		case 0b01: result = addrMode4.incrementAfter(ins); break;
@@ -1131,17 +1145,25 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
-
-			u32 reg = getRegister(id);
-			mbus->writeU32(addr, reg);
+			//Store user mode registers only
+			if (S == 0x1) {
+				u32 reg_usr = getUserModeRegister(id);
+				mbus->writeU32(addr, reg_usr);
+			}
+			//Store registers of current mode
+			else {
+				u32 reg = getRegister(id);
+				mbus->writeU32(addr, reg);
+			}
 			addr += 4;
 		}
 
 		if (end == addr - 4) break;
 	}
 
+	bool store_pc = testBit(reg_list, 15);
 	//If R15 is to be stored, store 4 ahead (R15 + 4) to memory
-	if (testBit(reg_list, 15)) {
+	if (store_pc) {
 		mbus->writeU32(addr, R15 + 4);
 	}
 

@@ -128,6 +128,7 @@ public:
 	u32 getSPSR();
 
 	u32 getRegister(RegisterID reg);
+	u32 getUserModeRegister(RegisterID reg);
 	void writeRegister(RegisterID reg, u32 value);
 	void writeSPSR(u32 spsr);
 	void writePC(u32 pc);
