@@ -2111,6 +2111,24 @@ u8 Arm::opSMULL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterI
 
 u8 Arm::opUMLAL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags)
 {
+	u32 reg_rdhi = getRegister(rdhi);
+	u32 reg_rdlo = getRegister(rdlo);
+
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rs = getRegister(rs);
+
+	u64 reg_rd = ((u64)reg_rdhi << 32) | ((u64)reg_rdlo);
+
+	u64 result = ((u64)reg_rm * (u64)reg_rs) + reg_rd;
+
+	writeRegister(rdlo, result & 0xFFFFFFFF);
+	writeRegister(rdhi, (result >> 32));
+
+	if (flags) {
+		(result >> 63) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
+	}
+
 	return 1;
 }
 
@@ -2119,8 +2137,8 @@ u8 Arm::opUMULL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterI
 	u32 reg_rdhi = getRegister(rdhi);
 	u32 reg_rdlo = getRegister(rdlo);
 
-	s32 reg_rm = getRegister(rm);
-	s32 reg_rs = getRegister(rs);
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rs = getRegister(rs);
 
 	u64 result = (u64)reg_rm * (u64)reg_rs;
 	reg_rdhi = (result >> 32);
