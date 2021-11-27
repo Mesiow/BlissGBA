@@ -917,11 +917,7 @@ u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
 		reg_rn = result.address;
 	}
 
-	bool immPostIndex = (result.type == AddrModeLoadStoreType::POSTINDEX);
-	bool useImmediateOffset = (result.type == AddrModeLoadStoreType::OFFSET);
-	//imm offset (no writeback to register rn) or base reg as address (immediate post index)
 	u32 address = result.address;
-
 	if (load) {
 		//LDR, LDRB
 		if (byte) {
@@ -985,32 +981,21 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrModeLoadStoreResult &re
 	bool load = (ins.L() == 0x1);
 	u8 SH = (ins.S() << 1) | ins.H();
 
-	switch (result.type) {
-		case AddrModeLoadStoreType::PREINDEXED:
-			reg_rn = result.address;
-			writeRegister(rn, reg_rn);
-			break;
-		
-		case AddrModeLoadStoreType::POSTINDEX:
-			reg_rn = result.rn;
-			writeRegister(rn, reg_rn);
-			break;
+	//Modify before
+	if (result.type == AddrModeLoadStoreType::PREINDEXED) {
+		reg_rn = result.address;
 	}
 
-	bool useImmediateOffset = (result.type == AddrModeLoadStoreType::OFFSET);
-	u32 address = result.address; //imm offset (no writeback to register rn)
-	
+	u32 address = result.address; 
 	switch (SH) {
 		case 0b00: /*SWP*/ break;
 		case 0b01: //Unsigned halfwords
 		{
 			if (!load) {
-				(useImmediateOffset == true) ? opSTRH(ins, rd, address) 
-					: opSTRH(ins, rd, reg_rn); 
+				opSTRH(ins, rd, address);
 			}
 			else {
-				(useImmediateOffset == true) ? opLDRH(ins, rd, address) 
-					: opLDRH(ins, rd, reg_rn); 
+				opLDRH(ins, rd, address);
 			}
 		}
 		break;
@@ -1018,12 +1003,10 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrModeLoadStoreResult &re
 		case 0b10: //Signed byte
 		{
 			if (!load) {
-				(useImmediateOffset == true) ? opSTRH(ins, rd, address)
-					: opSTRH(ins, rd, reg_rn);
+				opSTRH(ins, rd, address);
 			}
 			else { 
-				(useImmediateOffset == true) ? opLDRSB(ins, rd, address) 
-					: opLDRSB(ins, rd, reg_rn); 
+				opLDRSB(ins, rd, address);
 			}
 		}
 		break;
@@ -1031,15 +1014,27 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrModeLoadStoreResult &re
 		case 0b11: //Signed halfword
 		{
 			if (!load) {
-				(useImmediateOffset == true) ? opSTRH(ins, rd, address)
-					: opSTRH(ins, rd, reg_rn);
+				opSTRH(ins, rd, address);
 			}
 			else {
-				(useImmediateOffset == true) ? opLDRSH(ins, rd, address) 
-					: opLDRSH(ins, rd, reg_rn); 
+				opLDRSH(ins, rd, address);
 			}
 		}
 		break;
+	}
+
+	//Modify after
+	if (result.type == AddrModeLoadStoreType::POSTINDEX) {
+		reg_rn = result.rn;
+	}
+
+	//Both write back after
+	if (result.type == AddrModeLoadStoreType::PREINDEXED ||
+		result.type == AddrModeLoadStoreType::POSTINDEX) {
+		//Don't write back if reg base == reg dest when ldr
+		if (load && (rd.id == rn.id)) return 1;
+
+		writeRegister(rn, reg_rn);
 	}
 
 	return 1;
@@ -1920,8 +1915,17 @@ u8 Arm::opSWI(ArmInstruction& ins)
 
 u8 Arm::opSTRH(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u32 reg_rd = getRegister(rd);
-	mbus->writeU16(address, reg_rd & 0xFFFF);
+	u8 aligned = (address & 0x1);
+	//Misaligned
+	if (aligned != 0b0) {
+		address &= 0xFFFFFFFE;
+		u32 reg_rd = getRegister(rd);
+		mbus->writeU16(address, reg_rd & 0xFFFF);
+	}
+	else {
+		u32 reg_rd = getRegister(rd);
+		mbus->writeU16(address, reg_rd & 0xFFFF);
+	}
 
 	return 1;
 }
@@ -1929,8 +1933,21 @@ u8 Arm::opSTRH(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRH(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u16 value = mbus->readU16(address);
-	writeRegister(rd, value);
+	u8 aligned = (address & 0x1);
+	if (aligned != 0b0) {
+		//force align address
+		address &= 0xFFFFFFFE;
+
+		//read value and ror
+		u32 value = mbus->readU16(address);
+		value = ror(value, 8 * aligned);
+
+		writeRegister(rd, value);
+	}
+	else {
+		u16 value = mbus->readU16(address);
+		writeRegister(rd, value);
+	}
 
 	return 1;
 }
@@ -1946,9 +1963,20 @@ u8 Arm::opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u32 value = (s16)mbus->readU16(address);
-	value = signExtend32(value, 16);
-	writeRegister(rd, value);
+	u8 aligned = (address & 0x1);
+	if (aligned != 0b0) {
+		//LDRSB happens when misaligned LDRSH
+		//read a signed byte from the misaligned address then sign extends it and loads it
+		u32 value = (s8)mbus->readU8(address);
+		value = signExtend32(value, 8);
+
+		writeRegister(rd, value);
+	}
+	else {
+		u32 value = (s16)mbus->readU16(address);
+		value = signExtend32(value, 16);
+		writeRegister(rd, value);
+	}
 
 	return 1;
 }
@@ -1963,7 +1991,7 @@ u8 Arm::opLDRB(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u32 aligned = (address & 0x3);
+	u8 aligned = (address & 0x3);
 
 	bool r15 = (rd.id == R15_ID);
 	//Misaligned
