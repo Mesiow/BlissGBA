@@ -185,6 +185,8 @@ public:
 	u8 executeMSRImm(ArmInstruction& ins);
 	u8 executeMSRReg(ArmInstruction& ins);
 
+	u8 executeSwap(ArmInstruction& ins);
+
 	//Multiply
 	u8 executeMultiplyLong(ArmInstruction& ins);
 	u8 executeMultiply(ArmInstruction& ins);
@@ -261,7 +263,8 @@ private:
 	u8 opLDRH(ArmInstruction& ins, RegisterID rd, u32 address);
 	u8 opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address);
 	u8 opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address);
-	u8 opSWP(ArmInstruction& ins, RegisterID rd);
+	u8 opSWP(ArmInstruction& ins, RegisterID rd, RegisterID rn);
+	u8 opSWPB(ArmInstruction& ins, RegisterID rd, RegisterID rn);
 
 	//Load/Stores
 	u8 opLDRB(ArmInstruction& ins, RegisterID rd, u32 address);

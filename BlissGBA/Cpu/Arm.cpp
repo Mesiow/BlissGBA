@@ -988,7 +988,11 @@ u8 Arm::executeMiscLoadAndStore(ArmInstruction& ins, AddrModeLoadStoreResult &re
 
 	u32 address = result.address; 
 	switch (SH) {
-		case 0b00: /*SWP*/ break;
+		case 0b00: { //SWP, SWPB
+			u8 b22 = (ins.encoding >> 22) & 0x1;
+			(b22 == 0x0) ? opSWP(ins, rd, rn) : opSWPB(ins, rd, rn);
+		}
+		break;
 		case 0b01: //Unsigned halfwords
 		{
 			if (!load) {
@@ -1156,6 +1160,20 @@ u8 Arm::executeMSRReg(ArmInstruction& ins)
 	RegisterID rm = ins.rm();
 	u32 operand = getRegister(rm);
 	opMSR(ins, operand);
+
+	return 1;
+}
+
+u8 Arm::executeSwap(ArmInstruction& ins)
+{
+	RegisterID rd = ins.rd();
+	RegisterID rn = ins.rn();
+	u8 b22 = (ins.encoding >> 22) & 0x1;
+
+	if (b22 == 0x0)
+		opSWP(ins, rd, rn);
+	else
+		opSWPB(ins, rd, rn);
 
 	return 1;
 }
@@ -1977,6 +1995,42 @@ u8 Arm::opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address)
 		value = signExtend32(value, 16);
 		writeRegister(rd, value);
 	}
+
+	return 1;
+}
+
+u8 Arm::opSWP(ArmInstruction& ins, RegisterID rd, RegisterID rn)
+{
+	RegisterID rm = ins.rm();
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+
+	u8 aligned = (reg_rn & 0x3);
+	u32 temp = 0;
+	if (aligned == 0b00) {
+		temp = mbus->readU32(reg_rn);
+	}
+	//Misaligned
+	else {
+		reg_rn &= 0xFFFFFFFC;
+		temp = mbus->readU32(reg_rn);
+		temp = ror(temp, 8 * aligned);
+	}
+	mbus->writeU32(reg_rn, reg_rm);
+	writeRegister(rd, temp);
+
+	return 1;
+}
+
+u8 Arm::opSWPB(ArmInstruction& ins, RegisterID rd, RegisterID rn)
+{
+	RegisterID rm = ins.rm();
+	u32 reg_rm = getRegister(rm);
+	u32 reg_rn = getRegister(rn);
+
+	u32 temp = mbus->readU8(reg_rn);
+	mbus->writeU8(reg_rn, reg_rm & 0xFF);
+	writeRegister(rd, temp);
 
 	return 1;
 }
