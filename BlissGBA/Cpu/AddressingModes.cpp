@@ -141,7 +141,6 @@ AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstructio
 	u8 W = ins.W();
 	u8 U = ins.U();
 
-
 	//if LSL 0, then regular register offset/index addressing mode
 	//else, then it's scaled register offset/index
 
@@ -149,12 +148,13 @@ AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstructio
 	if (((ins.encoding >> 4) & 0xFF) == 0x0) { //Register offset
 		scaledRegOffset = false;
 	}
-
+	
 	AddrModeLoadStoreResult result = { AddrModeLoadStoreType::NONE, 0, 0, 0 };
+	bool immediate = (ins.i()); //will it be a shift with an immediate value?
 	u32 address;
 	if (P == 0x1) {
 		if (scaledRegOffset) {
-			u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut, false);
+			u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut, immediate);
 			address = ((U == 0x1) ? rn_reg + index : rn_reg - index);
 		}
 		else {
@@ -179,7 +179,7 @@ AddrModeLoadStoreResult AddressingMode2::scaledRegisterOffsetIndex(ArmInstructio
 			//LDR, LDRB, STR or STRB (normal memory access performed)
 			address = rn_reg;
 			if (scaledRegOffset) {
-				u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut, false);
+				u32 index = cpu.shift(rm_reg, ins.shiftAmount(), ins.shiftType(), result.shifterCarryOut, immediate);
 				result.rn = ((U == 0x1) ? rn_reg + index : rn_reg - index);
 			}
 			else {

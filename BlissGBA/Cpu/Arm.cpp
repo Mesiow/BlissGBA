@@ -608,12 +608,8 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit, bool immediate)
 			value = asr(value, amount, shiftedBit, immediate);
 			break;
 
-		case 0b11: {
-			if (immediate) {
-				
-			}
+		case 0b11:
 			value = ror(value, amount, shiftedBit, immediate);
-		}
 			break;
 	}
 	return value;
@@ -929,39 +925,19 @@ u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
 	if (load) {
 		//LDR, LDRB
 		if (byte) {
-			if (useImmediateOffset)
-				opLDRB(ins, rd, address);
-			else { 
-				if (immPostIndex) opLDRB(ins, rd, address);
-				else opLDRB(ins, rd, reg_rn); 
-			}
+			opLDRB(ins, rd, address);
 		}
 		else {
-			if (useImmediateOffset)
-				opLDR(ins, rd, address);
-			else {
-				if (immPostIndex) opLDR(ins, rd, address);
-				else opLDR(ins, rd, reg_rn);
-			}
+			opLDR(ins, rd, address);
 		}
 	}
 	else {
 		//STR, STRB
 		if (byte) {
-			if (useImmediateOffset)
-				opSTRB(ins, rd, address);
-			else {
-				if (immPostIndex) opSTRB(ins, rd, address);
-				else opSTRB(ins, rd, reg_rn);
-			}
+			opSTRB(ins, rd, address);
 		}
 		else {
-			if (useImmediateOffset)
-				opSTR(ins, rd, address);
-			else {
-				if (immPostIndex) opSTR(ins, rd, address);
-				else opSTR(ins, rd, reg_rn);
-			}
+			opSTR(ins, rd, address);
 		}
 	}
 
@@ -973,7 +949,7 @@ u8 Arm::executeLoadStore(ArmInstruction& ins, AddrModeLoadStoreResult& result)
 	//Both write back after
 	if (result.type == AddrModeLoadStoreType::PREINDEXED ||
 		result.type == AddrModeLoadStoreType::POSTINDEX) {
-		//Don't write back if reg base == reg dest
+		//Don't write back if reg base == reg dest when ldr
 		if (load && (rd.id == rn.id)) return 1;
 
 		writeRegister(rn, reg_rn);
