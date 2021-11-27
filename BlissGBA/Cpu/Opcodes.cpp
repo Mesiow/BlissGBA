@@ -16,6 +16,10 @@ void Arm::mapArmOpcodes()
 		else if ((i & 0xFCF) == 0x9) {
 			armlut[i] = b(&Arm::executeMultiply);
 		}
+		//Swap
+		else if ((i & 0xFBF) == 0x109) {
+			armlut[i] = b(&Arm::executeSwap);
+		}
 		//Branch
 		else if ((i >> 8) == 0b1010) {
 			armlut[i] = b(&Arm::opB);
