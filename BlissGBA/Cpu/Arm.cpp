@@ -2106,6 +2106,24 @@ u8 Arm::opSMLAL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterI
 
 u8 Arm::opSMULL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags)
 {
+	s32 reg_rdhi = getRegister(rdhi);
+	s32 reg_rdlo = getRegister(rdlo);
+
+	s32 reg_rm = getRegister(rm);
+	s32 reg_rs = getRegister(rs);
+
+	s64 result = ((s64)reg_rm * (s64)reg_rs);
+	reg_rdhi = (result >> 32);
+	reg_rdlo = (result & 0xFFFFFFFF);
+
+	writeRegister(rdhi, reg_rdhi);
+	writeRegister(rdlo, reg_rdlo);
+
+	if (flags) {
+		(reg_rdhi >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		((reg_rdhi == 0) && (reg_rdlo == 0)) ? setFlag(Z) : clearFlag(Z);
+	}
+
 	return 1;
 }
 
