@@ -1961,6 +1961,7 @@ u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 {
 	u32 aligned = (address & 0x3);
 
+	bool r15 = (rd.id == R15_ID);
 	//Misaligned
 	if (aligned != 0b00) {
 		//force align address
@@ -1969,12 +1970,23 @@ u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 		u32 value = mbus->readU32(address);
 		value = ror(value, 8 * aligned);
 
-		writeRegister(rd, value);
+		if (r15) {
+			writeRegister(rd, value);
+			flushPipeline();
+		}
+		else
+			writeRegister(rd, value);
 	}
 	//Aligned
 	else {
 		u32 value = mbus->readU32(address);
-		writeRegister(rd, value);
+
+		if (r15) {
+			writeRegister(rd, value);
+			flushPipeline();
+		}
+		else
+			writeRegister(rd, value);
 	}
 
 	return 1;
@@ -1990,7 +2002,13 @@ u8 Arm::opSTRB(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opSTR(ArmInstruction& ins, RegisterID rd, u32 address)
 {
+	//force align address
+	address &= 0xFFFFFFFC;
+
 	u32 reg_rd = getRegister(rd);
+	//R15 edge case
+	if (rd.id == R15_ID) reg_rd += 4;
+
 	mbus->writeU32(address, reg_rd);
 
 	return 1;
