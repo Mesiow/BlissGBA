@@ -1201,13 +1201,10 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		first = true;
 	}
 
-
 	for (s32 i = 0; i <= 14; i++) {
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
-
-			////If first, write the rb value to mem
 
 			//Store user mode registers only
 			if (S == 0x1) {
@@ -1221,10 +1218,10 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 			}
 			address += 4;
 
-			//then writeback
+			//writeback old base if rb first in list
 			if (first) {
 				u32 reg_rn = getRegister(rn);
-				writeRegister(rn, result.rn);
+				writeRegister(rn, reg_rn);
 				first = false;
 			}
 		}
