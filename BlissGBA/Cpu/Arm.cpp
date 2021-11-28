@@ -1096,6 +1096,7 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 		case 0b10: result = addrMode4.decrementBefore(ins); break;
 	}
 
+	RegisterID rn = ins.rn();
 	u16 reg_list = ins.registerList();
 	u32 address = result.startAddress;
 	u32 end = result.endAddress;
@@ -1110,6 +1111,20 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 		flushPipeline();
 
 		result.rn += 0x40;
+	}
+
+	s8 first_reg = -1;
+	for (s32 i = 0; i <= 7; i++) {
+		if (testBit(reg_list, i)) {
+			first_reg = i;
+			break;
+		}
+	}
+
+	//Is rb the first register in the list?
+	bool first = false;
+	if (rn.id == first_reg) {
+		first = true;
 	}
 
 	for (s32 i = 0; i <= 14; i++) {
@@ -1143,8 +1158,9 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	}
 
 	if (result.writeback) {
-		RegisterID rn = ins.rn();
-		writeRegister(rn, result.rn);
+		//No writeback if rb if first in rlist
+		if(!first)
+			writeRegister(rn, result.rn);
 	}
 
 	return 1;
@@ -1162,6 +1178,7 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		case 0b10: result = addrMode4.decrementBefore(ins); break;
 	}
 
+	RegisterID rn = ins.rn();
 	u16 reg_list = ins.registerList();
 	u32 address = result.startAddress;
 	u32 end = result.endAddress;
@@ -1174,10 +1191,29 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		result.rn += 0x40;
 	}
 
+	//Check if first reg in list is rb
+	s8 first_reg = -1;
+	for (s32 i = 0; i <= 7; i++) {
+		if (testBit(reg_list, i)) {
+			first_reg = i;
+			break;
+		}
+	}
+
+	//Is rb the first register in the list?
+	bool first = false;
+	if (rn.id == first_reg) {
+		first = true;
+	}
+
+
 	for (s32 i = 0; i <= 14; i++) {
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
+
+			////If first, write the rb value to mem
+
 			//Store user mode registers only
 			if (S == 0x1) {
 				u32 reg_usr = getUserModeRegister(id);
@@ -1189,6 +1225,13 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 				mbus->writeU32(address, reg);
 			}
 			address += 4;
+
+			//then writeback
+			if (first) {
+				u32 reg_rn = getRegister(rn);
+				writeRegister(rn, result.rn);
+				first = false;
+			}
 		}
 
 		if (end == address - 4) break;
@@ -1201,7 +1244,6 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	}
 
 	if (result.writeback) {
-		RegisterID rn = ins.rn();
 		writeRegister(rn, result.rn);
 	}
 
@@ -3223,14 +3265,6 @@ u8 Arm::thumbOpLDMIA(ThumbInstruction& ins)
 		reg_rn += 0x40;
 	}
 
-	//Check if first reg in list is rb
-	s8 first_reg = -1;
-	for (s32 i = 0; i <= 7; i++) {
-		if (testBit(reg_list, i)) {
-			first_reg = i;
-			break;
-		}
-	}
 
 	reg_rn += (numSetBitsU8(reg_list) * 4);
 	writeRegister(rn, reg_rn);
