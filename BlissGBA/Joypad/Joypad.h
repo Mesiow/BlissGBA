@@ -35,8 +35,7 @@ struct Joypad {
 	Joypad(MemoryBus* mbus);
 	void reset();
 	void update();
-	void buttonPressed(Button button);
-	void buttonReleased(Button button);
+	void buttonPressed(Button button, bool pressed);
 
 	u16 keyinput;
 	u16 currentInput;

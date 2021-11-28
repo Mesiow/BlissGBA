@@ -23,18 +23,36 @@ void Joypad::update()
 	}
 }
 
-void Joypad::buttonPressed(Button button)
+void Joypad::buttonPressed(Button button, bool pressed)
 {
 	//0 = pressed
-	switch (button) {
-		case Button::Start: currentInput &= ~(Start_); break;
+	if (pressed) {
+		switch (button) {
+			case Button::Button_A:  currentInput &= ~(A_); break;
+			case Button::Button_B:  currentInput &= ~(B_); break;
+			case Button::Select: currentInput &= ~(Select_); break;
+			case Button::Start: currentInput &= ~(Start_); break;
+			case Button::Right: currentInput &= ~(Right_); break;
+			case Button::Left: currentInput &= ~(Left_); break;
+			case Button::Up: currentInput &= ~(Up_); break;
+			case Button::Down: currentInput &= ~(Down_);  break;
+			case Button::Button_R: currentInput &= ~(R_); break;
+			case Button::Button_L: currentInput &= ~(L_); break;
+		}
 	}
-}
-
-void Joypad::buttonReleased(Button button)
-{
 	//1 = released
-	switch (button) {
-		case Button::Start: currentInput |= (Start_); break;
+	else {
+		switch (button) {
+			case Button::Button_A: currentInput |= (A_); break;
+			case Button::Button_B: currentInput |= (B_); break;
+			case Button::Select: currentInput |= (Select_); break;
+			case Button::Start: currentInput |= (Start_); break;
+			case Button::Right: currentInput |= (Right_); break;
+			case Button::Left: currentInput |= (Left_); break;
+			case Button::Up: currentInput |= (Up_); break;
+			case Button::Down: currentInput |= (Down_);  break;
+			case Button::Button_R: currentInput |= (R_); break;
+			case Button::Button_L: currentInput |= (L_); break;
+		}
 	}
 }
