@@ -161,6 +161,7 @@
     <ClCompile Include="Debugger\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Debugger\Logger.cpp" />
     <ClCompile Include="Debugger\tinyfiledialogs.c" />
+    <ClCompile Include="Joypad\Joypad.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\DisplayMemory.cpp" />
     <ClCompile Include="Memory\GeneralMemory.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="Cpu\Instruction.h" />
     <ClInclude Include="Debugger\DebugUI.h" />
     <ClInclude Include="Debugger\Logger.h" />
+    <ClInclude Include="Joypad\Joypad.h" />
     <ClInclude Include="Memory\DisplayMemory.h" />
     <ClInclude Include="Memory\GeneralMemory.h" />
     <ClInclude Include="Memory\MemoryBus.h" />
