@@ -162,7 +162,10 @@ void Ppu::setVBlankFlag(bool value)
 
 void Ppu::setScaleFactor(float scaleFactor)
 {
-	mode3.frame.setScale(scaleFactor, scaleFactor);
+	if (mode == BGMode::THREE)
+		mode3.frame.setScale(scaleFactor, scaleFactor);
+	else if (mode == BGMode::FOUR)
+		mode4.frame.setScale(scaleFactor, scaleFactor);
 }
 
 void Ppu::writeU8(u32 address, u8 value)
