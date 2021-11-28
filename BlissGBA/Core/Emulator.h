@@ -1,6 +1,8 @@
 #pragma once
 #include "../Debugger/DebugUI.h"
 #include "../Ppu/Ppu.h"
+#include "../Joypad/Joypad.h"
+
 
 class Emulator {
 public:
@@ -11,10 +13,12 @@ public:
 	void reset();
 
 	void handleEvents(sf::Event& ev);
+	void handleInput();
 
 	MemoryBus mbus;
 	Ppu ppu;
 	Arm cpu;
+	Joypad joypad;
 	DebugUI debug;
 
 	bool debuggerRunning;
