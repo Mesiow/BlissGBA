@@ -1113,18 +1113,13 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 		result.rn += 0x40;
 	}
 
-	s8 first_reg = -1;
+	//Check if reg base is in the list. If it is we don't writeback
+	bool rb_in_list = false;
 	for (s32 i = 0; i <= 7; i++) {
-		if (testBit(reg_list, i)) {
-			first_reg = i;
+		if (testBit(reg_list, i) && rn.id == i) {
+			rb_in_list = true;
 			break;
 		}
-	}
-
-	//Is rb the first register in the list?
-	bool first = false;
-	if (rn.id == first_reg) {
-		first = true;
 	}
 
 	for (s32 i = 0; i <= 14; i++) {
@@ -1158,8 +1153,8 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	}
 
 	if (result.writeback) {
-		//No writeback if rb if first in rlist
-		if(!first)
+		//No writeback if rb if first in rlist or if it is in the list at all
+		if(!rb_in_list)
 			writeRegister(rn, result.rn);
 	}
 
