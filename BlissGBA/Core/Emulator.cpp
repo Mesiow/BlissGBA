@@ -57,7 +57,6 @@ void Emulator::handleEvents(sf::Event& ev)
 
 	if (ev.type == sf::Event::KeyPressed) {
 		if (ev.key.code == (Key)Button::Button_A) {
-			printf("a pressed\n");
 			joypad.buttonPressed(Button::Button_A, true);
 		}
 		if (ev.key.code == (Key)Button::Button_B) {
@@ -67,7 +66,6 @@ void Emulator::handleEvents(sf::Event& ev)
 			joypad.buttonPressed(Button::Select, true);
 		}
 		if (ev.key.code == (Key)Button::Start) {
-			printf("start pressed\n");
 			joypad.buttonPressed(Button::Start, true);
 		}
 		if (ev.key.code == (Key)Button::Right) {
@@ -77,11 +75,9 @@ void Emulator::handleEvents(sf::Event& ev)
 			joypad.buttonPressed(Button::Left, true);
 		}
 		if (ev.key.code == (Key)Button::Up) {
-			printf("up pressed\n");
 			joypad.buttonPressed(Button::Up, true);
 		}
 		if (ev.key.code == (Key)Button::Down) {
-			printf("down pressed\n");
 			joypad.buttonPressed(Button::Down, true);
 		}
 		if (ev.key.code == (Key)Button::Button_R) {
@@ -93,7 +89,6 @@ void Emulator::handleEvents(sf::Event& ev)
 	}
 	else if (ev.type == sf::Event::KeyReleased) {
 		if (ev.key.code == (Key)Button::Button_A) {
-			printf("a released\n");
 			joypad.buttonPressed(Button::Button_A, false);
 		}
 		if (ev.key.code == (Key)Button::Button_B){
@@ -103,7 +98,6 @@ void Emulator::handleEvents(sf::Event& ev)
 			joypad.buttonPressed(Button::Select, false);
 		}
 		if (ev.key.code == (Key)Button::Start) {
-			printf("start released\n");
 			joypad.buttonPressed(Button::Start, false);
 		}
 		if (ev.key.code == (Key)Button::Right) {
@@ -113,11 +107,9 @@ void Emulator::handleEvents(sf::Event& ev)
 			joypad.buttonPressed(Button::Left, false);
 		}
 		if (ev.key.code == (Key)Button::Up) {
-			printf("up released\n");
 			joypad.buttonPressed(Button::Up, false);
 		}
 		if (ev.key.code == (Key)Button::Down) {
-			printf("down released\n");
 			joypad.buttonPressed(Button::Down, false);
 		}
 		if (ev.key.code == (Key)Button::Button_R) {
