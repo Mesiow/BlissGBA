@@ -31,6 +31,12 @@ enum class BGMode {
 	FIVE
 };
 
+enum class DisplayMode {
+	Visible,
+	HBlank,
+	VBlank
+};
+
 struct BitmapMode3 {
 	static constexpr u8 bpp = 2; //2 bytes per pixel
 	sf::Image pixels;
@@ -51,15 +57,14 @@ public:
 	void update(s32 cycles);
 	void render(sf::RenderTarget& target);
 	void reset();
-	void renderBitmapModes();
+	void render();
 	void renderBitmapMode3();
 	void renderBitmapMode4();
 	void bufferPixels();
 
-	void updateLCDStatus();
-	void updateCurrentScanline();
+	void updateScanline();
 
-	void setBGMode(u16 lcdControl);
+	void setBGMode(u16 lcdstatus);
 	void setHBlankFlag(bool value);
 	void setVBlankFlag(bool value);
 	void setScaleFactor(float scaleFactor);
@@ -73,14 +78,12 @@ public:
 	u8 readU8(u32 address);
 	u16 readU16(u32 address);
 
+	DisplayMode displayMode;
 	BGMode mode;
 	BitmapMode3 mode3;
 	BitmapMode4 mode4;
 
 	u32 cycleCounter = 0;
-	//u32 hblankCounter = 0;
-	u32 vblankCounter = 0;
-	u16 vcount = 0;
 	u16 currentScanline = 0;
 	MemoryBus* mbus;
 };
