@@ -42,7 +42,6 @@ int main(int arc, char* argv[]) {
         
         ImGui::SFML::Update(window, currentTime);
 
-        emu->handleInput();
         emu->run();
 
         window.clear(sf::Color(179, 216, 229, 255));
