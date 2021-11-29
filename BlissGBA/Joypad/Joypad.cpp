@@ -16,11 +16,7 @@ void Joypad::reset()
 
 void Joypad::update()
 {
-	keyinput = mbus->readU16(KEYINPUT);
-	if (keyinput != currentInput) {
-		keyinput &= currentInput;
-		mbus->writeU16(KEYINPUT, keyinput);
-	}
+	mbus->writeU16(KEYINPUT, currentInput);
 }
 
 void Joypad::buttonPressed(Button button, bool pressed)
@@ -28,8 +24,8 @@ void Joypad::buttonPressed(Button button, bool pressed)
 	//0 = pressed
 	if (pressed) {
 		switch (button) {
-			case Button::Button_A:  currentInput &= ~(A_); break;
-			case Button::Button_B:  currentInput &= ~(B_); break;
+			case Button::Button_A: currentInput &= ~(A_); break;
+			case Button::Button_B: currentInput &= ~(B_); break;
 			case Button::Select: currentInput &= ~(Select_); break;
 			case Button::Start: currentInput &= ~(Start_); break;
 			case Button::Right: currentInput &= ~(Right_); break;
@@ -43,16 +39,16 @@ void Joypad::buttonPressed(Button button, bool pressed)
 	//1 = released
 	else {
 		switch (button) {
-			case Button::Button_A: currentInput |= (A_); break;
-			case Button::Button_B: currentInput |= (B_); break;
-			case Button::Select: currentInput |= (Select_); break;
-			case Button::Start: currentInput |= (Start_); break;
-			case Button::Right: currentInput |= (Right_); break;
-			case Button::Left: currentInput |= (Left_); break;
-			case Button::Up: currentInput |= (Up_); break;
-			case Button::Down: currentInput |= (Down_);  break;
-			case Button::Button_R: currentInput |= (R_); break;
-			case Button::Button_L: currentInput |= (L_); break;
+			case Button::Button_A: currentInput ^= (A_); break;
+			case Button::Button_B: currentInput ^= (B_); break;
+			case Button::Select: currentInput ^= (Select_); break;
+			case Button::Start: currentInput ^= (Start_); break;
+			case Button::Right: currentInput ^= (Right_); break;
+			case Button::Left: currentInput ^= (Left_); break;
+			case Button::Up: currentInput ^= (Up_); break;
+			case Button::Down: currentInput ^= (Down_);  break;
+			case Button::Button_R: currentInput ^= (R_); break;
+			case Button::Button_L: currentInput ^= (L_); break;
 		}
 	}
 }

@@ -7,7 +7,7 @@
 class MemoryBus;
 using Key = sf::Keyboard::Key;
 
-#define A_ (1 << 0)
+#define A_ (1)
 #define B_ (1 << 1)
 #define Select_ (1 << 2)
 #define Start_ (1 << 3)
@@ -37,7 +37,6 @@ struct Joypad {
 	void update();
 	void buttonPressed(Button button, bool pressed);
 
-	u16 keyinput;
 	u16 currentInput;
 	MemoryBus* mbus;
 };
