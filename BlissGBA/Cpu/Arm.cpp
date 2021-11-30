@@ -498,12 +498,12 @@ void Arm::writePC(u32 pc)
 	R15 |= ((pc << 2) & 0xFFFFFFFF);
 }
 
-void Arm::setCC(u32 rd, bool borrow, bool overflow,
+void Arm::setCC(u32 result, bool borrow, bool overflow,
 	bool shiftOut, u8 shifterCarryOut)
 {
-	if (rd != R15) {
-		(rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-		(rd == 0) ? setFlag(Z) : clearFlag(Z);
+	if (result != R15) {
+		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
 		if (shiftOut) {
 			//overflow not affected
 			(shifterCarryOut == 1) ? setFlag(C) : clearFlag(C);
@@ -1663,7 +1663,7 @@ u8 Arm::opEOR(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rn = getRegister(rn);
 
-	u8 shifter_carry_out = 0;
+	u8 shifter_carry_out = 1;
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
@@ -1799,21 +1799,18 @@ u8 Arm::opRSC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rn = getRegister(rn);
 
 	u8 shifter_carry_out = 0;
-	bool borrow = false;
-	bool overflow = false;
-
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-	u32 result = (shifter_op - reg_rn) - (!(getFlag(C)));
+	u32 result = shifter_op - reg_rn - !getFlag(C);
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	borrow = borrowFrom(shifter_op - reg_rn, (!(getFlag(C))));
-	overflow = overflowFromSub(shifter_op - reg_rn, (!(getFlag(C))));
+	bool borrow = borrowFrom(shifter_op - reg_rn, (!(getFlag(C))));
+	bool overflow = overflowFromSub(shifter_op - reg_rn, (!(getFlag(C))));
 
 	if (flags) {
-		setCC(reg_rd, !borrow, overflow);
+		setCC(reg_rd, borrow, overflow);
 	}
 
 	return 1;
@@ -1931,11 +1928,10 @@ u8 Arm::opBIC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn & ~(shifter_op);
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
+	writeRegister(rd, result);
 
 	if (flags) {
-		setCC(reg_rd, false, false, true, shifter_carry_out);
+		setCC(result, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
