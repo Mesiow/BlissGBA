@@ -135,7 +135,7 @@ public:
 	void writePC(u32 pc);
 
 	//Set condition codes (S bit)
-	void setCC(u32 rd, bool borrow, bool overflow,
+	void setCC(u32 result, RegisterID rd, bool borrow, bool overflow,
 		 bool shiftOut = false, u8 shifterCarryOut = 0);
 
 	bool inPrivilegedMode();

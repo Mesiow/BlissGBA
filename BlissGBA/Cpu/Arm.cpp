@@ -498,10 +498,10 @@ void Arm::writePC(u32 pc)
 	R15 |= ((pc << 2) & 0xFFFFFFFF);
 }
 
-void Arm::setCC(u32 result, bool borrow, bool overflow,
+void Arm::setCC(u32 result, RegisterID rd, bool borrow, bool overflow,
 	bool shiftOut, u8 shifterCarryOut)
 {
-	if (result != R15) {
+	if (rd.id != R15_ID) {
 		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
 		(result == 0) ? setFlag(Z) : clearFlag(Z);
 		if (shiftOut) {
@@ -1601,7 +1601,7 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	}
 	
 	if (flags) {
-		setCC(result, false, false, true, shifter_carry_out);
+		setCC(result, rd, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
@@ -1629,7 +1629,7 @@ u8 Arm::opADD(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	overflow = overflowFromAdd(reg_rn, shifter_op);
 	
 	if (flags) {
-		setCC(reg_rd, !carry, overflow);
+		setCC(result, rd, !carry, overflow);
 	}
 
 	return 1;
@@ -1650,7 +1650,7 @@ u8 Arm::opAND(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	writeRegister(rd, reg_rd);
 
 	if (flags) {
-		setCC(reg_rd, false, false, true, shifter_carry_out);
+		setCC(result, rd, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
@@ -1672,7 +1672,7 @@ u8 Arm::opEOR(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	writeRegister(rd, reg_rd);
 
 	if (flags) {
-		setCC(reg_rd, false, false, true, shifter_carry_out);
+		setCC(result, rd, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
@@ -1705,7 +1705,7 @@ u8 Arm::opSUB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	}
 	
 	if (flags) {
-		setCC(reg_rd, borrow, overflow);
+		setCC(result, rd, borrow, overflow);
 	}
 
 	return 1;
@@ -1732,7 +1732,7 @@ u8 Arm::opRSB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	overflow = overflowFromSub(shifter_op, reg_rn);
 
 	if (flags) {
-		setCC(reg_rd, !borrow, overflow);
+		setCC(result, rd, !borrow, overflow);
 	}
 
 	return 1;
@@ -1759,7 +1759,7 @@ u8 Arm::opADC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	overflow = overflowFromAdd(reg_rn, shifter_op + getFlag(C));
 
 	if (flags) {
-		setCC(reg_rd, !carry, overflow);
+		setCC(result, rd, !carry, overflow);
 	}
 
 	return 1;
@@ -1786,7 +1786,7 @@ u8 Arm::opSBC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	overflow = overflowFromSub(reg_rn - shifter_op, (!(getFlag(C))));
 
 	if (flags) {
-		setCC(reg_rd, borrow, overflow);
+		setCC(result, rd, borrow, overflow);
 	}
 
 	return 1;
@@ -1810,7 +1810,7 @@ u8 Arm::opRSC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool overflow = overflowFromSub(shifter_op - reg_rn, (!(getFlag(C))));
 
 	if (flags) {
-		setCC(reg_rd, borrow, overflow);
+		setCC(result, rd, borrow, overflow);
 	}
 
 	return 1;
@@ -1868,11 +1868,11 @@ u8 Arm::opCMP(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool borrow = borrowFrom(reg_rn, shifter_op);
 	bool overflow = overflowFromSub(reg_rn, shifter_op);
 
-	setCC(result, borrow, overflow);
+	setCC(result, rd, borrow, overflow);
 
-	if (rd.id == R15_ID) {
+	/*if (rd.id == R15_ID) {
 		CPSR = getSPSR();
-	}
+	}*/
 
 	return 1;
 }
@@ -1891,7 +1891,7 @@ u8 Arm::opCMN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool carry = carryFrom(reg_rn, shifter_op);
 	bool overflow = overflowFromAdd(reg_rn, shifter_op);
 
-	setCC(result, !carry, overflow);
+	setCC(result, rd, !carry, overflow);
 
 	return 1;
 }
@@ -1911,7 +1911,7 @@ u8 Arm::opORR(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	writeRegister(rd, reg_rd);
 
 	if (flags) {
-		setCC(reg_rd, false, false, true, shifter_carry_out);
+		setCC(result, rd, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
@@ -1923,7 +1923,7 @@ u8 Arm::opBIC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rn = getRegister(rn);
 
-	u8 shifter_carry_out = 0;
+	u8 shifter_carry_out = 1;
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
@@ -1931,7 +1931,7 @@ u8 Arm::opBIC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	writeRegister(rd, result);
 
 	if (flags) {
-		setCC(result, false, false, true, shifter_carry_out);
+		setCC(result, rd, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
@@ -1950,7 +1950,7 @@ u8 Arm::opMVN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	writeRegister(rd, reg_rd);
 
 	if (flags) {
-		setCC(reg_rd, false, false, true, shifter_carry_out);
+		setCC(reg_rd, rd, false, false, true, shifter_carry_out);
 	}
 
 	return 1;
@@ -2773,7 +2773,7 @@ u8 Arm::thumbOpNEG(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	bool borrow = borrowFrom(0, reg_rm);
 	bool overflow = overflowFromSub(0, reg_rm);
 
-	setCC(reg_rd, borrow, overflow);
+	setCC(reg_rd, rd, borrow, overflow);
 
 	return 1;
 }
@@ -2848,7 +2848,7 @@ u8 Arm::thumbOpADC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	bool carry = carryFrom(reg_rd, reg_rm + getFlag(C));
 	bool overflow = overflowFromAdd(reg_rd, reg_rm + getFlag(C));
 
-	setCC(result, !carry, overflow);
+	setCC(result, rd, !carry, overflow);
 
 	return 1;
 }
@@ -2865,7 +2865,7 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	bool carry = carryFrom(reg_rn, reg_rm);
 	bool overflow = overflowFromAdd(reg_rn, reg_rm);
 
-	setCC(reg_rd, !carry, overflow);
+	setCC(reg_rd, rd, !carry, overflow);
 
 	return 1;
 }
@@ -2892,7 +2892,7 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 		bool carry = carryFrom(reg_rn, immediate);
 		bool overflow = overflowFromAdd(reg_rn, immediate);
 
-		setCC(reg_rd, !carry, overflow);
+		setCC(reg_rd, rd, !carry, overflow);
 	}
 
 	return 1;
@@ -2908,7 +2908,7 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rd, u8 immediate)
 	bool carry = carryFrom(reg_rd, immediate);
 	bool overflow = overflowFromAdd(reg_rd, immediate);
 
-	setCC(result, !carry, overflow);
+	setCC(result, rd, !carry, overflow);
 
 	return 1;
 }
@@ -2995,7 +2995,8 @@ u8 Arm::thumbOpCMN(ThumbInstruction& ins, RegisterID rm, RegisterID rn)
 	bool carry = carryFrom(reg_rn, reg_rm);
 	bool overflow = overflowFromAdd(reg_rn, reg_rm);
 
-	setCC(result, !carry, overflow);
+	//rd id as 0 when no destination reg
+	setCC(result, RegisterID{ (u8)0 }, !carry, overflow);
 
 	return 1;
 }
@@ -3020,7 +3021,7 @@ u8 Arm::thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn, bool hiR
 		bool borrow = borrowFrom(reg_rn, reg_rm);
 		bool overflow = overflowFromSub(reg_rn, reg_rm);
 
-		setCC(result, borrow, overflow);
+		setCC(result, RegisterID{ (u8)0 }, borrow, overflow);
 	}
 	else {
 
@@ -3032,7 +3033,7 @@ u8 Arm::thumbOpCMP(ThumbInstruction& ins, RegisterID rm, RegisterID rn, bool hiR
 		bool borrow = borrowFrom(reg_rn, reg_rm);
 		bool overflow = overflowFromSub(reg_rn, reg_rm);
 
-		setCC(result, borrow, overflow);
+		setCC(result, RegisterID{ (u8)0 }, borrow, overflow);
 	}
 
 	return 1;
@@ -3048,7 +3049,7 @@ u8 Arm::thumbOpCMP(ThumbInstruction& ins, u8 immediate)
 	bool borrow = borrowFrom(reg_rn, immediate);
 	bool overflow = overflowFromSub(reg_rn, immediate);
 
-	setCC(result, borrow, overflow);
+	setCC(result, RegisterID{ (u8)0 }, borrow, overflow);
 
 	return 1;
 }
@@ -3078,7 +3079,7 @@ u8 Arm::thumbOpSBC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	bool borrow = borrowFrom(reg_rd, reg_rm - (!(getFlag(C))));
 	bool overflow = overflowFromSub(reg_rd, reg_rm - (!(getFlag(C))));
 
-	setCC(result, borrow, overflow);
+	setCC(result, rd, borrow, overflow);
 
 	return 1;
 }
@@ -3095,7 +3096,7 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	bool borrow = borrowFrom(reg_rn, reg_rm);
 	bool overflow = overflowFromSub(reg_rn, reg_rm);
 
-	setCC(reg_rd, borrow, overflow);
+	setCC(reg_rd, rd, borrow, overflow);
 
 	return 1;
 }
@@ -3111,7 +3112,7 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	bool borrow = borrowFrom(reg_rn, immediate);
 	bool overflow = overflowFromSub(reg_rn, immediate);
 
-	setCC(reg_rd, borrow, overflow);
+	setCC(reg_rd, rd, borrow, overflow);
 
 	return 1;
 }
@@ -3126,7 +3127,7 @@ u8 Arm::thumbOpSUB(ThumbInstruction& ins, RegisterID rd, u8 immediate)
 	bool borrow = borrowFrom(reg_rd, immediate);
 	bool overflow = overflowFromSub(reg_rd, immediate);
 
-	setCC(result, borrow, overflow);
+	setCC(result, rd, borrow, overflow);
 
 	return 1;
 }
