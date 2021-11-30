@@ -650,6 +650,7 @@ void DebugUI::handleEvents(sf::Event& ev)
 
         if (shift && h) {
             *showDebugger = !*showDebugger;
+            emu->debuggerRunning = !emu->debuggerRunning;
             onDebugUIToggle();
         }
     }
