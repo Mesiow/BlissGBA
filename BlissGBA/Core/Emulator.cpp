@@ -38,7 +38,7 @@ void Emulator::run()
 
 void Emulator::render(sf::RenderTarget &target)
 {
-	if(showDebugger) debug.render();
+	if(debuggerRunning) debug.render();
 	else {
 		ppu.render(target);
 	}
@@ -52,8 +52,7 @@ void Emulator::reset()
 
 void Emulator::handleEvents(sf::Event& ev)
 {
-	if(debuggerRunning)
-		debug.handleEvents(ev);
+	debug.handleEvents(ev);
 
 	if (ev.type == sf::Event::KeyPressed) {
 		if (ev.key.code == (Key)Button::Button_A) {

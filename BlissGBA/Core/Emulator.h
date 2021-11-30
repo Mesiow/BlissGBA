@@ -8,12 +8,10 @@ class Emulator {
 public:
 	Emulator(sf::RenderWindow *window, float displayScaleFactor);
 	void run();
-	void render(sf::RenderTarget &target);
-	void update();
+	void render(sf::RenderTarget& target);
 	void reset();
 
 	void handleEvents(sf::Event& ev);
-	void handleInput();
 
 	MemoryBus mbus;
 	Ppu ppu;
