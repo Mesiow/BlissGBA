@@ -1927,7 +1927,7 @@ u8 Arm::opBIC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-	u32 result = reg_rn & ~shifter_op;
+	u32 result = reg_rn & ~(shifter_op);
 	writeRegister(rd, result);
 
 	if (flags) {
@@ -3410,11 +3410,6 @@ u8 Arm::thumbOpLDRSB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Regist
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
-
-	u8 aligned = (address & 0x1);
-	if (aligned != 0b0) {
-		address &= 0xFFFFFFFE;
-	}
 
 	u32 value = (s8)mbus->readU8(address);
 	value = signExtend32(value, 8);
