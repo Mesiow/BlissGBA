@@ -691,9 +691,10 @@ u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 			shiftedBit = getFlag(C);
 		}
 		else if (shift < 32) {
-			shiftedBit = (shift - 1);
-			shiftedBit = ((value >> shiftedBit) & 0x1);
-
+			if (shift != 0) {
+				shiftedBit = (shift - 1);
+				shiftedBit = ((value >> shiftedBit) & 0x1);
+			}
 			result = value >> shift;
 		}
 		else if (shift == 32) {
@@ -2652,16 +2653,16 @@ u8 Arm::thumbOpLSR(ThumbInstruction& ins, u8 immediate5)
 
 	//shift by 32
 	if (immediate5 == 0) {
-		(reg_rd >> 31) & 0x1 ? setFlag(C) : clearFlag(C);
+		(reg_rm >> 31) & 0x1 ? setFlag(C) : clearFlag(C);
 		reg_rd = 0x0;
 	}
-	//imm5 > 0
 	else {
 		u8 shifter_carry_out = 0;
 		reg_rd = lsr(reg_rm, immediate5, shifter_carry_out, true);
 
 		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 	}
+
 	writeRegister(rd, reg_rd);
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
@@ -2677,25 +2678,11 @@ u8 Arm::thumbOpLSR(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
 
 	u8 shift_amount = reg_rs & 0xFF;
 
-	if (shift_amount == 0) {
-		//C flag unaffected
-		//rd unaffected
-	}
-	else if (shift_amount < 32) {
-		u8 shifter_carry_out = 0;
-		reg_rd = lsr(reg_rd, shift_amount, shifter_carry_out, false);
+	u8 shifter_carry_out = 0;
+	reg_rd = lsr(reg_rd, shift_amount, shifter_carry_out, false);
 
-		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
-	}
-	else if (shift_amount == 32) {
-		(reg_rd >> 31) & 0x1 ? setFlag(C) : clearFlag(C);
-		reg_rd = 0x0;
-	}
-	//shift_amount > 32
-	else {
-		clearFlag(C);
-		reg_rd = 0x0;
-	}
+	(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
+
 	writeRegister(rd, reg_rd);
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
