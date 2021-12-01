@@ -2302,8 +2302,8 @@ u8 Arm::opMLA(ArmInstruction& ins, RegisterID rd, RegisterID rm, RegisterID rs, 
 
 u8 Arm::opSMLAL(ArmInstruction& ins, RegisterID rdhi, RegisterID rdlo, RegisterID rm, RegisterID rs, bool flags)
 {
-	s32 reg_rdhi = getRegister(rdhi);
-	s32 reg_rdlo = getRegister(rdlo);
+	u32 reg_rdhi = getRegister(rdhi);
+	u32 reg_rdlo = getRegister(rdlo);
 
 	s32 reg_rm = getRegister(rm);
 	s32 reg_rs = getRegister(rs);
