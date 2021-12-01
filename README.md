@@ -7,7 +7,7 @@
 ⬛Hardware Interrupts\
 ✅Software Interrupts\
 ⬛DMA\
-✅Boots Armwrestler Test ROM
+✅Boots and Passes Armwrestler CPU Test ROM
 
 ## Ppu
 ✅Basic Mode Switching\
