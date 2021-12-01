@@ -13,8 +13,8 @@ void Ppu::update(s32 cycles)
 
 	switch (displayMode) {
 		case DisplayMode::Visible: {
-			//counter >= 960 (hblank is off until this point)
-			if (cycleCounter >= HBLANK_START) {
+			//counter >= 1006 (hblank is off until this point)
+			if (cycleCounter >= (HBLANK_START + 46)) {
 				if (currentScanline < SCREEN_HEIGHT)
 					render();
 
