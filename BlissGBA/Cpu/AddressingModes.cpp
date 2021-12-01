@@ -307,7 +307,7 @@ AddrMode4Result AddressingMode4::incrementAfter(ArmInstruction& ins)
 	u16 reg_list = ins.registerList();
 
 	u32 start_address = reg_rn;
-	u32 end_address = reg_rn + ((numSetBitsU16(reg_list) * 4) - 4);
+	u32 end_address = reg_rn + (numSetBitsU16(reg_list) * 4) - 4;
 
 	result.startAddress = start_address;
 	result.endAddress = end_address;
