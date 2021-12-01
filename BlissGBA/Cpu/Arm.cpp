@@ -1923,11 +1923,11 @@ u8 Arm::opBIC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rn = getRegister(rn);
 
-	u8 shifter_carry_out = 1;
+	u8 shifter_carry_out = 0;
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-	u32 result = reg_rn & ~(shifter_op);
+	u32 result = reg_rn & ~shifter_op;
 	writeRegister(rd, result);
 
 	if (flags) {

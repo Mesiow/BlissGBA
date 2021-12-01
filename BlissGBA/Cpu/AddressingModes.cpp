@@ -33,6 +33,7 @@ u32 AddressingMode1::shift(ArmInstruction& ins, u8& shiftedBit)
 
 		//PC as operand 1 with shifted register
 		if (rm_reg == cpu.R15) rm_reg += 4;
+		//PC as operand 2 with shifted register
 		if (rn_reg == cpu.R15) rm_reg += 4;
 
 		//The least significant byte of rs is the shift amount
