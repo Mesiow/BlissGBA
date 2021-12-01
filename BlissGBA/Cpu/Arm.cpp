@@ -740,6 +740,7 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 				shiftedBit = ((value >> shiftedBit) & 0x1);
 
 				result = value >> shift;
+				result |= (shiftedBit << 31);
 			}
 		}
 	}
@@ -755,6 +756,7 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 			shiftedBit = ((value >> shiftedBit) & 0x1);
 
 			result = value >> shift;
+			result |= (shiftedBit << 31);
 		}
 		//shift >= 32
 		else {
