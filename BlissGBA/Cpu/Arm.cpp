@@ -3321,10 +3321,10 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 
 	u32 address = reg_rn + (immediate5 * 4);
 
-	u8 aligned = (address & 0x1);
-	if (aligned != 0b0) {
+	u8 aligned = (address & 0x3);
+	if (aligned != 0b00) {
 		//force align address
-		address &= 0xFFFFFFFE;
+		address &= 0xFFFFFFFC;
 
 		//read value and ror
 		u32 value = mbus->readU32(address);
@@ -3352,10 +3352,10 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	u32 address = reg_rn + reg_rm;
 
 	//Misaligned
-	u8 aligned = (address & 0x1);
-	if (aligned != 0b0) {
+	u8 aligned = (address & 0x3);
+	if (aligned != 0b00) {
 		//force align address
-		address &= 0xFFFFFFFE;
+		address &= 0xFFFFFFFC;
 
 		//read value and ror
 		u32 value = mbus->readU32(address);
