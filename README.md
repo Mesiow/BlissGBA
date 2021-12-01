@@ -3,6 +3,17 @@
 - Cpu state: WIP
 - Ppu state: WIP
 
-# Tests
-## Simple test for bitmap mode 3 drawing
-![](bmm3.PNG)
+## Cpu
+⬛Hardware Interrupts\
+✅Software Interrupts\
+⬛DMA\
+✅Boots Armwrestler Test ROM
+
+## Ppu
+✅Basic Mode Switching\
+✅Bitmap Mode 3\
+✅Bitmap Mode 4\
+⬛Bitmap Mode 5\
+⬛Tiled Mode 0\
+⬛Tiled Mode 1\
+⬛Tiled Mode 2
