@@ -1,6 +1,7 @@
 #pragma once
 #include "Instruction.h"
 #include "AddressingModes.h"
+#include "Interrupts.h"
 #include <array>
 #include <functional>
 
@@ -104,6 +105,8 @@ class Arm {
 public:
 	Arm(MemoryBus *mbus);
 	u8 clock();
+	void handleTimers();
+	void handleInterrupts();
 	void checkStateAndProcessorMode();
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
@@ -117,6 +120,7 @@ public:
 	void flushThumbPipeline();
 
 	void enterSupervisorMode();
+	void enterIRQMode();
 
 	u8 getFlag(u32 flag);
 	u8 carryFrom(u32 op1, u32 op2);

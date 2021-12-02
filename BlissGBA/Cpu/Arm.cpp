@@ -38,6 +38,39 @@ u8 Arm::clock()
 	return cycles;
 }
 
+void Arm::handleTimers()
+{
+
+}
+
+void Arm::handleInterrupts()
+{
+	u8 interrupts = getFlag(I);
+	if (interrupts == 0x0) {
+		u8 interrupt_master = mbus->readU32(IME) & 0x1;
+		if (interrupt_master) {
+			u16 interrupt_enable = mbus->readU16(IE);
+			u16 interrupt_req_flag = mbus->readU16(IF);
+			//There is an interrupt to be ran
+			if (interrupt_enable & interrupt_req_flag) {
+				//Save state before jumping
+
+				 //+ 4 because when returning after servicing an interrupt bios executes subs pc, r14, #4
+				LR_irq = (R15 - 4) + 4; //next instruction + 4
+				SPSR_irq = CPSR;
+
+				enterIRQMode();
+				clearFlag(T); //execute in arm state
+				setFlag(I); //disable irqs
+
+				R15 = IRQ_VECTOR;
+				flushPipeline();
+			}
+		}
+	}
+
+}
+
 void Arm::checkStateAndProcessorMode()
 {
 	mode = getProcessorMode();
@@ -239,6 +272,12 @@ void Arm::enterSupervisorMode()
 {
 	clearFlag(M2 | M3);
 	setFlag(M0 | M1 | M4);
+}
+
+void Arm::enterIRQMode()
+{
+	clearFlag(M0 | M2 | M3);
+	setFlag(M1 | M4);
 }
 
 u8 Arm::getFlag(u32 flag)
