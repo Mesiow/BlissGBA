@@ -10,7 +10,7 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	debug.running = &running;
 	debug.showDebugger = &showDebugger;
 
-	mbus.loadGamePak("test_roms/armwrestler.gba");
+	mbus.loadGamePak("test_roms/armwrestler-gba-fixed.gba");
 	reset();
 }
 
@@ -26,9 +26,9 @@ void Emulator::run()
 			cycle *= 1;
 			cycles_this_frame += cycle;
 
-			//emulate timers
+			cpu.handleTimers();
 			ppu.update(cycles_this_frame);
-			//emulate interrupts		
+			cpu.handleInterrupts();
 		}
 
 		joypad.update();
