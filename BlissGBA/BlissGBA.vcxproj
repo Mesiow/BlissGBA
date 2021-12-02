@@ -175,6 +175,7 @@
     <ClInclude Include="Cpu\AddressingModes.h" />
     <ClInclude Include="Cpu\Arm.h" />
     <ClInclude Include="Cpu\Instruction.h" />
+    <ClInclude Include="Cpu\Interrupts.h" />
     <ClInclude Include="Debugger\DebugUI.h" />
     <ClInclude Include="Debugger\Logger.h" />
     <ClInclude Include="Joypad\Joypad.h" />

@@ -119,5 +119,8 @@
     <ClInclude Include="Joypad\Joypad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Cpu\Interrupts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
