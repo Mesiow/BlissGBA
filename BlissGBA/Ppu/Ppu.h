@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML\Graphics.hpp>
 #include "../Utils.h"
+#include "../Cpu/Interrupts.h"
 
 class MemoryBus;
 
@@ -71,6 +72,7 @@ public:
 
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
+	void requestInterrupt(u16 interrupt);
 
 	//Extend 5 bit color val into 8 bits
 	u8 getU8Color(u8 color);

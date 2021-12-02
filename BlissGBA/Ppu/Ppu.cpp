@@ -20,6 +20,7 @@ void Ppu::update(s32 cycles)
 
 				//Enter hblank
 				setHBlankFlag(1);
+				requestInterrupt(HBLANK_INT);
 				displayMode = DisplayMode::HBlank;
 			}
 		}
@@ -34,6 +35,7 @@ void Ppu::update(s32 cycles)
 				if (currentScanline == SCREEN_HEIGHT) {
 					displayMode = DisplayMode::VBlank;
 					setVBlankFlag(1);
+					requestInterrupt(VBLANK_INT);
 				}
 			}
 			else {
@@ -194,6 +196,13 @@ void Ppu::writeU8(u32 address, u8 value)
 void Ppu::writeU16(u32 address, u16 value)
 {
 	mbus->writeU16(address, value);
+}
+
+void Ppu::requestInterrupt(u16 interrupt)
+{
+	u16 irq_flag = mbus->readU16(IF);
+	irq_flag = setBit(irq_flag, interrupt);
+	mbus->writeU16(IF, irq_flag);
 }
 
 u8 Ppu::getU8Color(u8 color)
