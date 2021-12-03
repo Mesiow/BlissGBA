@@ -65,12 +65,22 @@ u8 DisplayMemory::readU8(u32 address)
 		u32 addr = address - PRAM_START_ADDR;
 		return pram[addr];
 	}
+	//Pram memory mirror
+	else if (address >= PRAM_MIRROR_START_ADDR && address <= PRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - BG_OBJ_PALETTE_SIZE) - PRAM_START_ADDR;
+		return pram[addr];
+	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
 		u32 addr = address - VRAM_START_ADDR;
 		return vram[addr];
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
 		u32 addr = address - OAM_START_ADDR;
+		return oam[addr];
+	}
+	//Oam memory mirror
+	else if (address >= OAM_MIRROR_START_ADDR && address <= OAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OAM_SIZE) - OAM_START_ADDR;
 		return oam[addr];
 	}
 }
