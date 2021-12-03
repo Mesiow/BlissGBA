@@ -10,25 +10,15 @@ void DisplayMemory::zero()
 void DisplayMemory::writeU8(u32 address, u8 value)
 {
 	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
-		u32 addr = address - PRAM_START_ADDR;
-		pram[addr] = value;
-	}
-	//Pram memory mirror
-	else if (address >= PRAM_MIRROR_START_ADDR && address <= PRAM_MIRROR_END_ADDR) {
-		u32 addr = (address - BG_OBJ_PALETTE_SIZE) - PRAM_START_ADDR;
+		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
 		pram[addr] = value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address - VRAM_START_ADDR;
+		u32 addr = address & (VRAM_SIZE - 1);
 		vram[addr] = value;
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
-		u32 addr = address - OAM_START_ADDR;
-		oam[addr] = value;
-	}
-	//Oam memory mirror
-	else if (address >= OAM_MIRROR_START_ADDR && address <= OAM_MIRROR_END_ADDR) {
-		u32 addr = (address - OAM_SIZE) - OAM_START_ADDR;
+		u32 addr = address & (OAM_SIZE - 1);
 		oam[addr] = value;
 	}
 }
@@ -62,25 +52,15 @@ void DisplayMemory::writeU32(u32 address, u32 value)
 u8 DisplayMemory::readU8(u32 address)
 {
 	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
-		u32 addr = address - PRAM_START_ADDR;
-		return pram[addr];
-	}
-	//Pram memory mirror
-	else if (address >= PRAM_MIRROR_START_ADDR && address <= PRAM_MIRROR_END_ADDR) {
-		u32 addr = (address - BG_OBJ_PALETTE_SIZE) - PRAM_START_ADDR;
+		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
 		return pram[addr];
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address - VRAM_START_ADDR;
+		u32 addr = address & (VRAM_SIZE - 1);
 		return vram[addr];
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
-		u32 addr = address - OAM_START_ADDR;
-		return oam[addr];
-	}
-	//Oam memory mirror
-	else if (address >= OAM_MIRROR_START_ADDR && address <= OAM_MIRROR_END_ADDR) {
-		u32 addr = (address - OAM_SIZE) - OAM_START_ADDR;
+		u32 addr = address & (OAM_SIZE - 1);
 		return oam[addr];
 	}
 }
@@ -88,35 +68,21 @@ u8 DisplayMemory::readU8(u32 address)
 u16 DisplayMemory::readU16(u32 address)
 {
 	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
-		u32 addr = address - PRAM_START_ADDR;
-		u16 value = readPramU16(addr);
-
-		return value;
-	}
-	//Pram memory mirror
-	else if (address >= PRAM_MIRROR_START_ADDR && address <= PRAM_MIRROR_END_ADDR) {
-		u32 addr = (address - BG_OBJ_PALETTE_SIZE) - PRAM_START_ADDR;
+		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
 		u16 value = readPramU16(addr);
 
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address - VRAM_START_ADDR;
+		u32 addr = address & (VRAM_SIZE - 1);
 		u16 value = readVramU16(addr);
 
 		return value;
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
-		u32 addr = address - OAM_START_ADDR;
+		u32 addr = address & (OAM_SIZE - 1);
 		u16 value = readOamU16(addr);
 		
-		return value;
-	}
-	//Oam memory mirror
-	else if (address >= OAM_MIRROR_START_ADDR && address <= OAM_MIRROR_END_ADDR) {
-		u32 addr = (address - OAM_SIZE) - OAM_START_ADDR;
-		u16 value = readOamU16(addr);
-
 		return value;
 	}
 }
@@ -124,35 +90,21 @@ u16 DisplayMemory::readU16(u32 address)
 u32 DisplayMemory::readU32(u32 address)
 {
 	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
-		u32 addr = address - PRAM_START_ADDR;
-		u32 value = readPramU32(addr);
-
-		return value;
-	}
-	//Pram memory mirror
-	else if (address >= PRAM_MIRROR_START_ADDR && address <= PRAM_MIRROR_END_ADDR) {
-		u32 addr = (address - BG_OBJ_PALETTE_SIZE) - PRAM_START_ADDR;
+		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
 		u32 value = readPramU32(addr);
 
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address - VRAM_START_ADDR;
+		u32 addr = address & (VRAM_SIZE - 1);
 		u32 value = readVramU32(addr);
 
 		return value;
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
-		u32 addr = address - OAM_START_ADDR;
+		u32 addr = address & (OAM_SIZE - 1);
 		u32 value = readOamU32(addr);
 		
-		return value;
-	}
-	//Oam memory mirror
-	else if (address >= OAM_MIRROR_START_ADDR && address <= OAM_MIRROR_END_ADDR) {
-		u32 addr = (address - OAM_SIZE) - OAM_START_ADDR;
-		u32 value = readOamU32(addr);
-
 		return value;
 	}
 }
