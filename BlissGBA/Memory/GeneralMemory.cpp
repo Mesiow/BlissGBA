@@ -150,40 +150,33 @@ u32 GeneralMemory::readU32(u32 address)
 {
 	if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
 		u32 addr = address - OB_WRAM_START_ADDR;
+		u32 value = readOBWramU32(addr);
 
-		u8 byte1, byte2, byte3, byte4;
-		byte1 = obwram[addr];
-		byte2 = obwram[addr + 1];
-		byte3 = obwram[addr + 2];
-		byte4 = obwram[addr + 3];
-
-		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+		return value;
+	}
+	//OBWram memory mirror
+	else if (address >= OB_WRAM_MIRROR_START_ADDR && address <= OB_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OB_WRAM_SIZE) - OB_WRAM_START_ADDR;
+		u32 value = readOBWramU32(addr);
 
 		return value;
 	}
 	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
 		u32 addr = address - OC_WRAM_START_ADDR;
+		u32 value = readOCWramU32(addr);
 
-		u8 byte1, byte2, byte3, byte4;
-		byte1 = ocwram[addr];
-		byte2 = ocwram[addr + 1];
-		byte3 = ocwram[addr + 2];
-		byte4 = ocwram[addr + 3];
-
-		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+		return value;
+	}
+	//OCWram memory mirror
+	else if (address >= OC_WRAM_MIRROR_START_ADDR && address <= OC_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OC_WRAM_SIZE) - OC_WRAM_START_ADDR;
+		u32 value = readOCWramU32(addr);
 
 		return value;
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		u32 addr = address - IO_START_ADDR;
-
-		u8 byte1, byte2, byte3, byte4;
-		byte1 = io[addr];
-		byte2 = io[addr + 1];
-		byte3 = io[addr + 2];
-		byte4 = io[addr + 3];
-
-		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+		u32 value = readIOU32(addr);
 
 		return value;
 	}
@@ -218,6 +211,45 @@ u16 GeneralMemory::readIOU16(u32 address)
 	hi = io[address + 1];
 
 	u16 value = (hi << 8) | lo;
+
+	return value;
+}
+
+u32 GeneralMemory::readOBWramU32(u32 address)
+{
+	u8 byte1, byte2, byte3, byte4;
+	byte1 = obwram[address];
+	byte2 = obwram[address + 1];
+	byte3 = obwram[address + 2];
+	byte4 = obwram[address + 3];
+
+	u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+	return value;
+}
+
+u32 GeneralMemory::readOCWramU32(u32 address)
+{
+	u8 byte1, byte2, byte3, byte4;
+	byte1 = ocwram[address];
+	byte2 = ocwram[address + 1];
+	byte3 = ocwram[address + 2];
+	byte4 = ocwram[address + 3];
+
+	u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+	return value;
+}
+
+u32 GeneralMemory::readIOU32(u32 address)
+{
+	u8 byte1, byte2, byte3, byte4;
+	byte1 = io[address];
+	byte2 = io[address + 1];
+	byte3 = io[address + 2];
+	byte4 = io[address + 3];
+
+	u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
 
 	return value;
 }
