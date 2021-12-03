@@ -13,12 +13,22 @@ void DisplayMemory::writeU8(u32 address, u8 value)
 		u32 addr = address - PRAM_START_ADDR;
 		pram[addr] = value;
 	}
+	//Pram memory mirror
+	else if (address >= PRAM_MIRROR_START_ADDR && address <= PRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - BG_OBJ_PALETTE_SIZE) - PRAM_START_ADDR;
+		pram[addr] = value;
+	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
 		u32 addr = address - VRAM_START_ADDR;
 		vram[addr] = value;
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
 		u32 addr = address - OAM_START_ADDR;
+		oam[addr] = value;
+	}
+	//Oam memory mirror
+	else if (address >= OAM_MIRROR_START_ADDR && address <= OAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OAM_SIZE) - OAM_START_ADDR;
 		oam[addr] = value;
 	}
 }
@@ -143,4 +153,34 @@ u32 DisplayMemory::readU32(u32 address)
 
 		return value;
 	}
+}
+
+u16 DisplayMemory::readPramU16(u32 address)
+{
+	return u16();
+}
+
+u16 DisplayMemory::readVramU16(u32 address)
+{
+	return u16();
+}
+
+u16 DisplayMemory::readOamU16(u32 address)
+{
+	return u16();
+}
+
+u32 DisplayMemory::readPramU32(u32 address)
+{
+	return u32();
+}
+
+u32 DisplayMemory::readVramU32(u32 address)
+{
+	return u32();
+}
+
+u32 DisplayMemory::readOamU32(u32 address)
+{
+	return u32();
 }
