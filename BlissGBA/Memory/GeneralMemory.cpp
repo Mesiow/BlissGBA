@@ -80,8 +80,18 @@ u8 GeneralMemory::readU8(u32 address)
 		u32 addr = address - OB_WRAM_START_ADDR;
 		return obwram[addr];
 	}
+	//OBWram memory mirror
+	else if (address >= OB_WRAM_MIRROR_START_ADDR && address <= OB_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OB_WRAM_SIZE) - OB_WRAM_START_ADDR;
+		return obwram[addr];
+	}
 	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
 		u32 addr = address - OC_WRAM_START_ADDR;
+		return ocwram[addr];
+	}
+	//OCWram memory mirror
+	else if (address >= OC_WRAM_MIRROR_START_ADDR && address <= OC_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OC_WRAM_SIZE) - OC_WRAM_START_ADDR;
 		return ocwram[addr];
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {

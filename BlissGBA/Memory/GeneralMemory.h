@@ -14,6 +14,12 @@
 #define IO_START_ADDR 0x4000000
 #define IO_END_ADDR 0x40003FE
 
+#define OB_WRAM_MIRROR_START_ADDR 0x2040000
+#define OB_WRAM_MIRROR_END_ADDR 0x207FFFF
+
+#define OC_WRAM_MIRROR_START_ADDR 0x3008000
+#define OC_WRAM_MIRROR_END_ADDR 0x300FFFF
+
 class GeneralMemory {
 public:
 	void loadBios(const std::string& fileName);
