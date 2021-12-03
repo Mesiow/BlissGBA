@@ -114,34 +114,33 @@ u16 GeneralMemory::readU16(u32 address)
 {
 	if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
 		u32 addr = address - OB_WRAM_START_ADDR;
+		u16 value = readOBWramU16(addr);
 
-		u8 lo, hi;
-		lo = obwram[addr];
-		hi = obwram[addr + 1];
-
-		u16 value = (hi << 8) | lo;
+		return value;
+	}
+	//OBWram memory mirror
+	else if (address >= OB_WRAM_MIRROR_START_ADDR && address <= OB_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OB_WRAM_SIZE) - OB_WRAM_START_ADDR;
+		u16 value = readOBWramU16(addr);
 
 		return value;
 	}
 	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
 		u32 addr = address - OC_WRAM_START_ADDR;
+		u16 value = readOCWramU16(addr);
 
-		u8 lo, hi;
-		lo = ocwram[addr];
-		hi = ocwram[addr + 1];
-
-		u16 value = (hi << 8) | lo;
+		return value;
+	}
+	//OCWram memory mirror
+	else if (address >= OC_WRAM_MIRROR_START_ADDR && address <= OC_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OC_WRAM_SIZE) - OC_WRAM_START_ADDR;
+		u16 value = readOCWramU16(addr);
 
 		return value;
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		u32 addr = address - IO_START_ADDR;
-
-		u8 lo, hi;
-		lo = io[addr];
-		hi = io[addr + 1];
-
-		u16 value = (hi << 8) | lo;
+		u16 value = readIOU16(addr);
 
 		return value;
 	}
@@ -188,4 +187,37 @@ u32 GeneralMemory::readU32(u32 address)
 
 		return value;
 	}
+}
+
+u16 GeneralMemory::readOBWramU16(u32 address)
+{
+	u8 lo, hi;
+	lo = obwram[address];
+	hi = obwram[address + 1];
+
+	u16 value = (hi << 8) | lo;
+
+	return value;
+}
+
+u16 GeneralMemory::readOCWramU16(u32 address)
+{
+	u8 lo, hi;
+	lo = ocwram[address];
+	hi = ocwram[address + 1];
+
+	u16 value = (hi << 8) | lo;
+
+	return value;
+}
+
+u16 GeneralMemory::readIOU16(u32 address)
+{
+	u8 lo, hi;
+	lo = io[address];
+	hi = io[address + 1];
+
+	u16 value = (hi << 8) | lo;
+
+	return value;
 }

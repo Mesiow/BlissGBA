@@ -33,6 +33,9 @@ public:
 	u16 readU16(u32 address);
 	u32 readU32(u32 address);
 
+	u16 readOBWramU16(u32 address);
+	u16 readOCWramU16(u32 address);
+	u16 readIOU16(u32 address);
 
 	u8 bios[BIOS_SIZE];
 	u8 obwram[OB_WRAM_SIZE];
