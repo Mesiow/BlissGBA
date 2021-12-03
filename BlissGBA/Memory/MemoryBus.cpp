@@ -60,6 +60,15 @@ void MemoryBus::writeU32(u32 address, u32 value)
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
 		pak.writeU32(address, value);
 	}
+
+	if (address >= 0x80000000) {
+		printf("--Open Bus writeU32-- at address: 0x%08X", address);
+	}
+
+	//Open bus
+	if (address >= 0x10000000) {
+		printf("--Open Bus readU32-- at address: 0x%08X", address);
+	}
 }
 
 u8 MemoryBus::readU8(u32 address)
@@ -112,7 +121,7 @@ u32 MemoryBus::readU32(u32 address)
 	
 	//open bus hardcode pass for test 362
 	if (address >= 0x80000000) {
-		std::cerr << "--Open bus readU32--" << std::endl;
+		printf("--Open Bus readU32-- at address: 0x%08X", address);
 		return 0x1A000002;
 	}
 
@@ -121,7 +130,6 @@ u32 MemoryBus::readU32(u32 address)
 		printf("--Open Bus readU32-- at address: 0x%08X", address);
 		return 0;
 	}
-	
 }
 
 bool MemoryBus::isAlignedU16(u32 address)

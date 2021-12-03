@@ -33,7 +33,7 @@ Unused Memory Area
 #include "../Cartridge/GamePak.h"
 
 #define GENERAL_MEM_END 0x5000000
-#define DISPLAY_MEM_END 0x70003FF
+#define DISPLAY_MEM_END 0x7FFFFFF
 #define EXTERNAL_MEM_START 0x8000000
 #define EXTERNAL_MEM_END 0xE00FFFF
 
