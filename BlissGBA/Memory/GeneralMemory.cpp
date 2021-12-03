@@ -35,8 +35,18 @@ void GeneralMemory::writeU8(u32 address, u8 value)
 		u32 addr = address - OB_WRAM_START_ADDR;
 		obwram[addr] = value;
 	}
+	//OBWram memory mirror
+	else if (address >= OB_WRAM_MIRROR_START_ADDR && address <= OB_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OB_WRAM_SIZE) - OB_WRAM_START_ADDR;
+		obwram[addr] = value;
+	}
 	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
 		u32 addr = address - OC_WRAM_START_ADDR;
+		ocwram[addr] = value;
+	}
+	//OCWram memory mirror
+	else if (address >= OC_WRAM_MIRROR_START_ADDR && address <= OC_WRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OC_WRAM_SIZE) - OC_WRAM_START_ADDR;
 		ocwram[addr] = value;
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
