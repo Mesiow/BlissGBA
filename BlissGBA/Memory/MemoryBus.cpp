@@ -120,16 +120,16 @@ u32 MemoryBus::readU32(u32 address)
 	}
 	
 	//open bus hardcode pass for test 362
-	if (address >= 0x80000000) {
-		printf("--Open Bus readU32-- at address: 0x%08X", address);
-		return 0x1A000002;
-	}
+	//if (address >= 0x80000000) {
+	//	printf("--Open Bus readU32-- at address: 0x%08X", address);
+	//	return 0x1A000002;
+	//}
 
-	//Open bus
-	if (address >= 0x10000000) {
-		printf("--Open Bus readU32-- at address: 0x%08X", address);
-		return 0;
-	}
+	////Open bus
+	//if (address >= 0x10000000) {
+	//	printf("--Open Bus readU32-- at address: 0x%08X", address);
+	//	return 0;
+	//}
 }
 
 bool MemoryBus::isAlignedU16(u32 address)

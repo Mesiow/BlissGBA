@@ -40,7 +40,7 @@ void GeneralMemory::writeU8(u32 address, u8 value)
 		ocwram[addr] = value;
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
-		u32 addr = address & (IO_SIZE - 1);
+		u32 addr = address - IO_START_ADDR;
 		io[addr] = value;
 	}
 }
@@ -85,7 +85,7 @@ u8 GeneralMemory::readU8(u32 address)
 		return ocwram[addr];
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
-		u32 addr = address & (IO_SIZE - 1);
+		u32 addr = address - IO_START_ADDR;
 		return io[addr];
 	}
 }
@@ -105,7 +105,7 @@ u16 GeneralMemory::readU16(u32 address)
 		return value;
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
-		u32 addr = address & (IO_SIZE - 1);
+		u32 addr = address - IO_START_ADDR;
 		u16 value = readIOU16(addr);
 
 		return value;
@@ -127,7 +127,7 @@ u32 GeneralMemory::readU32(u32 address)
 		return value;
 	}
 	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
-		u32 addr = address & (IO_SIZE - 1);
+		u32 addr = address - IO_START_ADDR;
 		u32 value = readIOU32(addr);
 
 		return value;

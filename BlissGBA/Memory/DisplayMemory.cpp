@@ -14,8 +14,11 @@ void DisplayMemory::writeU8(u32 address, u8 value)
 		pram[addr] = value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address & (VRAM_SIZE - 1);
-		vram[addr] = value;
+		u32 vram_addr = address & 0x1FFFF;
+		if (vram_addr > (VRAM_SIZE - 1))
+			vram_addr -= 0x8000;
+
+		vram[vram_addr] = value;
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
 		u32 addr = address & (OAM_SIZE - 1);
@@ -43,10 +46,19 @@ void DisplayMemory::writeU32(u32 address, u32 value)
 	upper1 = (value >> 16) & 0xFF;
 	upper2 = (value >> 24) & 0xFF;
 
-	writeU8(address, lower1);
-	writeU8(address + 1, lower2);
-	writeU8(address + 2, upper1);
-	writeU8(address + 3, upper2);
+    if (address >= VRAM_START_ADDR && address <= 0x6017FFF) {
+		u32 addr = address - VRAM_START_ADDR;
+		vram[addr] = lower1;
+		vram[addr + 1] = lower2;
+		vram[addr + 2] = upper1;
+		vram[addr + 3] = upper2;
+	}
+	else {
+		writeU8(address, lower1);
+		writeU8(address + 1, lower2);
+		writeU8(address + 2, upper1);
+		writeU8(address + 3, upper2);
+	}
 }
 
 u8 DisplayMemory::readU8(u32 address)
@@ -56,8 +68,11 @@ u8 DisplayMemory::readU8(u32 address)
 		return pram[addr];
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address & (VRAM_SIZE - 1);
-		return vram[addr];
+		u32 vram_addr = address & 0x1FFFF;
+		if (vram_addr > (VRAM_SIZE - 1))
+			vram_addr -= 0x8000;
+
+		return vram[vram_addr];
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
 		u32 addr = address & (OAM_SIZE - 1);
@@ -74,7 +89,7 @@ u16 DisplayMemory::readU16(u32 address)
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address & (VRAM_SIZE - 1);
+		u32 addr = address - VRAM_START_ADDR;
 		u16 value = readVramU16(addr);
 
 		return value;
@@ -96,7 +111,7 @@ u32 DisplayMemory::readU32(u32 address)
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
-		u32 addr = address & (VRAM_SIZE - 1);
+		u32 addr = address - VRAM_START_ADDR;
 		u32 value = readVramU32(addr);
 
 		return value;
