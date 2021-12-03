@@ -51,12 +51,16 @@ void Arm::handleInterrupts()
 		if (interrupt_master) {
 			u16 interrupt_enable = mbus->readU16(IE);
 			u16 interrupt_req_flag = mbus->readU16(IF);
-			//There is an interrupt to be ran
+			//There is an interrupt to be serviced
 			if (interrupt_enable & interrupt_req_flag) {
 				//Save state before jumping
-
-				 //+ 4 because when returning after servicing an interrupt bios executes subs pc, r14, #4
-				LR_irq = (R15 - 4) + 4; //next instruction + 4
+				if (getFlag(T) == 0x0) {
+					//+ 4 because when returning after servicing an interrupt bios executes subs pc, r14, #4
+					LR_irq = (R15 - 4) + 4; //next instruction + 4
+				}
+				else {
+					LR_irq = (R15 - 2) + 2;
+				}
 				SPSR_irq = CPSR;
 
 				enterIRQMode();
@@ -618,6 +622,19 @@ u8 Arm::getConditionCode(u8 cond)
 		case 0b1110: return 1; break;//always
 		default: return 1; break; //always
 	}
+}
+
+void Arm::writeU16(u32 address, u16 value)
+{
+	//Cpu only, write to IF means the program is
+	//trying to clear a bit
+	if (address == IF) {
+		u16 irq_flag = mbus->readU16(IF);
+		irq_flag &= ~(value);
+		mbus->writeU16(IF, irq_flag);
+	}
+	else
+		mbus->writeU16(address, value);
 }
 
 u16 Arm::readU16()
@@ -2075,11 +2092,11 @@ u8 Arm::opSTRH(ArmInstruction& ins, RegisterID rd, u32 address)
 	if (aligned != 0b0) {
 		address &= 0xFFFFFFFE;
 		u32 reg_rd = getRegister(rd);
-		mbus->writeU16(address, reg_rd & 0xFFFF);
+		writeU16(address, reg_rd & 0xFFFF);
 	}
 	else {
 		u32 reg_rd = getRegister(rd);
-		mbus->writeU16(address, reg_rd & 0xFFFF);
+		writeU16(address, reg_rd & 0xFFFF);
 	}
 
 	return 1;
@@ -3589,7 +3606,7 @@ u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + (immediate5 * 2);
-	mbus->writeU16(address, reg_rd & 0xFFFF);
+	writeU16(address, reg_rd & 0xFFFF);
 
 	return 1;
 }
@@ -3601,7 +3618,7 @@ u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
-	mbus->writeU16(address, reg_rd & 0xFFFF);
+	writeU16(address, reg_rd & 0xFFFF);
 
 	return 1;
 }

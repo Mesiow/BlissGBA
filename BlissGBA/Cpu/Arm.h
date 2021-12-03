@@ -148,6 +148,7 @@ public:
 	State getState();
 	u8 getConditionCode(u8 cond);
 
+	void writeU16(u32 address, u16 value);
 	u16 readU16();
 	u16 fetchU16();
 	u32 readU32();
