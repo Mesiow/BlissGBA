@@ -125,40 +125,33 @@ u32 DisplayMemory::readU32(u32 address)
 {
 	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
 		u32 addr = address - PRAM_START_ADDR;
+		u32 value = readPramU32(addr);
 
-		u8 byte1, byte2, byte3, byte4;
-		byte1 = pram[addr];
-		byte2 = pram[addr + 1];
-		byte3 = pram[addr + 2];
-		byte4 = pram[addr + 3];
-
-		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+		return value;
+	}
+	//Pram memory mirror
+	else if (address >= PRAM_MIRROR_START_ADDR && address <= PRAM_MIRROR_END_ADDR) {
+		u32 addr = (address - BG_OBJ_PALETTE_SIZE) - PRAM_START_ADDR;
+		u32 value = readPramU32(addr);
 
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
 		u32 addr = address - VRAM_START_ADDR;
-
-		u8 byte1, byte2, byte3, byte4;
-		byte1 = vram[addr];
-		byte2 = vram[addr + 1];
-		byte3 = vram[addr + 2];
-		byte4 = vram[addr + 3];
-
-		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+		u32 value = readVramU32(addr);
 
 		return value;
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
 		u32 addr = address - OAM_START_ADDR;
-
-		u8 byte1, byte2, byte3, byte4;
-		byte1 = oam[addr];
-		byte2 = oam[addr + 1];
-		byte3 = oam[addr + 2];
-		byte4 = oam[addr + 3];
-
-		u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+		u32 value = readOamU32(addr);
+		
+		return value;
+	}
+	//Oam memory mirror
+	else if (address >= OAM_MIRROR_START_ADDR && address <= OAM_MIRROR_END_ADDR) {
+		u32 addr = (address - OAM_SIZE) - OAM_START_ADDR;
+		u32 value = readOamU32(addr);
 
 		return value;
 	}
@@ -199,15 +192,39 @@ u16 DisplayMemory::readOamU16(u32 address)
 
 u32 DisplayMemory::readPramU32(u32 address)
 {
-	return u32();
+	u8 byte1, byte2, byte3, byte4;
+	byte1 = pram[address];
+	byte2 = pram[address + 1];
+	byte3 = pram[address + 2];
+	byte4 = pram[address + 3];
+
+	u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+	return value;
 }
 
 u32 DisplayMemory::readVramU32(u32 address)
 {
-	return u32();
+	u8 byte1, byte2, byte3, byte4;
+	byte1 = vram[address];
+	byte2 = vram[address + 1];
+	byte3 = vram[address + 2];
+	byte4 = vram[address + 3];
+
+	u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+	return value;
 }
 
 u32 DisplayMemory::readOamU32(u32 address)
 {
-	return u32();
+	u8 byte1, byte2, byte3, byte4;
+	byte1 = oam[address];
+	byte2 = oam[address + 1];
+	byte3 = oam[address + 2];
+	byte4 = oam[address + 3];
+
+	u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
+
+	return value;
 }
