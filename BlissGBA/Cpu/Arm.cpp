@@ -72,7 +72,6 @@ void Arm::handleInterrupts()
 			}
 		}
 	}
-
 }
 
 void Arm::checkStateAndProcessorMode()
@@ -92,6 +91,7 @@ void Arm::reset()
 	R15 = 0x08000000;
 	SP = 0x03007F00; //R13
 	CPSR = 0x000000DF;
+
 	SPSR = CPSR;
 	SPSR_irq = 0x0;
 	SPSR_fiq = 0x0;
@@ -99,8 +99,17 @@ void Arm::reset()
 	SPSR_abt = 0x0;
 	SPSR_und = 0x0;
 
+	SP_fiq = 0x03007FA0;
 	SP_irq = 0x03007FA0;
 	SP_svc = 0x03007FE0;
+	SP_abt = 0x0;
+	SP_und = 0x0;
+
+	LR_fiq = 0x0;
+	LR_irq = 0x0;
+	LR_svc = 0x0;
+	LR_abt = 0x0;
+	LR_und = 0x0;
 
 	mode = getProcessorMode();
 
