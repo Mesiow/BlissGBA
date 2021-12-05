@@ -18,10 +18,9 @@ void Ppu::update(s32 cycles)
 				if (currentScanline < SCREEN_HEIGHT)
 					render();
 
-				//Enter hblank
+				displayMode = DisplayMode::HBlank;
 				setHBlankFlag(1);
 				requestInterrupt(HBLANK_INT);
-				displayMode = DisplayMode::HBlank;
 			}
 		}
 		break; 
@@ -111,7 +110,6 @@ void Ppu::renderBitmapMode3()
 		const sf::Color color = sf::Color(red, green, blue, 255);
 		mode3.pixels.setPixel(x, currentScanline, color);
 	}
-	
 }
 
 void Ppu::renderBitmapMode4()
@@ -147,6 +145,7 @@ void Ppu::updateScanline()
 
 	//exit hblank
 	setHBlankFlag(0);
+	//requestInterrupt(HBLANK_INT);
 	cycleCounter = 0;
 }
 
@@ -208,7 +207,7 @@ void Ppu::requestInterrupt(u16 interrupt)
 u8 Ppu::getU8Color(u8 color)
 {
 	u8 new_color = color << 3;
-	new_color |= (new_color >> 2);
+	new_color |= (color >> 2);
 
 	return new_color;
 }
