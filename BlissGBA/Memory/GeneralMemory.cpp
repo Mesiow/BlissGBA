@@ -92,7 +92,13 @@ u8 GeneralMemory::readU8(u32 address)
 
 u16 GeneralMemory::readU16(u32 address)
 {
-	if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
+	if (address < BIOS_SIZE) {
+		u32 addr = address & (BIOS_SIZE - 1);
+		u16 value = readBiosU16(addr);
+
+		return value;
+	}
+	else if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
 		u32 addr = address & (OB_WRAM_SIZE - 1);
 		u16 value = readOBWramU16(addr);
 
@@ -114,7 +120,13 @@ u16 GeneralMemory::readU16(u32 address)
 
 u32 GeneralMemory::readU32(u32 address)
 {
-	if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
+	if (address < BIOS_SIZE) {
+		u32 addr = address & (BIOS_SIZE - 1);
+		u32 value = readBiosU32(addr);
+
+		return value;
+	}
+	else if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
 		u32 addr = address & (OB_WRAM_SIZE - 1);
 		u32 value = readOBWramU32(addr);
 
@@ -132,6 +144,17 @@ u32 GeneralMemory::readU32(u32 address)
 
 		return value;
 	}
+}
+
+u16 GeneralMemory::readBiosU16(u32 address)
+{
+	u8 lo, hi;
+	lo = bios[address];
+	hi = bios[address + 1];
+
+	u16 value = (hi << 8) | lo;
+
+	return value;
 }
 
 u16 GeneralMemory::readOBWramU16(u32 address)
@@ -163,6 +186,19 @@ u16 GeneralMemory::readIOU16(u32 address)
 	hi = io[address + 1];
 
 	u16 value = (hi << 8) | lo;
+
+	return value;
+}
+
+u32 GeneralMemory::readBiosU32(u32 address)
+{
+	u8 byte1, byte2, byte3, byte4;
+	byte1 = bios[address];
+	byte2 = bios[address + 1];
+	byte3 = bios[address + 2];
+	byte4 = bios[address + 3];
+
+	u32 value = ((byte4 << 24) | (byte3 << 16) | (byte2 << 8) | byte1);
 
 	return value;
 }
