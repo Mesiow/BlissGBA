@@ -99,7 +99,7 @@ void Arm::reset()
 	SPSR_abt = 0x0;
 	SPSR_und = 0x0;
 
-	SP_fiq = 0x03007FA0;
+	SP_fiq = 0x0;
 	SP_irq = 0x03007FA0;
 	SP_svc = 0x03007FE0;
 	SP_abt = 0x0;
@@ -686,7 +686,7 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit, bool immediate)
 {
 	switch (type) {
 		case 0b00:
-			value = lsl(value, amount, shiftedBit);
+			value = lsl(value, amount, shiftedBit, immediate);
 			break;
 
 		case 0b01:
@@ -704,23 +704,40 @@ u32 Arm::shift(u32 value, u8 amount, u8 type, u8 &shiftedBit, bool immediate)
 	return value;
 }
 
-u32 Arm::lsl(u32 value, u8 shift, u8& shiftedBit)
+u32 Arm::lsl(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 {
 	u32 result = 0;
-	if (shift < 32) {
-		if (shift != 0) {
-			//Save last carried out bit
-			shiftedBit = (31 - (shift - 1));
-			shiftedBit = ((value >> shiftedBit) & 0x1);
+	if (immediate) {
+		if (shift == 0) {
+			result = value;
+			shiftedBit = getFlag(C);
 		}
-		result = value << shift;
+		else { //shift > 0
+			shiftedBit = (32 - (shift));
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+			
+			result = value << shift;
+		}
 	}
 	else {
-		result = 0;
-		if (shift == 32) {
+		if (shift == 0) {
+			result = value;
+			shiftedBit = getFlag(C);
+		}
+		else if (shift < 32) {
+			if (shift != 0) {
+				//Save last carried out bit
+				shiftedBit = (32 - (shift));
+				shiftedBit = ((value >> shiftedBit) & 0x1);
+			}
+			result = value << shift;
+		}
+		else if(shift == 32) {
+			result = 0;
 			shiftedBit = value & 0x1;
 		}
-		else {
+		else { //shift > 32
+			result = 0;
 			shiftedBit = 0;
 		}
 	}
@@ -730,7 +747,6 @@ u32 Arm::lsl(u32 value, u8 shift, u8& shiftedBit)
 u32 Arm::lsr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 {
 	u32 result = 0;
-
 	if (immediate) {
 		//shift == 0 encoded as 32
 		if (shift == 0) {
@@ -2661,7 +2677,7 @@ u8 Arm::thumbOpLSL(ThumbInstruction& ins, u8 immediate5)
 	//imm5 > 0
 	else {
 		u8 shifter_carry_out = 0;
-		reg_rd = lsl(reg_rm, immediate5, shifter_carry_out);
+		reg_rd = lsl(reg_rm, immediate5, shifter_carry_out, true);
 
 		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 	}
@@ -2685,7 +2701,7 @@ u8 Arm::thumbOpLSL(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
 	}
 	else if (shift_amount < 32) {
 		u8 shifter_carry_out = 0;
-		reg_rd = lsl(reg_rd, shift_amount, shifter_carry_out);
+		reg_rd = lsl(reg_rd, shift_amount, shifter_carry_out, false);
 
 		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 	}
