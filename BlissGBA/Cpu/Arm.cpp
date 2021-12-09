@@ -781,15 +781,14 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 	if (immediate) {
 		//shift == 0 encoded as 32
 		if (shift == 0) {
-			u8 rm_sign_bit = (value >> 31) & 0x1;
-			if (rm_sign_bit == 0) {
+			u8 sign_bit_rm = (value >> 31) & 0x1;
+			if (sign_bit_rm == 0) {
 				result = 0;
-				shiftedBit = (value >> 31) & 0x1;
+				shiftedBit = sign_bit_rm;
 			}
-			//rm_sign_bit == 1
-			else {
+			else { //rm[31] == 1
 				result = 0xFFFFFFFF;
-				shiftedBit = (value >> 31) & 0x1;
+				shiftedBit = sign_bit_rm;
 			}
 		}
 		//shift > 0
@@ -798,15 +797,17 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 				if ((value >> 31) & 0x1) {
 					result = 0xFFFFFFFF;
 					shiftedBit = (value >> 31) & 0x1;
+
+					return result;
 				}
 			}
-			else {
-				shiftedBit = (shift - 1);
-				shiftedBit = ((value >> shiftedBit) & 0x1);
 
-				result = value >> shift;
-				result |= (shiftedBit << 31);
-			}
+			shiftedBit = (shift - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+
+			u8 sign_bit_rm = (value >> 31) & 0x1;
+			result = value >> shift;
+			result |= signExtend32(sign_bit_rm, 32 - shift);
 		}
 	}
 	//Register shift
@@ -820,8 +821,12 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 			shiftedBit = (shift - 1);
 			shiftedBit = ((value >> shiftedBit) & 0x1);
 
+			shiftedBit = (shift - 1);
+			shiftedBit = ((value >> shiftedBit) & 0x1);
+
+			u8 sign_bit_rm = (value >> 31) & 0x1;
 			result = value >> shift;
-			result |= (shiftedBit << 31);
+			result |= signExtend32(sign_bit_rm, 32 - shift);
 		}
 		//shift >= 32
 		else {
@@ -1655,7 +1660,7 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 {
 	u32 reg_rd = getRegister(rd);
 
-	u8 shifter_carry_out = 1;
+	u8 shifter_carry_out = 0;
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 	
@@ -2588,23 +2593,13 @@ u8 Arm::thumbOpASR(ThumbInstruction& ins, u8 immediate5)
 
 	//shift by 32
 	if (immediate5 == 0) {
-		bool rm_sign_bit = (reg_rm >> 31) & 0x1;
-		(rm_sign_bit == 1) ? setFlag(C) : clearFlag(C);
-
-		if (rm_sign_bit == 0) {
-			reg_rd = 0x0;
-		}
-		else {
-			reg_rd = 0xFFFFFFFF;
-		}
+		immediate5 = 32;
 	}
-	//imm5 > 0
-	else {
-		u8 shifter_carry_out = 0;
-		reg_rd = asr(reg_rm, immediate5, shifter_carry_out, true);
+	
+	u8 shifter_carry_out = 0;
+	reg_rd = asr(reg_rm, immediate5, shifter_carry_out, true);
 
-		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
-	}
+	(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 	writeRegister(rd, reg_rd);
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);

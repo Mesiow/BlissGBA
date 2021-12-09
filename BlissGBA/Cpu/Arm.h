@@ -1,7 +1,7 @@
 #pragma once
 #include "Instruction.h"
 #include "AddressingModes.h"
-#include "Interrupts.h"
+#include "../Core/Interrupts.h"
 #include <array>
 #include <functional>
 
