@@ -944,6 +944,13 @@ void Arm::executeThumbIns(ThumbInstruction& ins)
 
 u8 Arm::executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate)
 {
+	u8 hi_bits = (ins.encoding >> 24) & 0xF;
+	u8 lo_bits = (ins.encoding >> 4) & 0xF;
+	//Arithmetic instruction extension space
+	if (hi_bits == 0x0 && lo_bits == 0b1001) {
+		printf("arithmetic instruction set extension\n");
+	}
+	
 	RegisterID rd = ins.rd();
 	RegisterID rn = ins.rn();
 
@@ -1917,10 +1924,7 @@ u8 Arm::opTST(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 
 	u32 result = reg_rn & shifter_op;
 
-	(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-	(result == 0) ? setFlag(Z) : clearFlag(Z);
-	(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
-	
+	setCC(result, rd, false, false, true, shifter_carry_out);
 
 	return 1;
 }
@@ -1936,10 +1940,7 @@ u8 Arm::opTEQ(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 
 	u32 result = reg_rn ^ shifter_op;
 
-	(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
-	(result == 0) ? setFlag(Z) : clearFlag(Z);
-	(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
-
+	setCC(result, rd, false, false, true, shifter_carry_out);
 
 	return 1;
 }
@@ -1958,11 +1959,15 @@ u8 Arm::opCMP(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool borrow = borrowFrom(reg_rn, shifter_op);
 	bool overflow = overflowFromSub(reg_rn, shifter_op);
 
-	setCC(result, rd, borrow, overflow);
+	if (rd.id == R15_ID) {
+		//Update regardless
+		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
+		(borrow == false) ? setFlag(C) : clearFlag(C);
+		(overflow == true) ? setFlag(V) : clearFlag(V);
+	}
 
-	/*if (rd.id == R15_ID) {
-		CPSR = getSPSR();
-	}*/
+	setCC(result, rd, borrow, overflow);
 
 	return 1;
 }
