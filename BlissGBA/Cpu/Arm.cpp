@@ -837,12 +837,9 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 			shiftedBit = (shift - 1);
 			shiftedBit = ((value >> shiftedBit) & 0x1);
 
-			shiftedBit = (shift - 1);
-			shiftedBit = ((value >> shiftedBit) & 0x1);
-
 			u8 sign_bit_rm = (value >> 31) & 0x1;
 			result = value >> shift;
-			result |= signExtend32(sign_bit_rm, 32 - shift);
+			result |= signExtend32(result, 32 - shift);
 		}
 		//shift >= 32
 		else {
@@ -1913,7 +1910,7 @@ u8 Arm::opRSB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	overflow = overflowFromSub(shifter_op, reg_rn);
 
 	if (flags) {
-		setCC(result, rd, !borrow, overflow);
+		setCC(result, rd, borrow, overflow);
 	}
 
 	return 1;
@@ -1959,12 +1956,12 @@ u8 Arm::opSBC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-	u32 result = (reg_rn - shifter_op) - (!(getFlag(C)));
+	u32 result = reg_rn - shifter_op - !getFlag(C);
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	borrow = borrowFrom(reg_rn - shifter_op, (!(getFlag(C))));
-	overflow = overflowFromSub(reg_rn - shifter_op, (!(getFlag(C))));
+	borrow = borrowFrom(reg_rn - shifter_op, !getFlag(C));
+	overflow = overflowFromSub(reg_rn - shifter_op, !getFlag(C));
 
 	if (flags) {
 		setCC(result, rd, borrow, overflow);
@@ -1987,8 +1984,8 @@ u8 Arm::opRSC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	bool borrow = borrowFrom(shifter_op - reg_rn, (!(getFlag(C))));
-	bool overflow = overflowFromSub(shifter_op - reg_rn, (!(getFlag(C))));
+	bool borrow = borrowFrom(shifter_op - reg_rn, !getFlag(C));
+	bool overflow = overflowFromSub(shifter_op - reg_rn, !getFlag(C));
 
 	if (flags) {
 		setCC(result, rd, borrow, overflow);
@@ -2709,15 +2706,29 @@ u8 Arm::thumbOpASR(ThumbInstruction& ins, u8 immediate5)
 	u32 reg_rd = getRegister(rd);
 	u32 reg_rm = getRegister(rm);
 
+	u8 shifter_carry_out = 0;
 	//shift by 32
 	if (immediate5 == 0) {
-		immediate5 = 32;
+		u8 rm_sign_bit = (reg_rm >> 31) & 0x1;
+		(rm_sign_bit == 1) ? setFlag(C) : clearFlag(C);
+		
+		if (rm_sign_bit == 0)
+			reg_rd = 0x0;
+		else
+			reg_rd = 0xFFFFFFFF;
+	}
+	else { //imm > 0
+		u8 shiftedBit = (immediate5 - 1);
+		shiftedBit = (reg_rm >> shiftedBit) & 0x1;
+
+		(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
+
+		u32 result = reg_rm >> immediate5;
+		result |= signExtend32(result, 32 - immediate5);
+
+		reg_rd = result;
 	}
 	
-	u8 shifter_carry_out = 0;
-	reg_rd = asr(reg_rm, immediate5, shifter_carry_out, true);
-
-	(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
 	writeRegister(rd, reg_rd);
 
 	(reg_rd >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
@@ -2738,10 +2749,15 @@ u8 Arm::thumbOpASR(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
 		//rd unaffected
 	}
 	else if (shift_amount < 32) {
-		u8 shifter_carry_out = 0;
-		reg_rd = asr(reg_rd, shift_amount, shifter_carry_out, false);
+		u8 shiftedBit = (shift_amount - 1);
+		shiftedBit = (reg_rd >> shiftedBit) & 0x1;
 
-		(shifter_carry_out == 1) ? setFlag(C) : clearFlag(C);
+		(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
+
+		u32 result = reg_rd >> shift_amount;
+		result |= signExtend32(result, 32 - shift_amount);
+
+		reg_rd = result;
 	}
 	//shift_amount >= 32
 	else {
