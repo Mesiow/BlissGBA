@@ -1245,14 +1245,6 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 		if (incrementing) result.rn += 0x40;
 		else result.rn -= 0x40;
 	}
-	else { //Populated list
-		//if (ib || db) { //writeback before operation
-		//	if (result.writeback) {
-		//		if(!rb_in_list)
-		//			writeRegister(rn, result.rn); 
-		//	}
-		//}
-	}
 
 	bool load_pc = testBit(reg_list, 15);
 	for (s32 i = 0; i <= 14; i++) {
@@ -1358,17 +1350,25 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	bool rb_in_list = false;
 	//Empty list
 	if (reg_list == 0x0) {
-		mbus->writeU32(address, R15 + 4);
+		u32 base_addr;
+		if (ib) base_addr = result.rn + 0x4;
+		if (ia) base_addr = result.rn + 0x0;
+		if (db) base_addr = result.rn - 0x40;
+		if (da) base_addr = result.rn - 0x3C;
+
+		mbus->writeU32(base_addr, R15 + 4);
 
 		if (incrementing) result.rn += 0x40;
 		else result.rn -= 0x40;
+
+		if (result.writeback) writeRegister(rn, result.rn);
+
+		return 1;
 	}
 	else { //Populated list
 		//check is rb is in rlist if not first
-		s8 reg = -1;
 		for (s32 i = 0; i <= 7; i++) {
 			if (testBit(reg_list, i)) {
-				reg = i;
 				rb_in_list = true;
 				break;
 			}
