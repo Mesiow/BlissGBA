@@ -821,9 +821,8 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 			shiftedBit = (shift - 1);
 			shiftedBit = ((value >> shiftedBit) & 0x1);
 
-			u8 sign_bit_rm = (value >> 31) & 0x1;
 			result = value >> shift;
-			result |= signExtend32(sign_bit_rm, 32 - shift);
+			result = signExtend32(result, 32 - shift);
 		}
 	}
 	//Register shift
@@ -837,9 +836,8 @@ u32 Arm::asr(u32 value, u8 shift, u8& shiftedBit, bool immediate)
 			shiftedBit = (shift - 1);
 			shiftedBit = ((value >> shiftedBit) & 0x1);
 
-			u8 sign_bit_rm = (value >> 31) & 0x1;
 			result = value >> shift;
-			result |= signExtend32(result, 32 - shift);
+			result = signExtend32(result, 32 - shift);
 		}
 		//shift >= 32
 		else {
