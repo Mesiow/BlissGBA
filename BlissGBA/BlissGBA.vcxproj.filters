@@ -119,7 +119,10 @@
     <ClInclude Include="Joypad\Joypad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Cpu\Interrupts.h">
+    <ClInclude Include="Core\Interrupts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Dma.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
