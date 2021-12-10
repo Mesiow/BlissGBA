@@ -919,7 +919,7 @@ u32 Arm::rrx(u32 value, u8 &shiftedBit)
 {
 	//shifter_carry_out
 	shiftedBit = value & 0x1;
-	value = (((u32)getFlag(C) << 31) | (value >> 1));
+	value = (getFlag(C) << 31) | (value >> 1);
 	
 	return value;
 }
@@ -1185,11 +1185,37 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	u8 PU = (ins.P() << 1) | ins.U();
 	u8 S = ins.S_bit22();
 	AddrMode4Result result;
+	bool incrementing;
+	bool ia = false;
+	bool ib = false;
+	bool da = false;
+	bool db = false;
+
 	switch (PU) {
-		case 0b01: result = addrMode4.incrementAfter(ins); break;
-		case 0b11: result = addrMode4.incrementBefore(ins); break;
-		case 0b00: result = addrMode4.decrementAfter(ins); break;
-		case 0b10: result = addrMode4.decrementBefore(ins); break;
+		case 0b01: {
+			ia = true;
+			incrementing = true;
+			result = addrMode4.incrementAfter(ins);
+		}
+		break;
+		case 0b11: {
+			ib = true;
+			incrementing = true;
+			result = addrMode4.incrementBefore(ins);
+		}
+		break;
+		case 0b00: {
+			da = true;
+			incrementing = false;
+			result = addrMode4.decrementAfter(ins);
+		}
+		break;
+		case 0b10: {
+			db = true;
+			incrementing = false;
+			result = addrMode4.decrementBefore(ins);
+		}
+		break;
 	}
 
 	RegisterID rn = ins.rn();
@@ -1199,15 +1225,6 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 
 	address &= 0xFFFFFFFC;
 
-	//Empty list
-	if (reg_list == 0x0) {
-		//Load value from reg_rn address into r15
-		u32 addr = mbus->readU32(address);
-		R15 = addr & 0xFFFFFFFC;
-		flushPipeline();
-
-		result.rn += 0x40;
-	}
 
 	//Check if reg base is in the list. If it is we don't writeback
 	bool rb_in_list = false;
@@ -1216,6 +1233,25 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 			rb_in_list = true;
 			break;
 		}
+	}
+
+	//Empty list
+	if (reg_list == 0x0) {
+		//Load value from reg_rn address into r15
+		u32 addr = mbus->readU32(address);
+		R15 = addr & 0xFFFFFFFC;
+		flushPipeline();
+
+		if (incrementing) result.rn += 0x40;
+		else result.rn -= 0x40;
+	}
+	else { //Populated list
+		//if (ib || db) { //writeback before operation
+		//	if (result.writeback) {
+		//		if(!rb_in_list)
+		//			writeRegister(rn, result.rn); 
+		//	}
+		//}
 	}
 
 	bool load_pc = testBit(reg_list, 15);
@@ -1263,11 +1299,37 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	u8 PU = (ins.P() << 1) | ins.U();
 	u8 S = ins.S_bit22();
 	AddrMode4Result result;
+	bool incrementing;
+	bool ia = false;
+	bool ib = false;
+	bool da = false;
+	bool db = false;
+
 	switch (PU) {
-		case 0b01: result = addrMode4.incrementAfter(ins); break;
-		case 0b11: result = addrMode4.incrementBefore(ins); break;
-		case 0b00: result = addrMode4.decrementAfter(ins); break;
-		case 0b10: result = addrMode4.decrementBefore(ins); break;
+		case 0b01: {
+			ia = true;
+			incrementing = true;
+			result = addrMode4.incrementAfter(ins);
+		}
+		break;
+		case 0b11: { 
+			ib = true;
+			incrementing = true;
+			result = addrMode4.incrementBefore(ins);
+		} 
+		break;
+		case 0b00: {
+			da = true;
+			incrementing = false;
+			result = addrMode4.decrementAfter(ins); 
+		}
+		break;
+		case 0b10: {
+			db = true;
+			incrementing = false;
+			result = addrMode4.decrementBefore(ins); 
+		}
+		break;
 	}
 
 	RegisterID rn = ins.rn();
@@ -1277,11 +1339,6 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 
 	address &= 0xFFFFFFFC;
 
-	//Empty list
-	if (reg_list == 0x0) {
-		mbus->writeU32(address, R15 + 4);
-		result.rn += 0x40;
-	}
 
 	//Check if first reg in list is rb
 	s8 first_reg = -1;
@@ -1296,6 +1353,26 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	bool first = false;
 	if (rn.id == first_reg) {
 		first = true;
+	}
+
+	bool rb_in_list = false;
+	//Empty list
+	if (reg_list == 0x0) {
+		mbus->writeU32(address, R15 + 4);
+
+		if (incrementing) result.rn += 0x40;
+		else result.rn -= 0x40;
+	}
+	else { //Populated list
+		//check is rb is in rlist if not first
+		s8 reg = -1;
+		for (s32 i = 0; i <= 7; i++) {
+			if (testBit(reg_list, i)) {
+				reg = i;
+				rb_in_list = true;
+				break;
+			}
+		}
 	}
 
 	for (s32 i = 0; i <= 14; i++) {
@@ -1320,6 +1397,13 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 				u32 reg_rn = getRegister(rn);
 				writeRegister(rn, reg_rn);
 				first = false;
+			}
+			else if (rb_in_list) { //Not first but rb is in the list
+				//Store after first transfer occured
+				if (result.writeback) {
+					writeRegister(rn, result.rn);
+					rb_in_list = false;
+				}
 			}
 		}
 
@@ -2102,11 +2186,24 @@ u8 Arm::opSWI(ArmInstruction& ins)
 {
 	u8 swi_number = (ins.encoding >> 16) & 0xFF;
 	if (swi_number == 0x6) {
-		printf("Failed test: 0x%08X\n", registers[0].value);
+		//printf("Failed test: 0x%08X\n", registers[0].value);
+
+		//HLE Div
+		s32 r0 = getRegister(RegisterID{ (u8)0 });
+		s32 r1 = getRegister(RegisterID{ (u8)1 });
+
+		s32 div_res = r0 / r1;
+		writeRegister(RegisterID{ (u8)0 }, div_res);
+
+		s32 mod_res = r0 % r1;
+		writeRegister(RegisterID{ (u8)1 }, mod_res);
+		
+		u32 abs_res = abs(r0 / r1);
+		writeRegister(RegisterID{ (u8)3 }, abs_res);
 	}
 	
 	printf("ARM mode SWI at address: 0x%08X", R15 - 8);
-	LR_svc = R15 - 4;
+	/*LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
 
 	enterSupervisorMode();
@@ -2114,7 +2211,7 @@ u8 Arm::opSWI(ArmInstruction& ins)
 	setFlag(I);
 
 	R15 = 0x8;
-	flushPipeline();
+	flushPipeline();*/
 
 	return 1;
 }
