@@ -2722,7 +2722,7 @@ u8 Arm::thumbOpASR(ThumbInstruction& ins, u8 immediate5)
 		(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
 
 		u32 result = reg_rm >> immediate5;
-		result |= signExtend32(result, 32 - immediate5);
+		result = signExtend32(result, 32 - immediate5);
 
 		reg_rd = result;
 	}
@@ -2753,7 +2753,7 @@ u8 Arm::thumbOpASR(ThumbInstruction& ins, RegisterID rs, RegisterID rd)
 		(shiftedBit == 1) ? setFlag(C) : clearFlag(C);
 
 		u32 result = reg_rd >> shift_amount;
-		result |= signExtend32(result, 32 - shift_amount);
+		result = signExtend32(result, 32 - shift_amount);
 
 		reg_rd = result;
 	}
