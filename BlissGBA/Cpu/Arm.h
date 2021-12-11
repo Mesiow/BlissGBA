@@ -123,10 +123,12 @@ public:
 	void enterIRQMode();
 
 	u8 getFlag(u32 flag);
-	u8 carryFrom(u32 op1, u32 op2);
-	u8 borrowFrom(u32 op1, u32 op2);
-	u8 overflowFromAdd(u32 op1, u32 op2);
-	u8 overflowFromSub(u32 op1, u32 op2);
+	bool carryFrom(u32 op1, u32 op2);
+	bool borrowFrom(u32 op1, u32 op2);
+	bool overflowFromAdd(u32 op1, u32 op2);
+	bool overflowFromSub(u32 op1, u32 op2);
+	bool overflowFromAdd(u32 op1, u32 op2, u32 result);
+	bool overflowFromSub(u32 op1, u32 op2, u32 result);
 	u8 fetchOp(u32 encoding);
 	PSR getPSR();
 	u32 getSPSR();

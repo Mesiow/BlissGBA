@@ -298,26 +298,36 @@ u8 Arm::getFlag(u32 flag)
 	return (CPSR & flag) ? 1 : 0;
 }
 
-u8 Arm::carryFrom(u32 op1, u32 op2)
+bool Arm::carryFrom(u32 op1, u32 op2)
 {
 	return (((u64)op1 + (u64)op2) > 0xFFFFFFFF);
 }
 
-u8 Arm::borrowFrom(u32 op1, u32 op2)
+bool Arm::borrowFrom(u32 op1, u32 op2)
 {
 	return (((s64)op1 - (s64)op2) < 0);
 }
 
-u8 Arm::overflowFromAdd(u32 op1, u32 op2)
+bool Arm::overflowFromAdd(u32 op1, u32 op2)
 {
-	s64 result = op1 + op2;
-	return (~(op1 ^ op2) & ((op1 ^ result)) & 0x80000000) != 0;
+	u32 result = op1 + op2;
+	return (~(op1 ^ op2) & ((op1 ^ result))) >> 31;
 }
 
-u8 Arm::overflowFromSub(u32 op1, u32 op2) 
+bool Arm::overflowFromSub(u32 op1, u32 op2) 
 {
-	s64 result = op1 - op2;
-	return ((op1 ^ op2) & ((op1 ^ result)) & 0x80000000) != 0;
+	u32 result = op1 - op2;
+	return ((op1 ^ op2) & ((op1 ^ result))) >> 31;
+}
+
+bool Arm::overflowFromAdd(u32 op1, u32 op2, u32 result)
+{
+	return (~(op1 ^ op2) & ((op1 ^ result))) >> 31;
+}
+
+bool Arm::overflowFromSub(u32 op1, u32 op2, u32 result)
+{
+	return ((op1 ^ op2) & ((op1 ^ result))) >> 31;
 }
 
 u8 Arm::fetchOp(u32 encoding)
@@ -884,8 +894,10 @@ u32 Arm::ror(u32 value, u8 shift, u8 &shiftedBit, bool immediate)
 			result = value;
 			shiftedBit = (value >> 31) & 0x1;
 		}
-		//rm[0-4] > 0
-		else {
+		//rs[0-4] > 0
+		else if((shift & 0x1F) > 0){
+			shift = shift & 0x1F; //0 - 4
+
 			u32 rotatedOut = getNthBits(value, 0, shift);
 			u32 rotatedIn = getNthBits(value, shift, 31);
 
@@ -1931,8 +1943,8 @@ u8 Arm::opADC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	carry = carryFrom(reg_rn, shifter_op + getFlag(C));
-	overflow = overflowFromAdd(reg_rn, shifter_op + getFlag(C));
+	carry = ((u64)reg_rn + (u64)shifter_op + getFlag(C)) >> 32;
+	overflow = overflowFromAdd(reg_rn, shifter_op, result);
 
 	if (flags) {
 		setCC(result, rd, !carry, overflow);
@@ -1954,15 +1966,18 @@ u8 Arm::opSBC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-	u32 result = reg_rn - shifter_op - !getFlag(C);
+	u32 result = reg_rn - (shifter_op + !getFlag(C));
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	borrow = borrowFrom(reg_rn - shifter_op, !getFlag(C));
-	overflow = overflowFromSub(reg_rn - shifter_op, !getFlag(C));
+	//For adc/sbc/rsc don't take into account the carry flag
+	//for overflow
+
+	bool carry = (u64)reg_rn >= ((u64)shifter_op + !getFlag(C));
+	overflow = overflowFromSub(reg_rn, shifter_op, result);
 
 	if (flags) {
-		setCC(result, rd, borrow, overflow);
+		setCC(result, rd, !carry, overflow);
 	}
 
 	return 1;
@@ -1978,12 +1993,12 @@ u8 Arm::opRSC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
-	u32 result = shifter_op - reg_rn - !getFlag(C);
+	u32 result = shifter_op - (reg_rn + !getFlag(C));
 	reg_rd = result;
 	writeRegister(rd, reg_rd);
 
-	bool borrow = borrowFrom(shifter_op - reg_rn, !getFlag(C));
-	bool overflow = overflowFromSub(shifter_op - reg_rn, !getFlag(C));
+	bool borrow = borrowFrom(shifter_op, reg_rn + !getFlag(C));
+	bool overflow = overflowFromSub(shifter_op, reg_rn, result);
 
 	if (flags) {
 		setCC(result, rd, borrow, overflow);
