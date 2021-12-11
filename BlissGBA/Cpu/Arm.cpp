@@ -3039,11 +3039,11 @@ u8 Arm::thumbOpADC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	u32 reg_rm = getRegister(rm);
 	u32 reg_rd = getRegister(rd);
 
-	u32 result = (reg_rd + reg_rm) + getFlag(C);
+	u32 result = reg_rd + reg_rm + getFlag(C);
 	writeRegister(rd, result);
 
-	bool carry = carryFrom(reg_rd, reg_rm + getFlag(C));
-	bool overflow = overflowFromAdd(reg_rd, reg_rm + getFlag(C));
+	bool carry = ((u64)reg_rd + (u64)reg_rm + getFlag(C)) >> 32;
+	bool overflow = overflowFromAdd(reg_rd, reg_rm, result);
 
 	setCC(result, rd, !carry, overflow);
 
@@ -3270,13 +3270,13 @@ u8 Arm::thumbOpSBC(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	u32 reg_rm = getRegister(rm);
 	u32 reg_rd = getRegister(rd);
 
-	u32 result = (reg_rd - reg_rm) - (!(getFlag(C)));
+	u32 result = reg_rd - (reg_rm + !getFlag(C));
 	writeRegister(rd, result);
 
-	bool borrow = borrowFrom(reg_rd, reg_rm - (!(getFlag(C))));
-	bool overflow = overflowFromSub(reg_rd, reg_rm - (!(getFlag(C))));
+	bool carry = (u64)reg_rd >= ((u64)reg_rm + !getFlag(C));
+	bool overflow = overflowFromSub(reg_rd, reg_rm, result);
 
-	setCC(result, rd, borrow, overflow);
+	setCC(result, rd, !carry, overflow);
 
 	return 1;
 }
