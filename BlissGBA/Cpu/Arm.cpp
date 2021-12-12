@@ -1778,18 +1778,33 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 	
-	
 	u32 result = shifter_op;
-	if (reg_rd == R15) {
-		writeRegister(rd, result);
-		flushPipeline();
+	if (rd.id == R15_ID) {
+		if (flags) {
+			//movs pc, lr
+			CPSR = getSPSR();
+
+			if (getFlag(T) == 0x0) {
+				R15 = result & 0xFFFFFFFC;
+				flushPipeline();
+			}
+			else {
+				R15 = result & 0xFFFFFFFE;
+				flushThumbPipeline();
+				R15 -= 2;
+			}
+		}
+		else {
+			//mov pc, lr
+			R15 = result & 0xFFFFFFFC;
+			flushPipeline();
+		}
 	}
 	else {
 		writeRegister(rd, result);
-	}
-	
-	if (flags) {
-		setCC(result, rd, false, false, true, shifter_carry_out);
+		if (flags) {
+			setCC(result, rd, false, false, true, shifter_carry_out);
+		}
 	}
 
 	return 1;
@@ -3498,6 +3513,7 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 
 u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
+	//printf("THUMB mode SWI at address: 0x%08X", R15 - 4);
 	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;
 
@@ -3507,6 +3523,9 @@ u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 
 	R15 = 0x8; //jump to bios
 	flushPipeline();
+
+	//take into account that after exiting this instruction r15 is incremented by two from the fetchU16 function
+	R15 += 2; 
 
 	return 1;
 }
