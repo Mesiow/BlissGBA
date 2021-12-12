@@ -2196,10 +2196,10 @@ u8 Arm::opSWI(ArmInstruction& ins)
 {
 	u8 swi_number = (ins.encoding >> 16) & 0xFF;
 	if (swi_number == 0x6) {
-		//printf("Failed test: 0x%08X\n", registers[0].value);
+		printf("Failed test: 0x%08X\n", registers[0].value);
 
 		//HLE Div
-		s32 r0 = getRegister(RegisterID{ (u8)0 });
+		/*s32 r0 = getRegister(RegisterID{ (u8)0 });
 		s32 r1 = getRegister(RegisterID{ (u8)1 });
 
 		s32 div_res = r0 / r1;
@@ -2209,11 +2209,11 @@ u8 Arm::opSWI(ArmInstruction& ins)
 		writeRegister(RegisterID{ (u8)1 }, mod_res);
 		
 		u32 abs_res = abs(r0 / r1);
-		writeRegister(RegisterID{ (u8)3 }, abs_res);
+		writeRegister(RegisterID{ (u8)3 }, abs_res);*/
 	}
 	
 	printf("ARM mode SWI at address: 0x%08X", R15 - 8);
-	/*LR_svc = R15 - 4;
+	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
 
 	enterSupervisorMode();
@@ -2221,7 +2221,7 @@ u8 Arm::opSWI(ArmInstruction& ins)
 	setFlag(I);
 
 	R15 = 0x8;
-	flushPipeline();*/
+	flushPipeline();
 
 	return 1;
 }
@@ -2232,7 +2232,7 @@ u8 Arm::opSTRH(ArmInstruction& ins, RegisterID rd, u32 address)
 	u8 aligned = (address & 0x1);
 	//Misaligned
 	if (aligned != 0b0) {
-		address &= 0xFFFFFFFE;
+		address &= 0xFFFFFFFE;  //todo: UNCOMMENT
 		u32 reg_rd = getRegister(rd);
 		writeU16(address, reg_rd & 0xFFFF);
 	}
@@ -2417,7 +2417,6 @@ u8 Arm::opMSR(ArmInstruction& ins, u32 value)
 	u8 R = ins.R();
 	u8 fm = ins.fieldMask();
 	bool cpsr_write = (R == 0x0);
-
 	if (cpsr_write) {
 		if (((fm & 0x1) == 0x1) && inPrivilegedMode()) {
 			u32 operand = value & 0xFF;
