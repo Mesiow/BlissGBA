@@ -2194,24 +2194,25 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
-	u8 swi_number = (ins.encoding >> 16) & 0xFF;
-	if (swi_number == 0x6) {
-		printf("Failed test: 0x%08X\n", registers[0].value);
+	//u8 swi_number = (ins.encoding >> 16) & 0xFF;
+	//if (swi_number == 0x6) {
+	//	printf("Failed test: 0x%08X\n", registers[0].value);
 
-		//HLE Div
-		/*s32 r0 = getRegister(RegisterID{ (u8)0 });
-		s32 r1 = getRegister(RegisterID{ (u8)1 });
+	//	//HLE Div
+	//	/*s32 r0 = getRegister(RegisterID{ (u8)0 });
+	//	s32 r1 = getRegister(RegisterID{ (u8)1 });
 
-		s32 div_res = r0 / r1;
-		writeRegister(RegisterID{ (u8)0 }, div_res);
+	//	s32 div_res = r0 / r1;
+	//	writeRegister(RegisterID{ (u8)0 }, div_res);
 
-		s32 mod_res = r0 % r1;
-		writeRegister(RegisterID{ (u8)1 }, mod_res);
-		
-		u32 abs_res = abs(r0 / r1);
-		writeRegister(RegisterID{ (u8)3 }, abs_res);*/
-	}
-	
+	//	s32 mod_res = r0 % r1;
+	//	writeRegister(RegisterID{ (u8)1 }, mod_res);
+	//	
+	//	u32 abs_res = abs(r0 / r1);
+	//	writeRegister(RegisterID{ (u8)3 }, abs_res);*/
+	//}
+	//
+
 	printf("ARM mode SWI at address: 0x%08X", R15 - 8);
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
@@ -2232,7 +2233,7 @@ u8 Arm::opSTRH(ArmInstruction& ins, RegisterID rd, u32 address)
 	u8 aligned = (address & 0x1);
 	//Misaligned
 	if (aligned != 0b0) {
-		address &= 0xFFFFFFFE;  //todo: UNCOMMENT
+		address &= 0xFFFFFFFE;
 		u32 reg_rd = getRegister(rd);
 		writeU16(address, reg_rd & 0xFFFF);
 	}
