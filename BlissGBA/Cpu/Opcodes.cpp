@@ -100,8 +100,12 @@ void Arm::mapArmOpcodes()
 void Arm::mapThumbOpcodes() 
 {
 	for (s32 i = 0; i < 256; i++) {
+		//SWI
+		if (i == 0b11011111) {
+			thumblut[i] = b(&Arm::thumbOpSWI);
+		}
 		//Add/subtract register
-		if (((i >> 2) & 0x3F) == 0b000110) {
+		else if (((i >> 2) & 0x3F) == 0b000110) {
 			thumblut[i] = b(&Arm::executeThumbAddSubReg);
 		}
 		//Add/subtract immediate
@@ -167,10 +171,6 @@ void Arm::mapThumbOpcodes()
 		//Undefined instruction
 		else if ((i & 0xFF) == 0b11011110) {
 			thumblut[i] = b(&Arm::handleUndefinedThumbIns);
-		}
-		//SWI
-		else if ((i & 0xFF) == 0b11011111) {
-			thumblut[i] = b(&Arm::thumbOpSWI);
 		}
 		//Unconditional branch
 		else if ((((i >> 5) & 0x1F) == 0b111) && 
