@@ -68,16 +68,16 @@ void GamePak::writeU32(u32 address, u32 value)
 
 u8 GamePak::readU8(u32 address)
 {
-	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {
-		u32 addr = address - GAMEPAK_WS0_START_ADDR;
+	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
+		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 		return gamepakWS0[addr];
 	}
 }
 
 u16 GamePak::readU16(u32 address)
 {
-	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {
-		u32 addr = address - GAMEPAK_WS0_START_ADDR;
+	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
+		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 
 		u8 lo = gamepakWS0[addr];
 		u8 hi = gamepakWS0[addr + 1];
@@ -89,8 +89,8 @@ u16 GamePak::readU16(u32 address)
 
 u32 GamePak::readU32(u32 address)
 {
-	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS0_END_ADDR) {
-		u32 addr = address - GAMEPAK_WS0_START_ADDR;
+	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
+		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 
 		u8 byte1 = gamepakWS0[addr];
 		u8 byte2 = gamepakWS0[addr + 1];
