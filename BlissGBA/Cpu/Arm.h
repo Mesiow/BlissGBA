@@ -117,6 +117,7 @@ public:
 
 	void fillPipeline();
 	void flushPipeline();
+	void flushAndRefillPipeline();
 	void flushThumbPipeline();
 
 	void enterSupervisorMode();
@@ -151,6 +152,7 @@ public:
 	u8 getConditionCode(u8 cond);
 
 	void writeU16(u32 address, u16 value);
+	void writeU32(u32 address, u32 value);
 	u16 readU16();
 	u16 fetchU16();
 	u32 readU32();

@@ -45,32 +45,36 @@ void Arm::handleTimers()
 
 void Arm::handleInterrupts()
 {
-	u8 interrupts = getFlag(I);
-	if (interrupts == 0x0) {
-		u8 interrupt_master = mbus->readU32(IME) & 0x1;
-		if (interrupt_master) {
-			u16 interrupt_enable = mbus->readU16(IE);
-			u16 interrupt_req_flag = mbus->readU16(IF);
-			//There is an interrupt to be serviced
-			if (interrupt_enable & interrupt_req_flag) {
-				//Save state before jumping
-				if (getFlag(T) == 0x0) {
-					//+ 4 because when returning after servicing an interrupt bios executes subs pc, r14, #4
-					LR_irq = (R15 - 4) + 4; //next instruction + 4
-				}
-				else {
-					LR_irq = (R15 - 2) + 2;
-				}
-				SPSR_irq = CPSR;
+	u16 ie = mbus->readU16(IE);
+	u16 irq_flag = mbus->readU16(IF);
 
-				enterIRQMode();
-				clearFlag(T); //execute in arm state
-				setFlag(I); //disable irqs
+	//There is an interrupt to be serviced
+	if (ie & irq_flag) {
+		u8 ime = mbus->readU32(IME) & 0x1;
+		u8 interrupts = getFlag(I);
 
-				R15 = IRQ_VECTOR;
-				flushPipeline();
-			}
+		//If irqs are disabled or IME is not set, return (irq should not be serviced)
+		if (interrupts == 0x1 || ime == 0x0)
+			return;
+
+		//Save state before jumping
+		if (getFlag(T) == 0x0) {
+			//no offset because when returning after servicing an 
+			//interrupt bios executes subs pc, r14, #4, which will land us back
+			//at the same instruction that the interrupt happened so we can finally execute it
+			LR_irq = (R15 - 4);
 		}
+		else {
+			LR_irq = (R15 - 2) + 2;
+		}
+		SPSR_irq = CPSR;
+
+		enterIRQMode();
+		clearFlag(T); //execute in arm state
+		setFlag(I); //disable irqs
+
+		R15 = IRQ_VECTOR;
+		flushAndRefillPipeline();
 	}
 }
 
@@ -273,6 +277,12 @@ void Arm::flushPipeline()
 {
 	armpipeline[0] = fetchU32();
 	armpipeline[1] = readU32();
+}
+
+void Arm::flushAndRefillPipeline()
+{
+	armpipeline[0] = fetchU32();
+	armpipeline[1] = fetchU32();
 }
 
 void Arm::flushThumbPipeline()
@@ -645,15 +655,18 @@ u8 Arm::getConditionCode(u8 cond)
 
 void Arm::writeU16(u32 address, u16 value)
 {
-	//Cpu only, write to IF means the program is
-	//trying to clear a bit
 	if (address == IF) {
 		u16 irq_flag = mbus->readU16(IF);
 		irq_flag &= ~(value);
-		mbus->writeU16(IF, irq_flag);
+		mbus->mmio.setIF(irq_flag);
 	}
 	else
 		mbus->writeU16(address, value);
+}
+
+void Arm::writeU32(u32 address, u32 value)
+{
+	mbus->writeU32(address, value);
 }
 
 u16 Arm::readU16()
@@ -1363,7 +1376,7 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		if (db) base_addr = result.rn - 0x40;
 		if (da) base_addr = result.rn - 0x3C;
 
-		mbus->writeU32(base_addr, R15 + 4);
+		writeU32(base_addr, R15 + 4);
 
 		if (incrementing) result.rn += 0x40;
 		else result.rn -= 0x40;
@@ -1390,12 +1403,12 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 			//Store user mode registers only
 			if (S == 0x1) {
 				u32 reg_usr = getUserModeRegister(id);
-				mbus->writeU32(address, reg_usr);
+				writeU32(address, reg_usr);
 			}
 			//Store registers of current mode
 			else {
 				u32 reg = getRegister(id);
-				mbus->writeU32(address, reg);
+				writeU32(address, reg);
 			}
 			address += 4;
 
@@ -1420,7 +1433,7 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	bool store_pc = testBit(reg_list, 15);
 	//If R15 is to be stored, store 4 ahead (R15 + 4) to memory
 	if (store_pc) {
-		mbus->writeU32(address, R15 + 4);
+		writeU32(address, R15 + 4);
 	}
 
 	if (result.writeback) {
@@ -2435,7 +2448,7 @@ u8 Arm::opSTR(ArmInstruction& ins, RegisterID rd, u32 address)
 	//R15 edge case
 	if (rd.id == R15_ID) reg_rd += 4;
 
-	mbus->writeU32(address, reg_rd);
+	writeU32(address, reg_rd);
 
 	return 1;
 }
@@ -2747,7 +2760,7 @@ u8 Arm::thumbOpSTRStack(ThumbInstruction& ins)
 	u8 imm8 = ins.imm8();
 
 	u32 address = sp + (imm8 * 4);	
-	mbus->writeU32(address, reg_rd);
+	writeU32(address, reg_rd);
 
 	return 1;
 }
@@ -3423,7 +3436,7 @@ u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
 
 	//Empty list
 	if (reg_list == 0x0) {
-		mbus->writeU32(address, R15 + 2);
+		writeU32(address, R15 + 2);
 		reg_rn += 0x40;
 	}
 
@@ -3454,7 +3467,7 @@ u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
 			
 			//If first, write the rb value to mem
 			u32 reg = getRegister(id);
-			mbus->writeU32(address, reg);
+			writeU32(address, reg);
 			address += 4;
 
 			//then increment and writeback
@@ -3763,7 +3776,7 @@ u8 Arm::thumbOpSTR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + (immediate5 * 4);
-	mbus->writeU32(address, reg_rd);
+	writeU32(address, reg_rd);
 
 	return 1;
 }
@@ -3775,7 +3788,7 @@ u8 Arm::thumbOpSTR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
-	mbus->writeU32(address, reg_rd);
+	writeU32(address, reg_rd);
 
 	return 1;
 }
@@ -3845,7 +3858,7 @@ u8 Arm::thumbOpPUSH(ThumbInstruction& ins)
 			id.id = i;
 
 			u32 reg = getRegister(id);
-			mbus->writeU32(address, reg);
+			writeU32(address, reg);
 			address += 4;
 		}
 	}
@@ -3853,7 +3866,7 @@ u8 Arm::thumbOpPUSH(ThumbInstruction& ins)
 	//is LR included
 	if (R == 0x1) {
 		u32 lr = getRegister(RegisterID{ R14_ID });
-		mbus->writeU32(address, lr);
+		writeU32(address, lr);
 	}
 	sp = sp - 4 * (R + numSetBitsU8(reg_list));
 	writeRegister(RegisterID{ R13_ID }, sp);
