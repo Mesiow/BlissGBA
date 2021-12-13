@@ -32,6 +32,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showGamePakMemory = false;
     showCartWindow = true;
     showPPUWindow = false;
+    showInterruptsWindow = true;
     showPipeline = true;
     showDisplay = true;
     vsync = false;
@@ -53,6 +54,7 @@ void DebugUI::render()
     renderGeneralState();
     renderBankedRegisters();
     renderCartInfo();
+    renderInterrupts();
     renderPipeline();
     renderEmuButtons();
     renderLogSetup();
@@ -387,6 +389,7 @@ void DebugUI::renderMenuBar()
             ImGui::MenuItem("Show Bios memory", nullptr, &showBiosMemory);
             ImGui::MenuItem("Show GamePak memory", nullptr, &showGamePakMemory);
             ImGui::MenuItem("Show IO registers", nullptr, &showIO);
+            ImGui::MenuItem("Show Interrupts", nullptr, &showInterruptsWindow);
             ImGui::MenuItem("Show Palette RAM", nullptr, &showPALRAM);
             ImGui::MenuItem("Show VRAM", nullptr, &showVRAM);
             ImGui::MenuItem("Show OAM", nullptr, &showOAM);
@@ -403,6 +406,25 @@ void DebugUI::renderMenuBar()
         }
 
         ImGui::EndMainMenuBar();
+    }
+}
+
+void DebugUI::renderInterrupts()
+{
+    if (showInterruptsWindow) {
+        if (ImGui::Begin("Interrupts")) {
+            ImGui::SetWindowFontScale(1.2);
+
+            bool ime = mbus->readU16(IME) & 0x1;;
+            bool ie = mbus->readU16(IE);
+            bool irq_flag = mbus->readU16(IF);
+
+            ImGui::Checkbox("IME (Interrupt Master)", &ime);
+            ImGui::Text("IE (Interrupt Enable): 0x%04X", ie);
+            ImGui::Text("IF (Interrupt Request): 0x%04x", irq_flag);
+
+            ImGui::End();
+        }
     }
 }
 

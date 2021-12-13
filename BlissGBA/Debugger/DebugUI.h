@@ -23,6 +23,7 @@ struct DebugUI {
 	void renderGeneralState();
 	void renderBankedRegisters();
 	void renderMenuBar();
+	void renderInterrupts();
 	void renderCartInfo();
 	void renderPipeline();
 	void renderDisplay();
@@ -63,6 +64,7 @@ struct DebugUI {
 	bool showOCWRAM;
 	bool showGamePakMemory;
 	bool showCartWindow;
+	bool showInterruptsWindow;
 	bool showPPUWindow;
 	bool showPipeline;
 	bool showDisplay;
