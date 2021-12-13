@@ -56,6 +56,7 @@ public:
 	u8* getBiosMemory() { return genMem.bios;}
 	u8* getPALRAM() { return displayMem.pram; }
 	u8* getVRAM() { return displayMem.vram; }
+	u8* getOAM() { return displayMem.oam; }
 	u8* getIO() { return genMem.io; }
 	u8* getOBWRAM() { return genMem.obwram; }
 	u8* getOCWRAM() { return genMem.ocwram; }
