@@ -9,15 +9,23 @@ void DisplayMemory::zero()
 
 void DisplayMemory::writeU8(u32 address, u8 value)
 {
-	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
+	//If 8 bit writes to vram 6000000 - 600FFFF or 6000000 - 6013FFF or to
+	//palette ram, then write the new 8 bit value to both upper and lower 8 bits of the address
+	
+	if (address >= PRAM_START_ADDR && address <= (PRAM_START_ADDR + 0x3FF)) {
 		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
+
+		//write 8 bit value to halfword address
 		pram[addr] = value;
+		pram[addr + 1] = value;
 	}
-	//No 8 bit writes to vram allowed
-	/////////////////////////////////
-	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
-		u32 addr = address & (OAM_SIZE - 1);
-		oam[addr] = value;
+	else if (address >= VRAM_START_ADDR && address <= (VRAM_START_ADDR + 0xFFFF)) {
+		u32 vram_addr = address & 0x1FFFF;
+		if (vram_addr > (VRAM_SIZE - 1))
+			vram_addr -= 0x8000;
+
+		vram[vram_addr] = value;
+		vram[vram_addr + 1] = value;
 	}
 }
 
@@ -27,7 +35,13 @@ void DisplayMemory::writeU16(u32 address, u16 value)
 	lo = value & 0xFF;
 	hi = (value >> 8) & 0xFF;
 
-	if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR_MIRROR) {
+	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
+		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
+
+		pram[addr] = lo;
+		pram[addr + 1] = hi;
+	}
+	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR_MIRROR) {
 		u32 vram_addr = address & 0x1FFFF;
 		if (vram_addr > (VRAM_SIZE - 1))
 			vram_addr -= 0x8000;
@@ -35,9 +49,11 @@ void DisplayMemory::writeU16(u32 address, u16 value)
 		vram[vram_addr] = lo;
 		vram[vram_addr + 1] = hi;
 	}
-	else {
-		writeU8(address, lo);
-		writeU8(address + 1, hi);
+	else if (address >= address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
+		u32 addr = address & (OAM_SIZE - 1);
+
+		oam[addr] = lo;
+		oam[addr + 1] = hi;
 	}
 }
 
@@ -51,18 +67,26 @@ void DisplayMemory::writeU32(u32 address, u32 value)
 	upper1 = (value >> 16) & 0xFF;
 	upper2 = (value >> 24) & 0xFF;
 
-    if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
+	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
+		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
+		pram[addr] = lower1;
+		pram[addr + 1] = lower2;
+		pram[addr + 2] = upper1;
+		pram[addr + 3] = upper2;
+	}
+    else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR) {
 		u32 addr = address - VRAM_START_ADDR;
 		vram[addr] = lower1;
 		vram[addr + 1] = lower2;
 		vram[addr + 2] = upper1;
 		vram[addr + 3] = upper2;
 	}
-	else {
-		writeU8(address, lower1);
-		writeU8(address + 1, lower2);
-		writeU8(address + 2, upper1);
-		writeU8(address + 3, upper2);
+	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
+		u32 addr = address & (OAM_SIZE - 1);
+		oam[addr] = lower1;
+		oam[addr + 1] = lower2;
+		oam[addr + 2] = upper1;
+		oam[addr + 3] = upper2;
 	}
 }
 
@@ -94,7 +118,6 @@ u16 DisplayMemory::readU16(u32 address)
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR_MIRROR) {
-		//u32 addr = address - VRAM_START_ADDR;
 		u32 vram_addr = address & 0x1FFFF;
 		if (vram_addr > (VRAM_SIZE - 1))
 			vram_addr -= 0x8000;
