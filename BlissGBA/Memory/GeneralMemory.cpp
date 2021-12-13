@@ -1,5 +1,10 @@
 #include "GeneralMemory.h"
 
+GeneralMemory::GeneralMemory()
+{
+	zero();
+}
+
 void GeneralMemory::loadBios(const std::string& fileName)
 {
 	std::ifstream file(fileName, std::ios::binary | std::ios::ate);

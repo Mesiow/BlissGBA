@@ -30,6 +30,7 @@ Unused Memory Area
 */
 #include "GeneralMemory.h"
 #include "DisplayMemory.h"
+#include "Mmio.h"
 #include "../Cartridge/GamePak.h"
 
 #define GENERAL_MEM_END 0x5000000
@@ -64,6 +65,7 @@ public:
 
 	GeneralMemory genMem;
 	DisplayMemory displayMem;
+	Mmio mmio;
 
 	GamePak pak;
 };

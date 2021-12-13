@@ -1,5 +1,10 @@
 #include "DisplayMemory.h"
 
+DisplayMemory::DisplayMemory()
+{
+	zero();
+}
+
 void DisplayMemory::zero()
 {
 	std::fill(pram, pram + BG_OBJ_PALETTE_SIZE, 0x00);

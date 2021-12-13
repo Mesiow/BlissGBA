@@ -1,12 +1,9 @@
 #include "MemoryBus.h"
 
 MemoryBus::MemoryBus()
+	:genMem(), displayMem(), mmio(&genMem)
 {
-	genMem.zero();
-	displayMem.zero();
-
 	genMem.loadBios("roms/cult_bios.bin");
-	//genMem.loadBios("roms/og_gba_bios.bin");
 }
 
 void MemoryBus::loadGamePak(const std::string& file)

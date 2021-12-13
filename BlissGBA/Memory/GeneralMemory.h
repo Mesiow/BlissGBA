@@ -1,5 +1,6 @@
 #pragma once
 #include "../Utils.h"
+#include "../Core/Interrupts.h"
 
 #define BIOS_SIZE 0x4000 //16KB
 #define OB_WRAM_SIZE 0x40000 //256KB
@@ -16,8 +17,8 @@
 
 class GeneralMemory {
 public:
+	GeneralMemory();
 	void loadBios(const std::string& fileName);
-
 	void zero();
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
