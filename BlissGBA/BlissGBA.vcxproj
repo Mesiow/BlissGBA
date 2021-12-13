@@ -166,6 +166,7 @@
     <ClCompile Include="Memory\DisplayMemory.cpp" />
     <ClCompile Include="Memory\GeneralMemory.cpp" />
     <ClCompile Include="Memory\MemoryBus.cpp" />
+    <ClCompile Include="Memory\Mmio.cpp" />
     <ClCompile Include="Ppu\Ppu.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
@@ -183,6 +184,7 @@
     <ClInclude Include="Memory\DisplayMemory.h" />
     <ClInclude Include="Memory\GeneralMemory.h" />
     <ClInclude Include="Memory\MemoryBus.h" />
+    <ClInclude Include="Memory\Mmio.h" />
     <ClInclude Include="Ppu\Ppu.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
