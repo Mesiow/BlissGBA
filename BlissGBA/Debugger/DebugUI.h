@@ -37,6 +37,7 @@ struct DebugUI {
 	static MemoryEditor biosMemory;
 	static MemoryEditor palRamEditor;
 	static MemoryEditor vramEditor;
+	static MemoryEditor oamEditor;
 	static MemoryEditor ioEditor;
 	static MemoryEditor obwramEditor;
 	static MemoryEditor ocwramEditor;
@@ -56,6 +57,7 @@ struct DebugUI {
 	bool showBiosMemory;
 	bool showPALRAM;
 	bool showVRAM;
+	bool showOAM;
 	bool showIO;
 	bool showOBWRAM;
 	bool showOCWRAM;

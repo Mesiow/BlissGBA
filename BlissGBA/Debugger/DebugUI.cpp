@@ -5,6 +5,7 @@
 MemoryEditor DebugUI::biosMemory;
 MemoryEditor DebugUI::palRamEditor;
 MemoryEditor DebugUI::vramEditor;
+MemoryEditor DebugUI::oamEditor;
 MemoryEditor DebugUI::ioEditor;
 MemoryEditor DebugUI::obwramEditor;
 MemoryEditor DebugUI::ocwramEditor;
@@ -24,6 +25,7 @@ DebugUI::DebugUI(sf::RenderWindow *window, Emulator *emu)
     showBiosMemory = false;
     showPALRAM = false;
     showVRAM = true;
+    showOAM = false;
     showIO = true;
     showOBWRAM = false;
     showOCWRAM = false;
@@ -64,6 +66,9 @@ void DebugUI::render()
     }
     if (showVRAM) {
         vramEditor.DrawWindow("VRAM", mbus->getVRAM(), VRAM_SIZE);
+    }
+    if (showOAM) {
+        oamEditor.DrawWindow("OAM", mbus->getOAM(), OAM_SIZE);
     }
     if (showIO) {
         ioEditor.DrawWindow("IO Registers", mbus->getIO(), IO_SIZE);
@@ -384,6 +389,7 @@ void DebugUI::renderMenuBar()
             ImGui::MenuItem("Show IO registers", nullptr, &showIO);
             ImGui::MenuItem("Show Palette RAM", nullptr, &showPALRAM);
             ImGui::MenuItem("Show VRAM", nullptr, &showVRAM);
+            ImGui::MenuItem("Show OAM", nullptr, &showOAM);
             ImGui::MenuItem("Show OB WRAM", nullptr, &showOBWRAM);
             ImGui::MenuItem("Show OC WRAM", nullptr, &showOCWRAM);
             ImGui::EndMenu();
@@ -490,11 +496,16 @@ void DebugUI::renderEmuButtons()
         emu->reset();
     }
 
-    static const char * list[20] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
+    static const char * list[114] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+    "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+    "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
+    "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
+    "91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "150", "200", "300", "400", "500", "600",
+        "700", "800", "900", "1000", "2000", "3000", "4000", "5000"
     };
     static int selectedItem = 0;
-    static bool selected[20];
+    static bool selected[114];
 
     if (ImGui::BeginCombo("Step Count", stepCountStr.c_str())) {
         for (int i = 0; i < IM_ARRAYSIZE(list); i++) {
@@ -502,7 +513,7 @@ void DebugUI::renderEmuButtons()
             if (selected[i]) {
                 stepCountStr = list[i];
                 stepCount = atoi(stepCountStr.c_str());
-                for (int x = 0; x < 20; x++) {
+                for (int x = 0; x < 114; x++) {
                     if (x != i) selected[x] = false;
                 }
             }
