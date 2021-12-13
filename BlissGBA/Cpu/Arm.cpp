@@ -1793,6 +1793,9 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 				flushThumbPipeline();
 				R15 -= 2;
 			}
+			printf("Returning from SWI\n");
+			printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
+			
 		}
 		else {
 			//mov pc, lr
@@ -1895,21 +1898,40 @@ u8 Arm::opSUB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn - shifter_op;
-	if (reg_rd != R15) {
+	if (rd.id == R15_ID) {
+		if (flags) {
+			//subs pc, lr, #4 (returning from irq)
+			CPSR = getSPSR();
+
+			if (getFlag(T) == 0x0) {
+				R15 = result & 0xFFFFFFFC;
+				flushPipeline();
+			}
+			else {
+				R15 = result & 0xFFFFFFFE;
+				flushThumbPipeline();
+				R15 -= 2;
+			}
+			printf("Returning from IRQ\n");
+		}
+		else {
+			R15 = result & 0xFFFFFFFC;
+			flushPipeline();
+		}
+	}
+	else {
 		reg_rd = result;
 		writeRegister(rd, reg_rd);
 
 		borrow = borrowFrom(reg_rn, shifter_op);
 		overflow = overflowFromSub(reg_rn, shifter_op);
-	}
-	else {
-		R15 = result & 0xFFFFFFFC;
-		flushPipeline();
+
+		if (flags) {
+			setCC(result, rd, borrow, overflow);
+		}
 	}
 	
-	if (flags) {
-		setCC(result, rd, borrow, overflow);
-	}
+	
 
 	return 1;
 }
@@ -2228,7 +2250,13 @@ u8 Arm::opSWI(ArmInstruction& ins)
 	//}
 	//
 
-	printf("ARM mode SWI at address: 0x%08X", R15 - 8);
+	printf("ARM mode SWI at address: 0x%08X\n", R15 - 8);
+
+	printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
+	printf("R1: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
+	printf("R2: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
+	printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));
+
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
 
@@ -2671,7 +2699,6 @@ u8 Arm::thumbOpLDRPool(ThumbInstruction& ins)
 	RegisterID rd = ins.rdUpper();
 	u8 imm8 = ins.imm8();
 
-	//lower 2 bits of PC are disregarded to word align
 	u32 address = (R15 & 0xFFFFFFFC) + (imm8 * 4);
 	u32 value = mbus->readU32(address);
 
@@ -3513,7 +3540,13 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 
 u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
-	//printf("THUMB mode SWI at address: 0x%08X", R15 - 4);
+	printf("THUMB mode SWI at address: 0x%08X\n", R15 - 4);
+
+	printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
+	printf("R1: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
+	printf("R2: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
+	printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));
+
 	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;
 
