@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML\Graphics.hpp>
 #include "../Utils.h"
-#include "../Cpu/Interrupts.h"
+#include "../Core/Interrupts.h"
 
 class MemoryBus;
 
