@@ -200,7 +200,7 @@ void Ppu::requestInterrupt(u16 interrupt)
 {
 	u16 irq_flag = mbus->readU16(IF);
 	irq_flag = setBit(irq_flag, interrupt);
-	mbus->mmio.setIF(irq_flag);
+	mbus->mmio.writeIF(irq_flag);
 }
 
 u8 Ppu::getU8Color(u8 color)
