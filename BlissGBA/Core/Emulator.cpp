@@ -1,7 +1,8 @@
 #include "Emulator.h"
 
 Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
-	:mbus(), ppu(&mbus), cpu(&mbus), joypad(&mbus), debug(window, this)
+	:mbus(), ppu(&mbus), cpu(&mbus), dmac(&mbus),
+	joypad(&mbus), debug(window, this)
 {
 	this->displayScaleFactor = displayScaleFactor;
 	showDebugger = true;
@@ -10,7 +11,26 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	debug.running = &running;
 	debug.showDebugger = &showDebugger;
 
-	mbus.loadGamePak("test_roms/armwrestler-gba-fixed.gba");
+	//Pass dma controller pointer to mmio so that mmio can
+	//tell dma when there is a transfer ready from a received write
+	mbus.mmio.connect(&dmac);
+
+	//Test roms
+	//mbus.loadGamePak("test_roms/gba-tests-master/arm/arm.gba"); //pass
+	//mbus.loadGamePak("test_roms/gba-tests-master/thumb/thumb.gba"); //pass
+	//mbus.loadGamePak("test_roms/armwrestler-gba-fixed.gba"); //pass
+	//mbus.loadGamePak("test_roms/gba fuzzarm tests/ARM_DataProcessing.gba"); //pass
+	//mbus.loadGamePak("test_roms/gba fuzzarm tests/ARM_Any.gba"); //pass
+	//mbus.loadGamePak("test_roms/gba fuzzarm tests/FuzzARM.gba"); //pass
+	//mbus.loadGamePak("test_roms/gba fuzzarm tests/THUMB_DataProcessing.gba"); //pass
+	//mbus.loadGamePak("test_roms/gba fuzzarm tests/THUMB_Any.gba"); //pass
+	//mbus.loadGamePak("test_roms/tonc tests/swi_demo.gba"); 
+	//mbus.loadGamePak("test_roms/swi.gba");
+	//mbus.loadGamePak("test_roms/CPUTest.gba"); 
+	//mbus.loadGamePak("test_roms/gba fuzzarm tests/main.gba"); //pass
+	//mbus.loadGamePak("test_roms/gba-tests-master/memory/memory.gba"); //pass
+	//mbus.loadGamePak("test_roms/irqs/retAddr.gba"); //passing
+	mbus.loadGamePak("test_roms/yoshi_dma.gba");
 	reset();
 }
 
@@ -23,12 +43,13 @@ void Emulator::run()
 				debug.update();
 
 			u8 cycle = cpu.clock();
-			cycle *= 1;
+			cycle *= 2;
 			cycles_this_frame += cycle;
 
 			cpu.handleTimers();
 			ppu.update(cycles_this_frame);
 			cpu.handleInterrupts();
+			dmac.handleDMA();
 		}
 
 		joypad.update();

@@ -10,12 +10,12 @@ public:
 	void run();
 	void render(sf::RenderTarget& target);
 	void reset();
-
 	void handleEvents(sf::Event& ev);
 
 	MemoryBus mbus;
 	Ppu ppu;
 	Arm cpu;
+	DmaController dmac;
 	Joypad joypad;
 	DebugUI debug;
 
