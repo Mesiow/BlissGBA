@@ -2,6 +2,7 @@
 #include "Instruction.h"
 #include "AddressingModes.h"
 #include "../Core/Interrupts.h"
+#include "../Core/Dma.h"
 #include <array>
 #include <functional>
 
@@ -107,6 +108,7 @@ public:
 	u8 clock();
 	void handleTimers();
 	void handleInterrupts();
+	void handleDma();
 	void checkStateAndProcessorMode();
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
@@ -416,5 +418,6 @@ public:
 	u32 cycles = 0;
 	u32 currentExecutingArmOpcode;
 	u16 currentExecutingThumbOpcode;
+
 	MemoryBus* mbus;
 };

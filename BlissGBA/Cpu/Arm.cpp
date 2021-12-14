@@ -78,6 +78,16 @@ void Arm::handleInterrupts()
 	}
 }
 
+void Arm::handleDma()
+{
+	//handle DMA Channel 3
+	u32 dma3_cnt = mbus->readU32(DMA3CNT_H);
+	u8 enable = (dma3_cnt >> 15) & 0x1;
+	if (enable) {
+		//dmac.handleChannelTransfer(DmaChannel::CH3);
+	}
+}
+
 void Arm::checkStateAndProcessorMode()
 {
 	mode = getProcessorMode();
@@ -656,9 +666,14 @@ u8 Arm::getConditionCode(u8 cond)
 void Arm::writeU16(u32 address, u16 value)
 {
 	if (address == IF) {
+		//Cpu writes to IF, clears the bit
 		u16 irq_flag = mbus->readU16(IF);
 		irq_flag &= ~(value);
-		mbus->mmio.setIF(irq_flag);
+		mbus->mmio.writeIF(irq_flag);
+	}
+	else if (address == DMA3CNT_H) {
+		printf("write to dma3");
+		mbus->mmio.writeDMACNT(DMA3CNT_H, value);
 	}
 	else
 		mbus->writeU16(address, value);
