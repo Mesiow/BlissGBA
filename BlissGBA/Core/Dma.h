@@ -1,4 +1,5 @@
 #pragma once
+#include "../Utils.h"
 
 //DMA source address registers
 #define DMA0SAD 0x40000B0
@@ -26,6 +27,23 @@
 #define DMA2CNT_H 0x40000D2
 #define DMA3CNT_H 0x40000DE
 
-struct DmaController {
+enum class DmaChannel : u8 {
+	CH0 = 0,
+	CH1,
+	CH2,
+	CH3,
+	None
+};
 
+class MemoryBus;
+
+struct DmaController {
+	DmaController(MemoryBus* mbus);
+	void handleDMA();
+	void handleChannelTransfer(DmaChannel channel);
+	void enableTransfer(bool enable, DmaChannel channel);
+
+	MemoryBus* mbus;
+	DmaChannel channelToTransfer;
+	bool transfer;
 };
