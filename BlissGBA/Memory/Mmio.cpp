@@ -12,6 +12,61 @@ void Mmio::connect(DmaController* dmac)
 	this->dmac = dmac;
 }
 
+void Mmio::writeU8(u32 address, u8 value)
+{
+	gm->io[address] = value;
+}
+
+void Mmio::writeU16(u32 address, u16 value)
+{
+	if (address == IE) {
+		writeIE(value);
+	}
+	else if (address == IF) {
+		//Cpu writes to IF clears the bit
+		u16 irq_flag = readIF();
+		irq_flag &= ~(value);
+		writeIF(irq_flag);
+	}
+	else if (address == IME) {
+		writeIME(value);
+	}
+	else if (address == DMA3CNT_H) {
+		printf("write to dma3");
+		writeDMACNT(DMA3CNT_H, value);
+	}
+	else {
+		//If adress case not implemented yet just write freely to io with mbus
+		u32 addr = address - IO_START_ADDR;
+	 
+		u8 hi, lo;
+		lo = value & 0xFF;
+		hi = (value >> 8) & 0xFF;
+
+		gm->io[addr] = lo;
+		gm->io[addr + 1] = hi;
+	}
+}
+
+void Mmio::writeU32(u32 address, u32 value)
+{
+	if (address == IF) {
+		//Cpu writes to IF, clears the bit
+		u16 irq_flag = readIF();
+		irq_flag &= ~(value);
+		writeIF(irq_flag);
+	}
+	else if (address == IE) {
+		u16 lower = value & 0xFFFF;
+		u16 upper = value >> 16;
+		writeIE(lower);
+		writeIF(upper);
+	}
+	else if (address == IME) {
+		writeIME(value);
+	}
+}
+
 u16 Mmio::readU16(u32 address)
 {
 	u8 lo, hi;
@@ -126,11 +181,6 @@ u32 Mmio::readDMADest(u32 address)
 	}
 }
 
-u16 Mmio::readIF()
-{
-	return gm->io[IF - IO_START_ADDR];
-}
-
 void Mmio::writeIF(u16 value)
 {
 	u8 hi, lo;
@@ -141,3 +191,57 @@ void Mmio::writeIF(u16 value)
 	gm->io[addr] = lo;
 	gm->io[addr + 1] = hi;
 }
+
+void Mmio::writeIE(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = IE - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeIME(u32 value)
+{
+	u8 upper2, upper1;
+	u8 lower2, lower1;
+
+	lower1 = value & 0xFF;
+	lower2 = (value >> 8) & 0xFF;
+	upper1 = (value >> 16) & 0xFF;
+	upper2 = (value >> 24) & 0xFF;
+
+	u32 addr = IME - IO_START_ADDR;
+	writeU8(addr, lower1);
+	writeU8(addr + 1, lower2);
+	writeU8(addr + 2, upper1);
+	writeU8(addr + 3, upper2);
+}
+
+u16 Mmio::readIF()
+{
+	u32 addr = IF - IO_START_ADDR;
+	u16 irq_flag = readU16(addr);
+
+	return irq_flag;
+}
+
+u16 Mmio::readIE()
+{
+	u32 addr = IE - IO_START_ADDR;
+	u16 ie = readU16(addr);
+
+	return ie;
+}
+
+u32 Mmio::readIME()
+{
+	u32 addr = IME - IO_START_ADDR;
+	u32 ime = readU32(addr);
+
+	return ime;
+}
+
+
