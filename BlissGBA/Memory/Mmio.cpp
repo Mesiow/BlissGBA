@@ -1,6 +1,7 @@
 #include "Mmio.h"
 #include "GeneralMemory.h"
 #include "../Core/Dma.h"
+#include "../Cpu/Arm.h"
 
 Mmio::Mmio(GeneralMemory* gm)
 {
@@ -12,9 +13,20 @@ void Mmio::connect(DmaController* dmac)
 	this->dmac = dmac;
 }
 
+void Mmio::connect(Arm* cpu)
+{
+	this->cpu = cpu;
+}
+
 void Mmio::writeU8(u32 address, u8 value)
 {
-	gm->io[address] = value;
+	if (address == HALTCNT) {
+		u8 halt = (value >> 7) & 0x1;
+		if(halt == 0x0)
+			cpu->halt();
+
+		writeHALTCNT(value);
+	}
 }
 
 void Mmio::writeU16(u32 address, u16 value)
@@ -214,10 +226,10 @@ void Mmio::writeIME(u32 value)
 	upper2 = (value >> 24) & 0xFF;
 
 	u32 addr = IME - IO_START_ADDR;
-	writeU8(addr, lower1);
-	writeU8(addr + 1, lower2);
-	writeU8(addr + 2, upper1);
-	writeU8(addr + 3, upper2);
+	gm->io[addr] = lower1;
+	gm->io[addr + 1] = lower2;
+	gm->io[addr + 2] = upper1;
+	gm->io[addr + 3] = upper2;
 }
 
 u16 Mmio::readIF()
@@ -239,9 +251,15 @@ u16 Mmio::readIE()
 u32 Mmio::readIME()
 {
 	u32 addr = IME - IO_START_ADDR;
-	u32 ime = readU32(addr);
+	u32 ime = readU32(addr) & 0x1;
 
 	return ime;
+}
+
+void Mmio::writeHALTCNT(u8 value)
+{
+	u32 addr = HALTCNT - IO_START_ADDR;
+	gm->io[addr] = value;
 }
 
 
