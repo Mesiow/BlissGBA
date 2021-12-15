@@ -45,12 +45,12 @@ void Arm::handleTimers()
 
 void Arm::handleInterrupts()
 {
-	u16 ie = mbus->readU16(IE);
-	u16 irq_flag = mbus->readU16(IF);
+	u16 ie = mbus->mmio.readIE();
+	u16 irq_flag = mbus->mmio.readIF();
 
 	//There is an interrupt to be serviced
 	if (ie & irq_flag) {
-		u8 ime = mbus->readU32(IME) & 0x1;
+		u8 ime = mbus->mmio.readIME();
 		u8 interrupts = getFlag(I);
 
 		//If irqs are disabled or IME is not set, return (irq should not be serviced)
@@ -651,6 +651,15 @@ u8 Arm::getConditionCode(u8 cond)
 		case 0b1110: return 1; break;//always
 		default: return 1; break; //always
 	}
+}
+
+void Arm::writeU8(u32 address, u8 value)
+{
+	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		mbus->mmio.writeU8(address, value);
+	}
+	else
+		mbus->writeU8(address, value);
 }
 
 void Arm::writeU16(u32 address, u16 value)
@@ -2385,7 +2394,7 @@ u8 Arm::opSWPB(ArmInstruction& ins, RegisterID rd, RegisterID rn)
 	u32 reg_rn = getRegister(rn);
 
 	u32 temp = mbus->readU8(reg_rn);
-	mbus->writeU8(reg_rn, reg_rm & 0xFF);
+	writeU8(reg_rn, reg_rm & 0xFF);
 	writeRegister(rd, temp);
 
 	return 1;
@@ -2437,7 +2446,7 @@ u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 u8 Arm::opSTRB(ArmInstruction& ins, RegisterID rd, u32 address)
 {
 	u32 reg_rd = getRegister(rd);
-	mbus->writeU8(address, reg_rd & 0xFF);
+	writeU8(address, reg_rd & 0xFF);
 
 	return 1;
 }
@@ -3802,7 +3811,7 @@ u8 Arm::thumbOpSTRB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + immediate5;
-	mbus->writeU8(address, reg_rd & 0xFF);
+	writeU8(address, reg_rd & 0xFF);
 
 	return 1;
 }
@@ -3814,7 +3823,7 @@ u8 Arm::thumbOpSTRB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
-	mbus->writeU8(address, reg_rd & 0xFF);
+	writeU8(address, reg_rd & 0xFF);
 
 	return 1;
 }

@@ -152,6 +152,7 @@ public:
 	State getState();
 	u8 getConditionCode(u8 cond);
 
+	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
 	void writeU32(u32 address, u32 value);
 	u16 readU16();
@@ -419,4 +420,5 @@ public:
 	u16 currentExecutingThumbOpcode;
 
 	MemoryBus* mbus;
+	bool halted = false;
 };
