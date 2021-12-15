@@ -78,16 +78,6 @@ void Arm::handleInterrupts()
 	}
 }
 
-void Arm::handleDma()
-{
-	//handle DMA Channel 3
-	u32 dma3_cnt = mbus->readU32(DMA3CNT_H);
-	u8 enable = (dma3_cnt >> 15) & 0x1;
-	if (enable) {
-		//dmac.handleChannelTransfer(DmaChannel::CH3);
-	}
-}
-
 void Arm::checkStateAndProcessorMode()
 {
 	mode = getProcessorMode();
@@ -665,15 +655,8 @@ u8 Arm::getConditionCode(u8 cond)
 
 void Arm::writeU16(u32 address, u16 value)
 {
-	if (address == IF) {
-		//Cpu writes to IF, clears the bit
-		u16 irq_flag = mbus->readU16(IF);
-		irq_flag &= ~(value);
-		mbus->mmio.writeIF(irq_flag);
-	}
-	else if (address == DMA3CNT_H) {
-		printf("write to dma3");
-		mbus->mmio.writeDMACNT(DMA3CNT_H, value);
+	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		mbus->mmio.writeU16(address, value);
 	}
 	else
 		mbus->writeU16(address, value);
@@ -681,7 +664,11 @@ void Arm::writeU16(u32 address, u16 value)
 
 void Arm::writeU32(u32 address, u32 value)
 {
-	mbus->writeU32(address, value);
+	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		mbus->mmio.writeU32(address, value);
+	}
+	else
+		mbus->writeU32(address, value);
 }
 
 u16 Arm::readU16()
@@ -2259,7 +2246,8 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
-	//u8 swi_number = (ins.encoding >> 16) & 0xFF;
+	u8 swi_number = (ins.encoding >> 16) & 0xFF;
+	printf("Swi: 0x%02X", swi_number);
 	//if (swi_number == 0x6) {
 	//	printf("Failed test: 0x%08X\n", registers[0].value);
 
@@ -2384,7 +2372,7 @@ u8 Arm::opSWP(ArmInstruction& ins, RegisterID rd, RegisterID rn)
 		temp = mbus->readU32(reg_rn);
 		temp = ror(temp, 8 * aligned);
 	}
-	mbus->writeU32(reg_rn, reg_rm);
+	writeU32(reg_rn, reg_rm);
 	writeRegister(rd, temp);
 
 	return 1;

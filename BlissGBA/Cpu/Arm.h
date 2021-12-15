@@ -108,7 +108,6 @@ public:
 	u8 clock();
 	void handleTimers();
 	void handleInterrupts();
-	void handleDma();
 	void checkStateAndProcessorMode();
 	void reset();
 	void setFlag(u32 flagBits, bool condition);
