@@ -13,6 +13,7 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 
 	//Pass dma controller pointer to mmio so that mmio can
 	//tell dma when there is a transfer ready from a received write
+	mbus.mmio.connect(&cpu);
 	mbus.mmio.connect(&dmac);
 
 	//Test roms
@@ -30,7 +31,10 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	//mbus.loadGamePak("test_roms/gba fuzzarm tests/main.gba"); //pass
 	//mbus.loadGamePak("test_roms/gba-tests-master/memory/memory.gba"); //pass
 	//mbus.loadGamePak("test_roms/irqs/retAddr.gba"); //passing
-	mbus.loadGamePak("test_roms/yoshi_dma.gba");
+	//mbus.loadGamePak("test_roms/irqs/irqDemo.gba");
+	//mbus.loadGamePak("test_roms/yoshi_dma.gba");
+
+	//mbus.loadGamePak("roms/Doom (USA, Europe).gba");
 	reset();
 }
 
