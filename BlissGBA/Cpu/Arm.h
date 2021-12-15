@@ -110,6 +110,7 @@ public:
 	void handleInterrupts();
 	void checkStateAndProcessorMode();
 	void reset();
+	void halt();
 	void setFlag(u32 flagBits, bool condition);
 	void setFlag(u32 flagBits);
 	void clearFlag(u32 flagBits);

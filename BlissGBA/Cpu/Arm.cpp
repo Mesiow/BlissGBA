@@ -13,27 +13,29 @@ Arm::Arm(MemoryBus *mbus)
 
 u8 Arm::clock()
 {
-	if (state == State::ARM) {
-		currentExecutingArmOpcode = armpipeline[0];
-		armpipeline[0] = armpipeline[1];
-		
-		ArmInstruction ins;
-		ins.encoding = currentExecutingArmOpcode;
-		executeArmIns(ins);
+	if (!halted) {
+		if (state == State::ARM) {
+			currentExecutingArmOpcode = armpipeline[0];
+			armpipeline[0] = armpipeline[1];
 
-		armpipeline[1] = fetchU32(); 
-	}
-	else if (state == State::THUMB) {
-		currentExecutingThumbOpcode = thumbpipeline[0];
-		thumbpipeline[0] = thumbpipeline[1];
-		
-		ThumbInstruction ins;
-		ins.encoding = currentExecutingThumbOpcode;
-		executeThumbIns(ins);
+			ArmInstruction ins;
+			ins.encoding = currentExecutingArmOpcode;
+			executeArmIns(ins);
 
-		thumbpipeline[1] = fetchU16();
+			armpipeline[1] = fetchU32();
+		}
+		else if (state == State::THUMB) {
+			currentExecutingThumbOpcode = thumbpipeline[0];
+			thumbpipeline[0] = thumbpipeline[1];
+
+			ThumbInstruction ins;
+			ins.encoding = currentExecutingThumbOpcode;
+			executeThumbIns(ins);
+
+			thumbpipeline[1] = fetchU16();
+		}
+		checkStateAndProcessorMode();
 	}
-	checkStateAndProcessorMode();
 
 	return cycles;
 }
@@ -47,6 +49,11 @@ void Arm::handleInterrupts()
 {
 	u16 ie = mbus->mmio.readIE();
 	u16 irq_flag = mbus->mmio.readIF();
+
+	//Cpu is paused as long as ie & if = 0
+	if((ie & irq_flag) != 0x0){
+		if (halted) halted = false;
+	}
 
 	//There is an interrupt to be serviced
 	if (ie & irq_flag) {
@@ -119,6 +126,11 @@ void Arm::reset()
 
 	armpipeline[0] = fetchU32();
 	armpipeline[1] = fetchU32();
+}
+
+void Arm::halt()
+{
+	halted = true;
 }
 
 void Arm::setFlag(u32 flagBits, bool condition)
