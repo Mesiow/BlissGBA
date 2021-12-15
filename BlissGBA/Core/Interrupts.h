@@ -6,6 +6,8 @@
 #define IF 0x4000202
 #define IRQ_VECTOR 0x18
 
+#define HALTCNT 0x04000301
+
 #define VBLANK_INT 0
 #define HBLANK_INT 1
 #define VCOUNT_INT 2
