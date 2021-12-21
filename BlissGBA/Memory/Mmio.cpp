@@ -31,7 +31,19 @@ void Mmio::writeU8(u32 address, u8 value)
 
 void Mmio::writeU16(u32 address, u16 value)
 {
-	if (address == IE) {
+	if (address == DISPCNT) {
+		writeDISPCNT(value);
+	}
+	else if (address == DISPSTAT) {
+		writeDISPSTAT(value);
+	}
+	else if (address == VCOUNT) {
+		writeVCOUNT(value);
+	}
+	else if (address == BG0CNT) {
+		writeBG0CNT(value);
+	}
+	else if (address == IE) {
 		writeIE(value);
 	}
 	else if (address == IF) {
@@ -62,7 +74,16 @@ void Mmio::writeU16(u32 address, u16 value)
 
 void Mmio::writeU32(u32 address, u32 value)
 {
-	if (address == IF) {
+	if (address == DISPCNT) {
+		writeDISPCNT(value);
+	}
+	else if (address == DISPSTAT) {
+		writeDISPSTAT(value);
+	}
+	else if (address == BG0CNT) {
+		writeBG0CNT(value);
+	}
+	else if (address == IF) {
 		//Cpu writes to IF, clears the bit
 		u16 irq_flag = readIF();
 		irq_flag &= ~(value);
@@ -76,6 +97,12 @@ void Mmio::writeU32(u32 address, u32 value)
 	}
 	else if (address == IME) {
 		writeIME(value);
+	}
+	else if (address == DMA3SAD) {
+		writeDMASource(address, value);
+	}
+	else if (address == DMA3DAD) {
+		writeDMADest(address, value);
 	}
 }
 
@@ -103,6 +130,44 @@ u32 Mmio::readU32(u32 address)
 	return value;
 }
 
+void Mmio::writeDMASource(u32 address, u32 value)
+{
+	u8 lower1 = value & 0xFF;
+	u8 lower2 = (value >> 8) & 0xFF;
+	u8 upper1 = (value >> 16) & 0xFF;
+	u8 upper2 = (value >> 24) & 0xFF;
+
+	switch (address) {
+		case DMA3SAD: {
+				u32 addr = DMA3SAD - IO_START_ADDR;
+				gm->io[addr] = lower1;
+				gm->io[addr + 1] = lower2;
+				gm->io[addr + 2] = upper1;
+				gm->io[addr + 3] = upper2;
+			}
+			break;
+	}
+}
+
+void Mmio::writeDMADest(u32 address, u32 value)
+{
+	u8 lower1 = value & 0xFF;
+	u8 lower2 = (value >> 8) & 0xFF;
+	u8 upper1 = (value >> 16) & 0xFF;
+	u8 upper2 = (value >> 24) & 0xFF;
+
+	switch (address) {
+		case DMA3DAD: {
+			u32 addr = DMA3DAD - IO_START_ADDR;
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+		}
+		break;
+	}
+}
+
 void Mmio::writeDMACNT(u32 address, u16 value)
 {
 	u8 hi, lo;
@@ -119,7 +184,6 @@ void Mmio::writeDMACNT(u32 address, u16 value)
 		break;
 		case DMA3CNT_H: {
 			u32 addr = DMA3CNT_H - IO_START_ADDR;
-
 
 			//Dma enable check
 			u16 dma3_cnt_h = readU16(addr);
@@ -260,6 +324,50 @@ void Mmio::writeHALTCNT(u8 value)
 {
 	u32 addr = HALTCNT - IO_START_ADDR;
 	gm->io[addr] = value;
+}
+
+void Mmio::writeDISPCNT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = DISPCNT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeDISPSTAT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = DISPSTAT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeVCOUNT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = VCOUNT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG0CNT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG0CNT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
 }
 
 

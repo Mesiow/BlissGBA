@@ -1,5 +1,6 @@
 #pragma once
 #include "../Utils.h"
+#include "../Ppu/Lcd.h"
 
 class GeneralMemory;
 struct DmaController;
@@ -19,6 +20,8 @@ struct Mmio {
 	u32 readU32(u32 address);
 
 	//Dma
+	void writeDMASource(u32 address, u32 value);
+	void writeDMADest(u32 address, u32 value);
 	void writeDMACNT(u32 address, u16 value);
 	u16 readDMACNT(u32 address);
 	u32 readDMASource(u32 address);
@@ -33,6 +36,12 @@ struct Mmio {
 	u32 readIME();
 
 	void writeHALTCNT(u8 value);
+
+	//Lcd
+	void writeDISPCNT(u16 value);
+	void writeDISPSTAT(u16 value);
+	void writeVCOUNT(u16 value);
+	void writeBG0CNT(u16 value);
 
 	GeneralMemory* gm;
 	DmaController* dmac = nullptr;
