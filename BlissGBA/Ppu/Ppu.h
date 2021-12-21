@@ -2,6 +2,7 @@
 #include <SFML\Graphics.hpp>
 #include "../Utils.h"
 #include "../Core/Interrupts.h"
+#include "Lcd.h"
 
 class MemoryBus;
 
@@ -10,18 +11,13 @@ class MemoryBus;
 
 #define BM_MODE3_SIZE 0x12BFF
 
-//LCD Registers
-#define DISPCNT 0x04000000
-#define DISPSTAT 0x04000004
-#define VCOUNT 0x04000006
-
 #define HBLANK_START 960
 #define HBLANK_CYCLES 272
 #define VBLANK_START 197120
 #define VBLANK_CYCLES 83776
 
 enum class BGMode {
-	//Tile/Map modes
+	//Tiled modes
 	ZERO = 0,
 	ONE,
 	TWO,
@@ -36,6 +32,12 @@ enum class DisplayMode {
 	Visible,
 	HBlank,
 	VBlank
+};
+
+struct Mode0 {
+	sf::Image pixels;
+	sf::Texture framebuffer;
+	sf::Sprite frame;
 };
 
 struct BitmapMode3 {
@@ -59,6 +61,7 @@ public:
 	void render(sf::RenderTarget& target);
 	void reset();
 	void render();
+	void renderMode0();
 	void renderBitmapMode3();
 	void renderBitmapMode4();
 	void bufferPixels();
@@ -82,6 +85,7 @@ public:
 
 	DisplayMode displayMode;
 	BGMode mode;
+	Mode0 mode0;
 	BitmapMode3 mode3;
 	BitmapMode4 mode4;
 

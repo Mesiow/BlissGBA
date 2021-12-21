@@ -59,7 +59,9 @@ void Ppu::update(s32 cycles)
 
 void Ppu::render(sf::RenderTarget& target)
 {
-	if (mode == BGMode::THREE)
+	if (mode == BGMode::ZERO)
+		target.draw(mode0.frame);
+	else if (mode == BGMode::THREE)
 		target.draw(mode3.frame);
 	else if (mode == BGMode::FOUR)
 		target.draw(mode4.frame);
@@ -67,6 +69,10 @@ void Ppu::render(sf::RenderTarget& target)
 
 void Ppu::reset()
 {
+	mode0.pixels.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
+	mode0.framebuffer.loadFromImage(mode0.pixels);
+	mode0.frame = sf::Sprite(mode0.framebuffer);
+
 	mode3.pixels.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
 	mode3.framebuffer.loadFromImage(mode3.pixels);
 	mode3.frame = sf::Sprite(mode3.framebuffer);
@@ -76,6 +82,7 @@ void Ppu::reset()
 	mode4.frame = sf::Sprite(mode4.framebuffer);
 
 	float scaleFactor = 2.5;
+	mode0.frame.setScale(scaleFactor, scaleFactor);
 	mode3.frame.setScale(scaleFactor, scaleFactor);
 	mode4.frame.setScale(scaleFactor, scaleFactor);
 
@@ -88,11 +95,54 @@ void Ppu::render()
 	u16 display_ctrl = readU16(DISPCNT);
 	setBGMode(display_ctrl);
 
-	if (mode == BGMode::THREE) {
+	if (mode == BGMode::ZERO) {
+		renderMode0();
+	}
+	else if (mode == BGMode::THREE) {
 		renderBitmapMode3();
 	}
 	else if (mode == BGMode::FOUR) {
 		renderBitmapMode4();
+	}
+}
+
+void Ppu::renderMode0()
+{
+	u16 bg0cnt = readU16(BG0CNT);
+
+	u8 char_base_offset = (bg0cnt >> 2) & 0x3; //offset from where to read tiledata from in vram
+	u8 bpp = (bg0cnt >> 7) & 0x1; //0 = 16 (4bpp), 1 = 256 (8bpp)
+	bool is8bpp = (bpp == 0x1);
+
+	for (u32 x = 0; x < SCREEN_WIDTH; x++) {
+		//tile data is in units of 16k bytes
+		u32 offset = char_base_offset * 0x4000;
+		u32 tile_address = VRAM_START_ADDR + offset;
+		
+		u8 bits_pp = (is8bpp) ? 8 : 4;
+		u32 index = ((currentScanline * SCREEN_WIDTH + x) * bits_pp);
+
+		u8 tile = readU8(tile_address + index);
+
+		//Get color of tile pixel from palette ram
+		u32 pramAddr = PRAM_START_ADDR;
+		if (is8bpp) {
+			pramAddr = PRAM_START_ADDR + (tile);
+		}
+		else {
+			u8 lower_pixel = tile & 0xF;
+			u8 offset = lower_pixel;
+			offset &= 0xF;
+			pramAddr = PRAM_START_ADDR + (offset * 2);
+		}
+		u16 palette = readU16(pramAddr);
+
+		u8 red = getU8Color((palette & 0x1F));
+		u8 green = getU8Color((palette >> 5) & 0x1F);
+		u8 blue = getU8Color((palette >> 10) & 0x1F);
+
+		const sf::Color color = sf::Color(red, green, blue, 255);
+		mode0.pixels.setPixel(x, currentScanline, color);
 	}
 }
 
@@ -132,7 +182,9 @@ void Ppu::renderBitmapMode4()
 
 void Ppu::bufferPixels()
 {
-	if (mode == BGMode::THREE)
+	if (mode == BGMode::ZERO)
+		mode0.framebuffer.update(mode0.pixels);
+	else if (mode == BGMode::THREE)
 		mode3.framebuffer.update(mode3.pixels);
 	else if (mode == BGMode::FOUR)
 		mode4.framebuffer.update(mode4.pixels);
@@ -141,7 +193,7 @@ void Ppu::bufferPixels()
 void Ppu::updateScanline()
 {
 	currentScanline++;
-	writeU16(VCOUNT, currentScanline);
+	mbus->mmio.writeVCOUNT(currentScanline);
 
 	//exit hblank
 	setHBlankFlag(0);
@@ -198,7 +250,7 @@ void Ppu::writeU16(u32 address, u16 value)
 
 void Ppu::requestInterrupt(u16 interrupt)
 {
-	u16 irq_flag = mbus->readU16(IF);
+	u16 irq_flag = mbus->mmio.readIF();
 	irq_flag = setBit(irq_flag, interrupt);
 	mbus->mmio.writeIF(irq_flag);
 }
