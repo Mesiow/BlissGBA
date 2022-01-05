@@ -479,7 +479,9 @@ void DebugUI::renderDisplay()
     if (showDisplay) {
         if (ImGui::Begin("Display")) {
 
-            if (ppu->mode == BGMode::THREE)
+            if (ppu->mode == BGMode::ZERO)
+                ImGui::Image(ppu->mode0.frame);
+            else if (ppu->mode == BGMode::THREE)
                 ImGui::Image(ppu->mode3.frame);
             else if (ppu->mode == BGMode::FOUR)
                 ImGui::Image(ppu->mode4.frame);
