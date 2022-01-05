@@ -134,5 +134,8 @@
     <ClInclude Include="Memory\Mmio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Ppu\Lcd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

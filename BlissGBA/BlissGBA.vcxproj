@@ -186,6 +186,7 @@
     <ClInclude Include="Memory\GeneralMemory.h" />
     <ClInclude Include="Memory\MemoryBus.h" />
     <ClInclude Include="Memory\Mmio.h" />
+    <ClInclude Include="Ppu\Lcd.h" />
     <ClInclude Include="Ppu\Ppu.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
