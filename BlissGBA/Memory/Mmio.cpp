@@ -93,7 +93,11 @@ void Mmio::writeU32(u32 address, u32 value)
 		u16 lower = value & 0xFFFF;
 		u16 upper = value >> 16;
 		writeIE(lower);
-		writeIF(upper);
+
+		////Cpu writes to IF clears the bit
+		u16 irq_flag = readIF();
+		irq_flag &= ~(upper);
+		writeIF(irq_flag);
 	}
 	else if (address == IME) {
 		writeIME(value);
