@@ -2250,8 +2250,8 @@ u8 Arm::opB(ArmInstruction& ins)
 
 u8 Arm::opBL(ArmInstruction& ins)
 {
-	LR = R15 - 4;
-	
+	writeRegister(RegisterID{ R14_ID }, R15 - 4);
+
 	s32 offset = ins.offset();
 	offset = signExtend32(offset, 24);
 	offset <<= 2;
@@ -2727,7 +2727,7 @@ u8 Arm::thumbOpBL(ThumbInstruction& ins)
 			offset11 = signExtend32(offset11, 11);
 			offset11 <<= 12;
 	
-			LR = R15 + offset11;
+			writeRegister(RegisterID{ R14_ID }, R15 + offset11);
 		}
 		break;
 
@@ -2735,8 +2735,11 @@ u8 Arm::thumbOpBL(ThumbInstruction& ins)
 		{
 			s32 offset11 = (ins.offset11()) << 1;
 
-			u32 prevLR = LR;
-			LR = (R15 - 2) | 0x1;
+			u32 prevLR = getRegister(RegisterID{ R14_ID });
+
+			u32 lr = (R15 - 2) | 0x1;
+			writeRegister(RegisterID{ R14_ID }, lr);
+
 			R15 = prevLR + offset11;
 
 			flushThumbPipeline();
