@@ -1377,13 +1377,13 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 
 	//Check if first reg in list is rb
 	s8 first_reg = -1;
-	for (s32 i = 0; i <= 7; i++) {
+	for (s32 i = 0; i <= 14; i++) {
 		if (testBit(reg_list, i)) {
 			first_reg = i;
 			break;
 		}
 	}
-
+	
 	//Is rb the first register in the list?
 	bool first = false;
 	if (rn.id == first_reg) {
@@ -1409,11 +1409,14 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		return 1;
 	}
 	else { //Populated list
-		//check is rb is in rlist if not first
-		for (s32 i = 0; i <= 7; i++) {
+		//check if rb is in rlist if not first
+		s8 reg = -1;
+		for (s32 i = 0; i <= 14; i++) {
 			if (testBit(reg_list, i)) {
-				rb_in_list = true;
-				break;
+				if (rn.id == i) {
+					rb_in_list = true;
+					break;
+				}
 			}
 		}
 	}
@@ -1805,6 +1808,29 @@ u8 Arm::handleUndefinedThumbIns(ThumbInstruction& ins)
 	return 1;
 }
 
+void Arm::handleDataProcessingR15AsDest(bool flags, u32 result)
+{
+	if(flags){
+		//example: movs pc, lr
+		CPSR = getSPSR();
+
+		if (getFlag(T) == 0x0) {
+			R15 = result & 0xFFFFFFFC;
+			flushPipeline();
+		}
+		else {
+			R15 = result & 0xFFFFFFFE;
+			flushThumbPipeline();
+			R15 -= 2;
+		}
+	}
+	else {
+		//example: mov pc, lr
+		R15 = result & 0xFFFFFFFC;
+		flushPipeline();
+	}
+}
+
 u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool flags, bool immediate)
 {
@@ -1816,28 +1842,7 @@ u8 Arm::opMOV(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	
 	u32 result = shifter_op;
 	if (rd.id == R15_ID) {
-		if (flags) {
-			//movs pc, lr
-			CPSR = getSPSR();
-
-			if (getFlag(T) == 0x0) {
-				R15 = result & 0xFFFFFFFC;
-				flushPipeline();
-			}
-			else {
-				R15 = result & 0xFFFFFFFE;
-				flushThumbPipeline();
-				R15 -= 2;
-			}
-			printf("Returning from SWI\n");
-			printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
-			
-		}
-		else {
-			//mov pc, lr
-			R15 = result & 0xFFFFFFFC;
-			flushPipeline();
-		}
+		handleDataProcessingR15AsDest(flags, result);
 	}
 	else {
 		writeRegister(rd, result);
@@ -1857,21 +1862,21 @@ u8 Arm::opADD(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 
 	//Shifter carry out is not needed here
 	u8 shifter_carry_out = 0;
-	bool carry = false;
-	bool overflow = false;
-
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn + shifter_op;
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		writeRegister(rd, result);
+		bool carry = carryFrom(reg_rn, shifter_op);
+		bool overflow = overflowFromAdd(reg_rn, shifter_op);
 
-	carry = carryFrom(reg_rn, shifter_op);
-	overflow = overflowFromAdd(reg_rn, shifter_op);
-	
-	if (flags) {
-		setCC(result, rd, !carry, overflow);
+		if (flags) {
+			setCC(result, rd, !carry, overflow);
+		}
 	}
 
 	return 1;
@@ -1888,11 +1893,14 @@ u8 Arm::opAND(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn & shifter_op;
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
-
-	if (flags) {
-		setCC(result, rd, false, false, true, shifter_carry_out);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		writeRegister(rd, result);
+		if (flags) {
+			setCC(result, rd, false, false, true, shifter_carry_out);
+		}
 	}
 
 	return 1;
@@ -1910,13 +1918,16 @@ u8 Arm::opEOR(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn ^ shifter_op;
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
-
-	if (flags) {
-		setCC(result, rd, false, false, true, shifter_carry_out);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
 	}
-
+	else {
+		writeRegister(rd, result);
+		if (flags) {
+			setCC(result, rd, false, false, true, shifter_carry_out);
+		}
+	}
+	
 	return 1;
 }
 
@@ -1927,48 +1938,23 @@ u8 Arm::opSUB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rn = getRegister(rn);
 
 	u8 shifter_carry_out = 0;
-	bool borrow = false;
-	bool overflow = false;
-
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn - shifter_op;
 	if (rd.id == R15_ID) {
-		if (flags) {
-			//subs pc, lr, #4 (returning from irq)
-			CPSR = getSPSR();
-
-			if (getFlag(T) == 0x0) {
-				R15 = result & 0xFFFFFFFC;
-				flushPipeline();
-			}
-			else {
-				R15 = result & 0xFFFFFFFE;
-				flushThumbPipeline();
-				R15 -= 2;
-			}
-			printf("Returning from IRQ\n");
-		}
-		else {
-			R15 = result & 0xFFFFFFFC;
-			flushPipeline();
-		}
+		handleDataProcessingR15AsDest(flags, result);
 	}
 	else {
-		reg_rd = result;
-		writeRegister(rd, reg_rd);
-
-		borrow = borrowFrom(reg_rn, shifter_op);
-		overflow = overflowFromSub(reg_rn, shifter_op);
+		writeRegister(rd, result);
+		bool borrow = borrowFrom(reg_rn, shifter_op);
+		bool overflow = overflowFromSub(reg_rn, shifter_op);
 
 		if (flags) {
 			setCC(result, rd, borrow, overflow);
 		}
 	}
 	
-	
-
 	return 1;
 }
 
@@ -1979,21 +1965,21 @@ u8 Arm::opRSB(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rn = getRegister(rn);
 
 	u8 shifter_carry_out = 0;
-	bool borrow = false;
-	bool overflow = false;
-
  	u32 shifter_op = (immediate == true) ? 
 		addrMode1.imm(ins, shifter_carry_out) :  addrMode1.shift(ins, shifter_carry_out);
 	
 	u32 result = shifter_op - reg_rn;
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		writeRegister(rd, result);
+		bool borrow = borrowFrom(shifter_op, reg_rn);
+		bool overflow = overflowFromSub(shifter_op, reg_rn);
 
-	borrow = borrowFrom(shifter_op, reg_rn);
-	overflow = overflowFromSub(shifter_op, reg_rn);
-
-	if (flags) {
-		setCC(result, rd, borrow, overflow);
+		if (flags) {
+			setCC(result, rd, borrow, overflow);
+		}
 	}
 
 	return 1;
@@ -2006,21 +1992,21 @@ u8 Arm::opADC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rn = getRegister(rn);
 
 	u8 shifter_carry_out = 0;
-	bool carry = false;
-	bool overflow = false;
-
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn + (shifter_op + getFlag(C));
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		writeRegister(rd, result);
+		bool carry = ((u64)reg_rn + (u64)shifter_op + getFlag(C)) >> 32;
+		bool overflow = overflowFromAdd(reg_rn, shifter_op, result);
 
-	carry = ((u64)reg_rn + (u64)shifter_op + getFlag(C)) >> 32;
-	overflow = overflowFromAdd(reg_rn, shifter_op, result);
-
-	if (flags) {
-		setCC(result, rd, !carry, overflow);
+		if (flags) {
+			setCC(result, rd, !carry, overflow);
+		}
 	}
 
 	return 1;
@@ -2033,24 +2019,23 @@ u8 Arm::opSBC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	u32 reg_rn = getRegister(rn);
 
 	u8 shifter_carry_out = 0;
-	bool borrow = false;
-	bool overflow = false;
-
 	u32 shifter_op = (immediate == true) ?
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn - (shifter_op + !getFlag(C));
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		//For adc/sbc/rsc don't take into account the carry flag
+		//for overflow
+		writeRegister(rd, result);
+		bool carry = (u64)reg_rn >= ((u64)shifter_op + !getFlag(C));
+		bool overflow = overflowFromSub(reg_rn, shifter_op, result);
 
-	//For adc/sbc/rsc don't take into account the carry flag
-	//for overflow
-
-	bool carry = (u64)reg_rn >= ((u64)shifter_op + !getFlag(C));
-	overflow = overflowFromSub(reg_rn, shifter_op, result);
-
-	if (flags) {
-		setCC(result, rd, !carry, overflow);
+		if (flags) {
+			setCC(result, rd, !carry, overflow);
+		}
 	}
 
 	return 1;
@@ -2067,14 +2052,17 @@ u8 Arm::opRSC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = shifter_op - (reg_rn + !getFlag(C));
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		writeRegister(rd, result);
+		bool borrow = borrowFrom(shifter_op, reg_rn + !getFlag(C));
+		bool overflow = overflowFromSub(shifter_op, reg_rn, result);
 
-	bool borrow = borrowFrom(shifter_op, reg_rn + !getFlag(C));
-	bool overflow = overflowFromSub(shifter_op, reg_rn, result);
-
-	if (flags) {
-		setCC(result, rd, borrow, overflow);
+		if (flags) {
+			setCC(result, rd, borrow, overflow);
+		}
 	}
 
 	return 1;
@@ -2090,6 +2078,11 @@ u8 Arm::opTST(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn & shifter_op;
+	if (rd.id == R15_ID) {
+		//Update regardless
+		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
+	}
 
 	setCC(result, rd, false, false, true, shifter_carry_out);
 
@@ -2106,6 +2099,11 @@ u8 Arm::opTEQ(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn ^ shifter_op;
+	if (rd.id == R15_ID) {
+		//Update regardless
+		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
+	}
 
 	setCC(result, rd, false, false, true, shifter_carry_out);
 
@@ -2153,6 +2151,14 @@ u8 Arm::opCMN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 	bool carry = carryFrom(reg_rn, shifter_op);
 	bool overflow = overflowFromAdd(reg_rn, shifter_op);
 
+	if (rd.id == R15_ID) {
+		//Update regardless
+		(result >> 31) & 0x1 ? setFlag(N) : clearFlag(N);
+		(result == 0) ? setFlag(Z) : clearFlag(Z);
+		(carry == true) ? setFlag(C) : clearFlag(C);
+		(overflow == true) ? setFlag(V) : clearFlag(V);
+	}
+
 	setCC(result, rd, !carry, overflow);
 
 	return 1;
@@ -2169,11 +2175,14 @@ u8 Arm::opORR(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn | shifter_op;
-	reg_rd = result;
-	writeRegister(rd, reg_rd);
-
-	if (flags) {
-		setCC(result, rd, false, false, true, shifter_carry_out);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		writeRegister(rd, result);
+		if (flags) {
+			setCC(result, rd, false, false, true, shifter_carry_out);
+		}
 	}
 
 	return 1;
@@ -2190,10 +2199,14 @@ u8 Arm::opBIC(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	u32 result = reg_rn & ~(shifter_op);
-	writeRegister(rd, result);
-
-	if (flags) {
-		setCC(result, rd, false, false, true, shifter_carry_out);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, result);
+	}
+	else {
+		writeRegister(rd, result);
+		if (flags) {
+			setCC(result, rd, false, false, true, shifter_carry_out);
+		}
 	}
 
 	return 1;
@@ -2209,12 +2222,16 @@ u8 Arm::opMVN(ArmInstruction& ins, RegisterID rd, RegisterID rn,
 		addrMode1.imm(ins, shifter_carry_out) : addrMode1.shift(ins, shifter_carry_out);
 
 	reg_rd = ~(shifter_op);
-	writeRegister(rd, reg_rd);
-
-	if (flags) {
-		setCC(reg_rd, rd, false, false, true, shifter_carry_out);
+	if (rd.id == R15_ID) {
+		handleDataProcessingR15AsDest(flags, reg_rd);
 	}
-
+	else {
+		writeRegister(rd, reg_rd);
+		if (flags) {
+			setCC(reg_rd, rd, false, false, true, shifter_carry_out);
+		}
+	}
+	
 	return 1;
 }
 
@@ -2267,32 +2284,32 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
-	u8 swi_number = (ins.encoding >> 16) & 0xFF;
-	printf("Swi: 0x%02X", swi_number);
-	//if (swi_number == 0x6) {
-	//	printf("Failed test: 0x%08X\n", registers[0].value);
+	//u8 swi_number = (ins.encoding >> 16) & 0xFF;
+	//printf("Swi: 0x%02X", swi_number);
+	////if (swi_number == 0x6) {
+	////	printf("Failed test: 0x%08X\n", registers[0].value);
 
-	//	//HLE Div
-	//	/*s32 r0 = getRegister(RegisterID{ (u8)0 });
-	//	s32 r1 = getRegister(RegisterID{ (u8)1 });
+	////	//HLE Div
+	////	/*s32 r0 = getRegister(RegisterID{ (u8)0 });
+	////	s32 r1 = getRegister(RegisterID{ (u8)1 });
 
-	//	s32 div_res = r0 / r1;
-	//	writeRegister(RegisterID{ (u8)0 }, div_res);
+	////	s32 div_res = r0 / r1;
+	////	writeRegister(RegisterID{ (u8)0 }, div_res);
 
-	//	s32 mod_res = r0 % r1;
-	//	writeRegister(RegisterID{ (u8)1 }, mod_res);
-	//	
-	//	u32 abs_res = abs(r0 / r1);
-	//	writeRegister(RegisterID{ (u8)3 }, abs_res);*/
-	//}
-	//
+	////	s32 mod_res = r0 % r1;
+	////	writeRegister(RegisterID{ (u8)1 }, mod_res);
+	////	
+	////	u32 abs_res = abs(r0 / r1);
+	////	writeRegister(RegisterID{ (u8)3 }, abs_res);*/
+	////}
+	////
 
-	printf("ARM mode SWI at address: 0x%08X\n", R15 - 8);
+	//printf("ARM mode SWI at address: 0x%08X\n", R15 - 8);
 
-	printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
-	printf("R1: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
-	printf("R2: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
-	printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));
+	//printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
+	//printf("R1: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
+	//printf("R2: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
+	//printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));
 
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
@@ -2434,7 +2451,7 @@ u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 		value = ror(value, 8 * aligned);
 
 		if (r15) {
-			writeRegister(rd, value);
+			R15 = value & 0xFFFFFFFC;
 			flushPipeline();
 		}
 		else
@@ -2443,9 +2460,8 @@ u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 	//Aligned
 	else {
 		u32 value = mbus->readU32(address);
-
 		if (r15) {
-			writeRegister(rd, value);
+			R15 = value & 0xFFFFFFFC;
 			flushPipeline();
 		}
 		else
@@ -3577,12 +3593,12 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 
 u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
-	printf("THUMB mode SWI at address: 0x%08X\n", R15 - 4);
+	/*printf("THUMB mode SWI at address: 0x%08X\n", R15 - 4);
 
 	printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
 	printf("R1: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
 	printf("R2: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
-	printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));
+	printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));*/
 
 	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;

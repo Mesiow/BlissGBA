@@ -230,6 +230,7 @@ private:
 	void mapArmOpcodes();
 	void mapThumbOpcodes();
 
+	void handleDataProcessingR15AsDest(bool flags, u32 result);
 	//Arm Instructions
 
 	//Data processing
