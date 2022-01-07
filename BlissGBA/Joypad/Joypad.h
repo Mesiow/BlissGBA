@@ -1,8 +1,7 @@
 #pragma once
 #include "../Utils.h"
+#include "../Core/io.h"
 #include <SFML/Graphics.hpp>
-
-#define KEYINPUT 0x4000130
 
 class MemoryBus;
 using Key = sf::Keyboard::Key;

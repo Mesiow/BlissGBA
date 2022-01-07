@@ -10,13 +10,13 @@ Joypad::Joypad(MemoryBus* mbus)
 void Joypad::reset()
 {
 	//All inputs not pressed
-	mbus->writeU16(KEYINPUT, 0x3FF);
+	mbus->mmio.writeKEYINPUT(0x3FF);
 	currentInput = 0x3FF;
 }
 
 void Joypad::update()
 {
-	mbus->writeU16(KEYINPUT, currentInput);
+	mbus->mmio.writeKEYINPUT(currentInput);
 }
 
 void Joypad::buttonPressed(Button button, bool pressed)
