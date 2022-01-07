@@ -66,6 +66,8 @@ public:
 	void renderBitmapMode4();
 	void bufferPixels();
 
+	u32 calculateTileOffset(u32 x, u32 y, u8 bpp);
+
 	void updateScanline();
 
 	void setBGMode(u16 lcdstatus);

@@ -120,8 +120,8 @@ void Ppu::renderMode0()
 		u32 tile_address = VRAM_START_ADDR + offset;
 		
 		u8 bits_pp = (is8bpp) ? 8 : 4;
-		u32 index = ((currentScanline * SCREEN_WIDTH + x) * bits_pp);
-
+		//u32 index = ((currentScanline * SCREEN_WIDTH + x) * bits_pp);
+		u32 index = calculateTileOffset(x, currentScanline, bits_pp);
 		u8 tile = readU8(tile_address + index);
 
 		//Get color of tile pixel from palette ram
@@ -133,6 +133,7 @@ void Ppu::renderMode0()
 			u8 lower_pixel = tile & 0xF;
 			u8 offset = lower_pixel;
 			offset &= 0xF;
+			offset |= (tile << 4);
 			pramAddr = PRAM_START_ADDR + (offset * 2);
 		}
 		u16 palette = readU16(pramAddr);
@@ -190,6 +191,15 @@ void Ppu::bufferPixels()
 		mode4.framebuffer.update(mode4.pixels);
 }
 
+u32 Ppu::calculateTileOffset(u32 x, u32 y, u8 bpp)
+{
+	u32 tilex = x % 8;
+	u32 tiley = y % 8;
+	u32 index = (tiley * bpp) * tilex;
+
+	return index;
+}
+
 void Ppu::updateScanline()
 {
 	currentScanline++;
@@ -232,7 +242,9 @@ void Ppu::setVBlankFlag(bool value)
 
 void Ppu::setScaleFactor(float scaleFactor)
 {
-	if (mode == BGMode::THREE)
+	if (mode == BGMode::ZERO)
+		mode0.frame.setScale(scaleFactor, scaleFactor);
+	else if (mode == BGMode::THREE)
 		mode3.frame.setScale(scaleFactor, scaleFactor);
 	else if (mode == BGMode::FOUR)
 		mode4.frame.setScale(scaleFactor, scaleFactor);
