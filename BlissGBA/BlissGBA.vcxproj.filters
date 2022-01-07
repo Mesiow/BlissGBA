@@ -137,5 +137,8 @@
     <ClInclude Include="Ppu\Lcd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
