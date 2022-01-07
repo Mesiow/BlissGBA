@@ -20,93 +20,100 @@ void Mmio::connect(Arm* cpu)
 
 void Mmio::writeU8(u32 address, u8 value)
 {
-	if (address == HALTCNT) {
-		u8 halt = (value >> 7) & 0x1;
-		if(halt == 0x0)
-			cpu->halt();
+	switch (address) {
+		case HALTCNT:{
+			u8 halt = (value >> 7) & 0x1;
+			if (halt == 0x0)
+				cpu->halt();
 
-		writeHALTCNT(value);
+			writeHALTCNT(value);
+		}
+		break;
 	}
 }
 
 void Mmio::writeU16(u32 address, u16 value)
 {
-	if (address == DISPCNT) {
-		writeDISPCNT(value);
-	}
-	else if (address == DISPSTAT) {
-		writeDISPSTAT(value);
-	}
-	else if (address == VCOUNT) {
-		writeVCOUNT(value);
-	}
-	else if (address == BG0CNT) {
-		writeBG0CNT(value);
-	}
-	else if (address == IE) {
-		writeIE(value);
-	}
-	else if (address == IF) {
-		//Cpu writes to IF clears the bit
-		u16 irq_flag = readIF();
-		irq_flag &= ~(value);
-		writeIF(irq_flag);
-	}
-	else if (address == IME) {
-		writeIME(value);
-	}
-	else if (address == DMA3CNT_H) {
-		printf("write to dma3");
-		writeDMACNT(DMA3CNT_H, value);
-	}
-	else {
-		//If adress case not implemented yet just write freely to io with mbus
-		u32 addr = address - IO_START_ADDR;
-	 
-		u8 hi, lo;
-		lo = value & 0xFF;
-		hi = (value >> 8) & 0xFF;
+	switch (address) {
+		//LCD
+		case DISPCNT: writeDISPCNT(value); break;
+		case DISPSTAT: writeDISPSTAT(value); break;
+		case VCOUNT: writeVCOUNT(value); break;
+		case BG0CNT: writeBG0CNT(value); break;
 
-		gm->io[addr] = lo;
-		gm->io[addr + 1] = hi;
+		//DMA
+		case DMA3CNT_H: writeDMACNT(DMA3CNT_H, value); break;
+
+		//Interrupt/Control
+		case IE: writeIE(value); break;
+		case IF: {
+			//Cpu writes to IF clears the bit
+			u16 irq_flag = readIF();
+			irq_flag &= ~(value);
+			writeIF(irq_flag);
+		}
+		break;
+		case IME: writeIME(value); break;
+
+		default: {
+			//If address case not implemented yet just write freely to io
+			u32 addr = address - IO_START_ADDR;
+
+			u8 hi, lo;
+			lo = value & 0xFF;
+			hi = (value >> 8) & 0xFF;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+		}
 	}
 }
 
 void Mmio::writeU32(u32 address, u32 value)
 {
-	if (address == DISPCNT) {
-		writeDISPCNT(value);
-	}
-	else if (address == DISPSTAT) {
-		writeDISPSTAT(value);
-	}
-	else if (address == BG0CNT) {
-		writeBG0CNT(value);
-	}
-	else if (address == IF) {
-		//Cpu writes to IF, clears the bit
-		u16 irq_flag = readIF();
-		irq_flag &= ~(value);
-		writeIF(irq_flag);
-	}
-	else if (address == IE) {
-		u16 lower = value & 0xFFFF;
-		u16 upper = value >> 16;
-		writeIE(lower);
+	switch (address) {
+		//LCD
+		case DISPCNT: writeDISPCNT(value); break;
+		case DISPSTAT: writeDISPSTAT(value); break;
+		case VCOUNT: writeVCOUNT(value); break;
+		case BG0CNT: writeBG0CNT(value); break;
 
-		////Cpu writes to IF clears the bit
-		u16 irq_flag = readIF();
-		irq_flag &= ~(upper);
-		writeIF(irq_flag);
-	}
-	else if (address == IME) {
-		writeIME(value);
-	}
-	else if (address == DMA3SAD) {
-		writeDMASource(address, value);
-	}
-	else if (address == DMA3DAD) {
-		writeDMADest(address, value);
+		//DMA
+		case DMA3SAD: writeDMASource(address, value); break;
+		case DMA3DAD: writeDMADest(address, value); break;
+
+		//Interrupt/Control
+		case IE: { 
+			u16 lower = value & 0xFFFF;
+			u16 upper = value >> 16;
+			writeIE(lower);
+
+			////Cpu writes to IF clears the bit
+			u16 irq_flag = readIF();
+			irq_flag &= ~(upper);
+			writeIF(irq_flag);
+		} 
+		break;
+		case IF: {
+			//Cpu writes to IF clears the bit
+			u16 irq_flag = readIF();
+			irq_flag &= ~(value);
+			writeIF(irq_flag);
+		}
+		break;
+		case IME: writeIME(value); break;
+
+		default: {
+			//If address case not implemented yet just write freely to io
+			u32 addr = address - IO_START_ADDR;
+
+			u8 hi, lo;
+			lo = value & 0xFF;
+			hi = (value >> 8) & 0xFF;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+		}
 	}
 }
 
@@ -259,6 +266,28 @@ u32 Mmio::readDMADest(u32 address)
 		}
 		break;
 	}
+}
+
+void Mmio::writeKEYINPUT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = KEYINPUT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeKEYCNT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = KEYCNT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
 }
 
 void Mmio::writeIF(u16 value)

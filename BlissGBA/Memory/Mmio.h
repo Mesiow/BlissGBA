@@ -1,6 +1,7 @@
 #pragma once
 #include "../Utils.h"
 #include "../Ppu/Lcd.h"
+#include "../Core/io.h"
 
 class GeneralMemory;
 struct DmaController;
@@ -26,6 +27,10 @@ struct Mmio {
 	u16 readDMACNT(u32 address);
 	u32 readDMASource(u32 address);
 	u32 readDMADest(u32 address);
+
+	//Keypad
+	void writeKEYINPUT(u16 value);
+	void writeKEYCNT(u16 value);
 
 	//Interrupts/System Control
 	void writeIF(u16 value);
