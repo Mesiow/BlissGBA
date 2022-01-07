@@ -2284,33 +2284,6 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
-	//u8 swi_number = (ins.encoding >> 16) & 0xFF;
-	//printf("Swi: 0x%02X", swi_number);
-	////if (swi_number == 0x6) {
-	////	printf("Failed test: 0x%08X\n", registers[0].value);
-
-	////	//HLE Div
-	////	/*s32 r0 = getRegister(RegisterID{ (u8)0 });
-	////	s32 r1 = getRegister(RegisterID{ (u8)1 });
-
-	////	s32 div_res = r0 / r1;
-	////	writeRegister(RegisterID{ (u8)0 }, div_res);
-
-	////	s32 mod_res = r0 % r1;
-	////	writeRegister(RegisterID{ (u8)1 }, mod_res);
-	////	
-	////	u32 abs_res = abs(r0 / r1);
-	////	writeRegister(RegisterID{ (u8)3 }, abs_res);*/
-	////}
-	////
-
-	//printf("ARM mode SWI at address: 0x%08X\n", R15 - 8);
-
-	//printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
-	//printf("R1: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
-	//printf("R2: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
-	//printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));
-
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
 
