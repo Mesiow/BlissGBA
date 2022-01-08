@@ -24,6 +24,7 @@ struct Mmio {
 	void writeDMASource(u32 address, u32 value);
 	void writeDMADest(u32 address, u32 value);
 	void writeDMACNT(u32 address, u16 value);
+	void writeDMACNT(u32 address, u32 value);
 	u16 readDMACNT(u32 address);
 	u32 readDMASource(u32 address);
 	u32 readDMADest(u32 address);

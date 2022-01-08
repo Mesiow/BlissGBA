@@ -43,6 +43,7 @@ void Mmio::writeU16(u32 address, u16 value)
 
 		//DMA
 		case DMA3CNT_H: writeDMACNT(DMA3CNT_H, value); break;
+		case DMA3CNT_L: writeDMACNT(DMA3CNT_L, value); break;
 
 		//Interrupt/Control
 		case IE: writeIE(value); break;
@@ -81,6 +82,9 @@ void Mmio::writeU32(u32 address, u32 value)
 		//DMA
 		case DMA3SAD: writeDMASource(address, value); break;
 		case DMA3DAD: writeDMADest(address, value); break;
+
+		case DMA3CNT_H: writeDMACNT(address, value); break;
+		case DMA3CNT_L: writeDMACNT(address, value); break;
 
 		//Interrupt/Control
 		case IE: { 
@@ -150,6 +154,7 @@ void Mmio::writeDMASource(u32 address, u32 value)
 
 	switch (address) {
 		case DMA3SAD: {
+				printf("write to dma3sad\n");
 				u32 addr = DMA3SAD - IO_START_ADDR;
 				gm->io[addr] = lower1;
 				gm->io[addr + 1] = lower2;
@@ -169,6 +174,7 @@ void Mmio::writeDMADest(u32 address, u32 value)
 
 	switch (address) {
 		case DMA3DAD: {
+			printf("write to dma3dad\n");
 			u32 addr = DMA3DAD - IO_START_ADDR;
 			gm->io[addr] = lower1;
 			gm->io[addr + 1] = lower2;
@@ -203,6 +209,49 @@ void Mmio::writeDMACNT(u32 address, u16 value)
 			//write new value
 			gm->io[addr] = lo;
 			gm->io[addr + 1] = hi;
+
+			if (enable_bit == 0x0) { //off
+				if ((value >> 15) & 0x1) { //write back to dma_cnt_h to start 
+					dmac->enableTransfer(true, DmaChannel::CH3);
+				}
+			}
+		}
+		break;
+
+		default:
+			break;
+	}
+}
+
+void Mmio::writeDMACNT(u32 address, u32 value)
+{
+	u8 lower1 = value & 0xFF;
+	u8 lower2 = (value >> 8) & 0xFF;
+	u8 upper1 = (value >> 16) & 0xFF;
+	u8 upper2 = (value >> 24) & 0xFF;
+
+	switch (address) {
+		case DMA3CNT_L: {
+			u32 addr = DMA3CNT_L - IO_START_ADDR;
+
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+		}
+					  break;
+		case DMA3CNT_H: {
+			u32 addr = DMA3CNT_H - IO_START_ADDR;
+
+			//Dma enable check
+			u16 dma3_cnt_h = readU16(addr);
+			u8 enable_bit = (dma3_cnt_h >> 15) & 0x1;
+
+			//write new value
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
 
 			if (enable_bit == 0x0) { //off
 				if ((value >> 15) & 0x1) { //write back to dma_cnt_h to start 
