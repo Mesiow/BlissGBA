@@ -2749,7 +2749,7 @@ u8 Arm::thumbOpLDRStack(ThumbInstruction& ins)
 	u8 aligned = (address & 0x1);
 	if (aligned != 0b0) {
 		//force align address
-		address &= 0xFFFFFFFE;
+		address &= 0xFFFFFFFC;
 
 		//read value and ror
 		u32 value = mbus->readU32(address);
@@ -3569,13 +3569,6 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 
 u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
-	/*printf("THUMB mode SWI at address: 0x%08X\n", R15 - 4);
-
-	printf("R0: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
-	printf("R1: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
-	printf("R2: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
-	printf("R3: 0x%08X\n", getRegister(RegisterID{ (u8)3 }));*/
-
 	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;
 
