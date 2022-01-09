@@ -1271,7 +1271,7 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 
 	//Check if reg base is in the list. If it is we don't writeback
 	bool rb_in_list = false;
-	for (s32 i = 0; i <= 7; i++) {
+	for (s32 i = 0; i <= 15; i++) {
 		if (testBit(reg_list, i) && rn.id == i) {
 			rb_in_list = true;
 			break;
