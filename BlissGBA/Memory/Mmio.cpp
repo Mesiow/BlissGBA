@@ -507,6 +507,55 @@ void Mmio::writeDMACNT(u32 address, u32 value)
 u16 Mmio::readDMACNT(u32 address)
 {
 	switch (address) {
+		//DMA 0
+		case DMA0CNT_L: {
+			u32 addr = DMA0CNT_L - IO_START_ADDR;
+			u16 dma0_cnt_l = readU16(addr);
+
+			return dma0_cnt_l;
+		}
+		break;
+		case DMA0CNT_H: {
+			u32 addr = DMA0CNT_H - IO_START_ADDR;
+			u16 dma0_cnt_h = readU16(addr);
+
+			return dma0_cnt_h;
+		}
+		break;
+
+		//DMA 1
+		case DMA1CNT_L: {
+			u32 addr = DMA1CNT_L - IO_START_ADDR;
+			u16 dma1_cnt_l = readU16(addr);
+
+			return dma1_cnt_l;
+		}
+		break;
+		case DMA1CNT_H: {
+			u32 addr = DMA1CNT_H - IO_START_ADDR;
+			u16 dma1_cnt_h = readU16(addr);
+
+			return dma1_cnt_h;
+		}
+		break;
+
+		//DMA 2
+		case DMA2CNT_L: {
+			u32 addr = DMA2CNT_L - IO_START_ADDR;
+			u16 dma2_cnt_l = readU16(addr);
+
+			return dma2_cnt_l;
+		}
+		break;
+		case DMA2CNT_H: {
+			u32 addr = DMA2CNT_H - IO_START_ADDR;
+			u16 dma2_cnt_h = readU16(addr);
+
+			return dma2_cnt_h;
+		}
+		break;
+
+		//DMA 3
 		case DMA3CNT_L: {
 			u32 addr = DMA3CNT_L - IO_START_ADDR;
 			u16 dma3_cnt_l = readU16(addr);
@@ -532,6 +581,27 @@ u16 Mmio::readDMACNT(u32 address)
 u32 Mmio::readDMASource(u32 address)
 {
 	switch (address) {
+		case DMA0SAD: {
+			u32 addr = DMA0SAD - IO_START_ADDR;
+			u32 dma0_source_addr = readU32(addr);
+
+			return dma0_source_addr;
+		}
+		break;
+		case DMA1SAD: {
+			u32 addr = DMA1SAD - IO_START_ADDR;
+			u32 dma1_source_addr = readU32(addr);
+
+			return dma1_source_addr;
+		}
+		break;
+		case DMA2SAD: {
+			u32 addr = DMA2SAD - IO_START_ADDR;
+			u32 dma2_source_addr = readU32(addr);
+
+			return dma2_source_addr;
+		}
+		break;
 		case DMA3SAD: {
 			u32 addr = DMA3SAD - IO_START_ADDR;
 			u32 dma3_source_addr = readU32(addr);
@@ -545,6 +615,27 @@ u32 Mmio::readDMASource(u32 address)
 u32 Mmio::readDMADest(u32 address)
 {
 	switch (address) {
+		case DMA0DAD: {
+			u32 addr = DMA0DAD - IO_START_ADDR;
+			u32 dma0_dest_addr = readU32(addr);
+
+			return dma0_dest_addr;
+		}
+		break;
+		case DMA1DAD: {
+			u32 addr = DMA1DAD - IO_START_ADDR;
+			u32 dma1_dest_addr = readU32(addr);
+
+			return dma1_dest_addr;
+		}
+		break;
+		case DMA2DAD: {
+			u32 addr = DMA2DAD - IO_START_ADDR;
+			u32 dma2_dest_addr = readU32(addr);
+
+			return dma2_dest_addr;
+		}
+		break;
 		case DMA3DAD: {
 			u32 addr = DMA3DAD - IO_START_ADDR;
 			u32 dma3_dest_addr = readU32(addr);
