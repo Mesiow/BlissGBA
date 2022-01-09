@@ -42,6 +42,10 @@ void Mmio::writeU16(u32 address, u16 value)
 		case BG0CNT: writeBG0CNT(value); break;
 
 		//DMA
+		case DMA1CNT_H: writeDMACNT(DMA1CNT_H, value); break;
+		case DMA1CNT_L: writeDMACNT(DMA1CNT_L, value); break;
+		case DMA2CNT_H: writeDMACNT(DMA2CNT_H, value); break;
+		case DMA2CNT_L: writeDMACNT(DMA2CNT_L, value); break;
 		case DMA3CNT_H: writeDMACNT(DMA3CNT_H, value); break;
 		case DMA3CNT_L: writeDMACNT(DMA3CNT_L, value); break;
 
@@ -80,11 +84,19 @@ void Mmio::writeU32(u32 address, u32 value)
 		case BG0CNT: writeBG0CNT(value); break;
 
 		//DMA
+		case DMA1SAD: writeDMASource(address, value); break;
+		case DMA1DAD: writeDMADest(address, value); break;
+		case DMA2SAD: writeDMASource(address, value); break;
+		case DMA2DAD: writeDMADest(address, value); break;
 		case DMA3SAD: writeDMASource(address, value); break;
 		case DMA3DAD: writeDMADest(address, value); break;
 
-		case DMA3CNT_H: writeDMACNT(address, value); break;
-		case DMA3CNT_L: writeDMACNT(address, value); break;
+		case DMA1CNT_H: writeDMACNT(DMA1CNT_H, value); break;
+		case DMA1CNT_L: writeDMACNT(DMA1CNT_L, value); break;
+		case DMA2CNT_H: writeDMACNT(DMA2CNT_H, value); break;
+		case DMA2CNT_L: writeDMACNT(DMA2CNT_L, value); break;
+		case DMA3CNT_H: writeDMACNT(DMA3CNT_H, value); break;
+		case DMA3CNT_L: writeDMACNT(DMA3CNT_L, value); break;
 
 		//Interrupt/Control
 		case IE: { 
@@ -152,17 +164,37 @@ void Mmio::writeDMASource(u32 address, u32 value)
 	u8 upper1 = (value >> 16) & 0xFF;
 	u8 upper2 = (value >> 24) & 0xFF;
 
+	u32 addr = 0;
 	switch (address) {
+		case DMA0SAD: {
+			printf("write to dma 0 SAD\n");
+			addr = DMA0SAD - IO_START_ADDR;
+		}
+		break;
+		case DMA1SAD: {
+			printf("write to dma 1 SAD\n");
+			addr = DMA1SAD - IO_START_ADDR;
+		}
+		break;
+		case DMA2SAD: {
+			printf("write to dma 2 SAD\n");
+			addr = DMA2SAD - IO_START_ADDR;
+		}
+		break;
 		case DMA3SAD: {
-				printf("write to dma3sad\n");
-				u32 addr = DMA3SAD - IO_START_ADDR;
-				gm->io[addr] = lower1;
-				gm->io[addr + 1] = lower2;
-				gm->io[addr + 2] = upper1;
-				gm->io[addr + 3] = upper2;
-			}
+			printf("write to dma 3 SAD\n");
+			addr = DMA3SAD - IO_START_ADDR;
+		}
+		break;
+
+		default:
 			break;
 	}
+
+	gm->io[addr] = lower1;
+	gm->io[addr + 1] = lower2;
+	gm->io[addr + 2] = upper1;
+	gm->io[addr + 3] = upper2;
 }
 
 void Mmio::writeDMADest(u32 address, u32 value)
@@ -172,17 +204,37 @@ void Mmio::writeDMADest(u32 address, u32 value)
 	u8 upper1 = (value >> 16) & 0xFF;
 	u8 upper2 = (value >> 24) & 0xFF;
 
+	u32 addr = 0;
 	switch (address) {
-		case DMA3DAD: {
-			printf("write to dma3dad\n");
-			u32 addr = DMA3DAD - IO_START_ADDR;
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
+		case DMA0DAD: {
+			printf("write to dma 0 DAD\n");
+			addr = DMA0DAD - IO_START_ADDR;
 		}
 		break;
+		case DMA1DAD: {
+			printf("write to dma 1 DAD\n");
+			addr = DMA1DAD - IO_START_ADDR;
+		}
+		break;
+		case DMA2DAD: {
+			printf("write to dma 2 DAD\n");
+			addr = DMA2DAD - IO_START_ADDR;
+		}
+		break;
+		case DMA3DAD: {
+			printf("write to dma 3 DAD\n");
+			addr = DMA3DAD - IO_START_ADDR;
+		}
+		break;
+
+		default:
+			break;
 	}
+
+	gm->io[addr] = lower1;
+	gm->io[addr + 1] = lower2;
+	gm->io[addr + 2] = upper1;
+	gm->io[addr + 3] = upper2;
 }
 
 void Mmio::writeDMACNT(u32 address, u16 value)
@@ -192,7 +244,93 @@ void Mmio::writeDMACNT(u32 address, u16 value)
 	hi = (value >> 8) & 0xFF;
 
 	switch (address) {
+		//DMA 0
+		case DMA0CNT_L: {
+			printf("write to dma 0 cnt L");
+			u32 addr = DMA0CNT_L - IO_START_ADDR;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+		}
+	    break;
+		case DMA0CNT_H: {
+			printf("write to dma 0 cnt H\n");
+			u32 addr = DMA0CNT_H - IO_START_ADDR;
+
+			//Dma enable check
+			u16 dma0_cnt_h = readU16(addr);
+			u8 enable_bit = (dma0_cnt_h >> 15) & 0x1;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+
+			if (enable_bit == 0x0) {
+				if ((value >> 15) & 0x1) {
+					dmac->enableTransfer(true, DmaChannel::CH0);
+				}
+			}
+		}
+		break;
+
+		//DMA 1
+		case DMA1CNT_L: {
+			printf("write to dma 1 cnt L");
+			u32 addr = DMA1CNT_L - IO_START_ADDR;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+		}
+		break;
+		case DMA1CNT_H: {
+			printf("write to dma 1 cnt H\n");
+			u32 addr = DMA1CNT_H - IO_START_ADDR;
+
+			//Dma enable check
+			u16 dma1_cnt_h = readU16(addr);
+			u8 enable_bit = (dma1_cnt_h >> 15) & 0x1;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+
+			if (enable_bit == 0x0) {
+				if ((value >> 15) & 0x1) {
+					dmac->enableTransfer(true, DmaChannel::CH1);
+				}
+			}
+		}
+		break;
+
+		//DMA 2
+		case DMA2CNT_L: {
+			printf("write to dma 2 cnt L");
+			u32 addr = DMA2CNT_L - IO_START_ADDR;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+		}
+		break;
+		case DMA2CNT_H: {
+			printf("write to dma 2 cnt H\n");
+			u32 addr = DMA2CNT_H - IO_START_ADDR;
+
+			//Dma enable check
+			u16 dma2_cnt_h = readU16(addr);
+			u8 enable_bit = (dma2_cnt_h >> 15) & 0x1;
+
+			gm->io[addr] = lo;
+			gm->io[addr + 1] = hi;
+
+			if (enable_bit == 0x0) {
+				if ((value >> 15) & 0x1) {
+					dmac->enableTransfer(true, DmaChannel::CH2);
+				}
+			}
+		}
+		break;
+
+		//DMA 3
 		case DMA3CNT_L: {
+			printf("write to dma 3 cnt L\n");
 			u32 addr = DMA3CNT_L - IO_START_ADDR;
 			
 			gm->io[addr] = lo;
@@ -200,6 +338,7 @@ void Mmio::writeDMACNT(u32 address, u16 value)
 		}
 		break;
 		case DMA3CNT_H: {
+			printf("write to dma 3 cnt H\n");
 			u32 addr = DMA3CNT_H - IO_START_ADDR;
 
 			//Dma enable check
@@ -231,7 +370,105 @@ void Mmio::writeDMACNT(u32 address, u32 value)
 	u8 upper2 = (value >> 24) & 0xFF;
 
 	switch (address) {
+		//DMA 0
+		case DMA0CNT_L: {
+			printf("write(32bit) to dma 0 cnt L");
+			u32 addr = DMA0CNT_L - IO_START_ADDR;
+
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+		}
+		break;
+		case DMA0CNT_H: {
+			printf("write(32bit) to dma 0 cnt H\n");
+			u32 addr = DMA0CNT_H - IO_START_ADDR;
+
+			//Dma enable check
+			u16 dma1_cnt_h = readU16(addr);
+			u8 enable_bit = (dma1_cnt_h >> 15) & 0x1;
+
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+
+			if (enable_bit == 0x0) {
+				if ((value >> 15) & 0x1) {
+					dmac->enableTransfer(true, DmaChannel::CH1);
+				}
+			}
+		}
+		break;
+		
+		//DMA 1
+		case DMA1CNT_L: {
+			printf("write to dma 1 cnt L");
+			u32 addr = DMA1CNT_L - IO_START_ADDR;
+
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+		}
+		break;
+		case DMA1CNT_H: {
+			printf("write to dma 1 cnt H\n");
+			u32 addr = DMA1CNT_H - IO_START_ADDR;
+
+			//Dma enable check
+			u16 dma1_cnt_h = readU16(addr);
+			u8 enable_bit = (dma1_cnt_h >> 15) & 0x1;
+
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+
+			if (enable_bit == 0x0) {
+				if ((value >> 15) & 0x1) {
+					dmac->enableTransfer(true, DmaChannel::CH1);
+				}
+			}
+		}
+		break;
+
+		//DMA 2
+		case DMA2CNT_L: {
+			printf("write(32bit) to dma 2 cnt L");
+			u32 addr = DMA2CNT_L - IO_START_ADDR;
+
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+		}
+		break;
+		case DMA2CNT_H: {
+			printf("write(32bit) to dma 2 cnt H\n");
+			u32 addr = DMA2CNT_H - IO_START_ADDR;
+
+			//Dma enable check
+			u16 dma2_cnt_h = readU16(addr);
+			u8 enable_bit = (dma2_cnt_h >> 15) & 0x1;
+
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
+
+			if (enable_bit == 0x0) {
+				if ((value >> 15) & 0x1) {
+					dmac->enableTransfer(true, DmaChannel::CH2);
+				}
+			}
+		}
+		break;
+
+		//DMA 3
 		case DMA3CNT_L: {
+			printf("write(32bit) to dma 3 cnt L\n");
 			u32 addr = DMA3CNT_L - IO_START_ADDR;
 
 			gm->io[addr] = lower1;
@@ -241,6 +478,7 @@ void Mmio::writeDMACNT(u32 address, u32 value)
 		}
 					  break;
 		case DMA3CNT_H: {
+			printf("write(32bit) to dma 3 cnt H\n");
 			u32 addr = DMA3CNT_H - IO_START_ADDR;
 
 			//Dma enable check
