@@ -73,6 +73,7 @@ public:
 	void setBGMode(u16 lcdstatus);
 	void setHBlankFlag(bool value);
 	void setVBlankFlag(bool value);
+	void setVCountFlag(bool value);
 	void setScaleFactor(float scaleFactor);
 
 	void writeU8(u32 address, u8 value);

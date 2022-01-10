@@ -205,7 +205,19 @@ void Ppu::updateScanline()
 	currentScanline++;
 	mbus->mmio.writeVCOUNT(currentScanline);
 
-	//exit hblank
+	u16 lcd_stat = readU16(DISPSTAT);
+	u8 lyc = (lcd_stat >> 8) & 0xFF; //VCount setting
+	u8 vcount_irq = (lcd_stat >> 5) & 0x1;
+
+	if (currentScanline == lyc) {
+		setVCountFlag(1); //ly matches lyc
+		if (vcount_irq) {
+			requestInterrupt(VCOUNT_INT);
+		}
+	}
+	else
+		setVCountFlag(0);
+
 	setHBlankFlag(0);
 	cycleCounter = 0;
 }
@@ -229,7 +241,7 @@ void Ppu::setHBlankFlag(bool value)
 	u16 lcd_stat = readU16(DISPSTAT);
 	(value == true) ? lcd_stat = setBit(lcd_stat, 1) : lcd_stat = resetBit(lcd_stat, 1);
 
-	writeU16(DISPSTAT, lcd_stat);
+	mbus->mmio.writeDISPSTAT(lcd_stat);
 }
 
 void Ppu::setVBlankFlag(bool value)
@@ -237,7 +249,15 @@ void Ppu::setVBlankFlag(bool value)
 	u16 lcd_stat = readU16(DISPSTAT);
 	(value == true) ? lcd_stat = setBit(lcd_stat, 0) : lcd_stat = resetBit(lcd_stat, 0);
 
-	writeU16(DISPSTAT, lcd_stat);
+	mbus->mmio.writeDISPSTAT(lcd_stat);
+}
+
+void Ppu::setVCountFlag(bool value)
+{
+	u16 lcd_stat = readU16(DISPSTAT);
+	(value == true) ? lcd_stat = setBit(lcd_stat, 2) : lcd_stat = resetBit(lcd_stat, 2);
+
+	mbus->mmio.writeDISPSTAT(lcd_stat);
 }
 
 void Ppu::setScaleFactor(float scaleFactor)
