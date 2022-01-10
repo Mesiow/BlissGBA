@@ -1312,11 +1312,22 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	//R15
 	if (load_pc) {
 		u32 value = mbus->readU32(address);
-		R15 = value & 0xFFFFFFFC;
-		flushPipeline();
-
 		if (S == 0x1) {
 			CPSR = getSPSR();
+
+			if (getFlag(T) == 0x0) {
+				R15 = value & 0xFFFFFFFC;
+				flushPipeline();
+			}
+			else {
+				R15 = value & 0xFFFFFFFE;
+				flushThumbPipeline();
+				R15 -= 2;
+			}
+		}
+		else {
+			R15 = value & 0xFFFFFFFC;
+			flushPipeline();
 		}
 	}
 
@@ -2746,8 +2757,8 @@ u8 Arm::thumbOpLDRStack(ThumbInstruction& ins)
 
 	u32 address = sp + (imm8 * 4);
 
-	u8 aligned = (address & 0x1);
-	if (aligned != 0b0) {
+	u8 aligned = (address & 0x3);
+	if (aligned != 0b00) {
 		//force align address
 		address &= 0xFFFFFFFC;
 
