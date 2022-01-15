@@ -1333,8 +1333,12 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 
 	if (result.writeback) {
 		//No writeback if rb is first in rlist or if it is in the list at all
-		if (!rb_in_list)
-			writeRegister(rn, result.rn);
+		if (!rb_in_list) {
+			if (S == 0x1)
+				writeUserModeRegister(rn, result.rn);
+			else
+				writeRegister(rn, result.rn);
+		}
 	}
 
 	return 1;
@@ -1451,14 +1455,24 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 
 			//writeback old base if rb first in list
 			if (first) {
-				u32 reg_rn = getRegister(rn);
-				writeRegister(rn, reg_rn);
+				if (S == 0x1) {
+					u32 reg_rn_usr = getUserModeRegister(rn);
+					writeUserModeRegister(rn, reg_rn_usr);
+				}
+				else {
+					u32 reg_rn = getRegister(rn);
+					writeRegister(rn, reg_rn);
+				}
 				first = false;
 			}
 			else if (rb_in_list) { //Not first but rb is in the list
 				//Store after first transfer occured
 				if (result.writeback) {
-					writeRegister(rn, result.rn);
+					if (S == 0x1)
+						writeUserModeRegister(rn, result.rn);
+					else
+						writeRegister(rn, result.rn);
+
 					rb_in_list = false;
 				}
 			}
@@ -1474,7 +1488,10 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	}
 
 	if (result.writeback) {
-		writeRegister(rn, result.rn);
+		if (S == 0x1)
+			writeUserModeRegister(rn, result.rn);
+		else
+			writeRegister(rn, result.rn);
 	}
 
 	return 1;
