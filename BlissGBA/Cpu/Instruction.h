@@ -1,5 +1,5 @@
 #pragma once
-#include "../Utils.h"
+#include "../Utils/Utils.h"
 
 /*
 	Instruction encodings for arm and thumb instruction sets
