@@ -120,9 +120,16 @@ void Ppu::renderMode0()
 		u32 tile_address = VRAM_START_ADDR + offset;
 		
 		u8 bits_pp = (is8bpp) ? 8 : 4;
-		//u32 index = ((currentScanline * SCREEN_WIDTH + x) * bits_pp);
-		u32 index = calculateTileOffset(x, currentScanline, bits_pp);
-		u8 tile = readU8(tile_address + index);
+		//u32 index = calculateTileOffset(x, currentScanline, bits_pp);
+		u32 index = 0;
+		if (bits_pp == 8) {
+
+		}
+		else {
+
+		}
+		u16 tile = readU16(tile_address + 96);
+		u8 paletteNumber = (tile >> 12) & 0xF;
 
 		//Get color of tile pixel from palette ram
 		u32 pramAddr = PRAM_START_ADDR;
@@ -134,7 +141,7 @@ void Ppu::renderMode0()
 			u8 offset = lower_pixel;
 			offset &= 0xF;
 			offset |= (tile << 4);
-			pramAddr = PRAM_START_ADDR + (offset * 2);
+			pramAddr = PRAM_START_ADDR + ((offset * 2) + (16 * paletteNumber));
 		}
 		u16 palette = readU16(pramAddr);
 

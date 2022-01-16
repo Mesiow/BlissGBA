@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML\Graphics.hpp>
-#include "../Utils.h"
+#include "../Utils/Utils.h"
 #include "../Core/Interrupts.h"
 #include "Lcd.h"
 
