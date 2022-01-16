@@ -1,5 +1,5 @@
 #pragma once
-#include "../Utils.h"
+#include "../Utils/Utils.h"
 
 #define GAMEPAK_WS_SIZE 0x2000000 //game pak rom wait state
 #define GAMEPAK_WS0_START_ADDR 0x8000000
