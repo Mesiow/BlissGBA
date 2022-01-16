@@ -1,5 +1,5 @@
 #pragma once
-#include "../Utils.h"
+#include "../Utils/Utils.h"
 #include "../Ppu/Lcd.h"
 #include "../Core/io.h"
 

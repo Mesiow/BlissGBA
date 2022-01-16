@@ -1,5 +1,5 @@
 #pragma once
-#include "../Utils.h"
+#include "../Utils/Utils.h"
 
 #define BG_OBJ_PALETTE_SIZE 0x400
 #define VRAM_SIZE 0x18000
