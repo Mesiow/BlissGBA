@@ -415,9 +415,9 @@ void DebugUI::renderInterrupts()
         if (ImGui::Begin("Interrupts")) {
             ImGui::SetWindowFontScale(1.2);
 
-            bool ime = mbus->readU16(IME) & 0x1;;
-            bool ie = mbus->readU16(IE);
-            bool irq_flag = mbus->readU16(IF);
+            bool ime = mbus->mmio.readIME();
+            u16 ie = mbus->mmio.readIE();
+            u16 irq_flag = mbus->mmio.readIF();
 
             ImGui::Checkbox("IME (Interrupt Master)", &ime);
             ImGui::Text("IE (Interrupt Enable): 0x%04X", ie);
