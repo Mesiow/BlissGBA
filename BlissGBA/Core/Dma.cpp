@@ -12,7 +12,20 @@ void DmaController::handleDMA()
 {
 	if (transfer) {
 		switch (channelToTransfer) {
+			case DmaChannel::CH0: {
+				printf("Handling DMA Channel 0...\n");
+			}
+			break;
+			case DmaChannel::CH1: {
+				printf("Handling DMA Channel 1...\n");
+			}
+			break;
+			case DmaChannel::CH2: {
+				printf("Handling DMA Channel 2...\n");
+			}
+			break;
 			case DmaChannel::CH3: {
+				//printf("Handling DMA Channel 3...\n");
 				u16 dma3_cnt_h = mbus->mmio.readDMACNT(DMA3CNT_H);
 				//if = 0, clear the enable bit after the transfer is done.
 				//if = 1, the enable bit remains set after the transfer and 
@@ -22,7 +35,7 @@ void DmaController::handleDMA()
 				//The transfer will be repeated forever, until it gets stopped by software.
 				u8 repeat = (dma3_cnt_h >> 9) & 0x1;
 				if (repeat == 0x0) {
-					printf("\nno repeat\n");
+					//printf("\nNo repeat (DMA3)\n");
 					handleChannelTransfer(DmaChannel::CH3);
 
 					//clear enable bit after transfer
@@ -32,7 +45,7 @@ void DmaController::handleDMA()
 					transfer = false;
 				}
 				else { //repeat transfer
-
+					printf("Repeat (DMA3)\n");
 				}
 			}
 			break;
@@ -48,6 +61,8 @@ void DmaController::handleChannelTransfer(DmaChannel channel)
 {
 	switch (channel) {
 		case DmaChannel::CH3: {
+			//printf("--DMA Channel 3 Transfer..\n");
+
 			u16 dma3_cnt_h = mbus->mmio.readDMACNT(DMA3CNT_H);
 			u8 transfer_type = (dma3_cnt_h >> 10) & 0x1;
 
@@ -82,7 +97,6 @@ void DmaController::handleChannelTransfer(DmaChannel channel)
 
 void DmaController::enableTransfer(bool enable, DmaChannel channel)
 {
-	if (channel == DmaChannel::CH3) printf("\ntransfer enabled for ch3");
 	transfer = enable;
 	channelToTransfer = channel;
 }
