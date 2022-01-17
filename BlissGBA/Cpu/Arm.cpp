@@ -1,9 +1,10 @@
 #include "Arm.h"
 #include "../Memory/MemoryBus.h"
 
-Arm::Arm(MemoryBus *mbus)
+Arm::Arm(MemoryBus* mbus)
 	:addrMode1(*this), addrMode2(*this),
-	addrMode3(*this), addrMode4(*this)
+	addrMode3(*this), addrMode4(*this),
+	rbuffer(100)
 {
 	mapArmOpcodes();
 	mapThumbOpcodes();
@@ -17,6 +18,8 @@ u8 Arm::clock()
 		if (state == State::ARM) {
 			currentExecutingArmOpcode = armpipeline[0];
 			armpipeline[0] = armpipeline[1];
+
+			pushIntoRingBuffer(currentExecutingArmOpcode);
 
 			ArmInstruction ins;
 			ins.encoding = currentExecutingArmOpcode;
@@ -72,7 +75,7 @@ void Arm::handleInterrupts()
 			LR_irq = (R15 - 4);
 		}
 		else {
-			LR_irq = (R15 - 2) + 2;
+			LR_irq = R15;
 		}
 		SPSR_irq = CPSR;
 
@@ -81,6 +84,7 @@ void Arm::handleInterrupts()
 		setFlag(I); //disable irqs
 
 		R15 = IRQ_VECTOR;
+		R15 &= 0xFFFFFFFC;
 		flushAndRefillPipeline();
 	}
 }
@@ -577,11 +581,6 @@ void Arm::writeSPSR(u32 spsr)
 	}
 }
 
-void Arm::writePC(u32 pc)
-{
-	R15 |= ((pc << 2) & 0xFFFFFFFF);
-}
-
 void Arm::setCC(u32 result, RegisterID rd, bool borrow, bool overflow,
 	bool shiftOut, u8 shifterCarryOut)
 {
@@ -685,6 +684,21 @@ void Arm::writeU16(u32 address, u16 value)
 
 void Arm::writeU32(u32 address, u32 value)
 {
+	/*if (address >= 0x03000000 && address <= 0x03FFFFFF){
+		if ((address & 0x7FFC) == 0x7FFC) {
+			printf("write to user handler 0x%08X\n", value);
+			if (value == 0x0) {
+				rbuffer.print();
+				return;
+			}
+		}
+	}*/
+	if (address >= 0x80000000) {
+		printf("--Open Bus writeU32-- at address: 0x%08X\n", address);
+		printf("R15: 0x%08X", R15);
+		return;
+	}
+
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		mbus->mmio.writeU32(address, value);
 	}
@@ -1414,7 +1428,8 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 		if (db) base_addr = result.rn - 0x40;
 		if (da) base_addr = result.rn - 0x3C;
 
-		writeU32(base_addr, R15 + 4);
+		base_addr &= 0xFFFFFFFC;
+		writeU32(base_addr, (R15 + 4));
 
 		if (incrementing) result.rn += 0x40;
 		else result.rn -= 0x40;
@@ -1484,7 +1499,7 @@ u8 Arm::executeSTM(ArmInstruction& ins)
 	bool store_pc = testBit(reg_list, 15);
 	//If R15 is to be stored, store 4 ahead (R15 + 4) to memory
 	if (store_pc) {
-		writeU32(address, R15 + 4);
+		writeU32(address, (R15 + 4));
 	}
 
 	if (result.writeback) {
@@ -2271,6 +2286,7 @@ u8 Arm::opB(ArmInstruction& ins)
 	offset <<= 2;
 
 	R15 += offset;
+	R15 &= 0xFFFFFFFC;
 	flushPipeline();
 
 	return 1;
@@ -2285,6 +2301,7 @@ u8 Arm::opBL(ArmInstruction& ins)
 	offset <<= 2;
 
 	R15 += offset;
+	R15 &= 0xFFFFFFFC;
 	flushPipeline();
 
 	return 1;
@@ -2312,6 +2329,10 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
+	u32 swi = (ins.encoding & 0xFFFFFF);
+	printf("arm swi: 0x%08X\n", swi);
+	printf("r15: 0x%08X", R15);
+
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
 
@@ -2698,6 +2719,7 @@ u8 Arm::thumbOpBCond(ThumbInstruction& ins)
 		signed_imm8_offset <<= 1;
 
 		R15 += signed_imm8_offset;
+		R15 &= 0xFFFFFFFE;
 
 		flushThumbPipeline();
 	}
@@ -2712,6 +2734,7 @@ u8 Arm::thumbOpB(ThumbInstruction& ins)
 	signed_imm11_offset <<= 1;
 
 	R15 += signed_imm11_offset;
+	R15 &= 0xFFFFFFFE;
 
 	flushThumbPipeline();
 
@@ -2728,7 +2751,10 @@ u8 Arm::thumbOpBL(ThumbInstruction& ins)
 			offset11 = signExtend32(offset11, 11);
 			offset11 <<= 12;
 	
-			writeRegister(RegisterID{ R14_ID }, R15 + offset11);
+			u32 result = (R15 + offset11);
+			result &= 0xFFFFFFFE;
+
+			writeRegister(RegisterID{ R14_ID }, result);
 		}
 		break;
 
@@ -2742,7 +2768,6 @@ u8 Arm::thumbOpBL(ThumbInstruction& ins)
 			writeRegister(RegisterID{ R14_ID }, lr);
 
 			R15 = prevLR + offset11;
-
 			flushThumbPipeline();
 		}
 		break;
@@ -2804,6 +2829,8 @@ u8 Arm::thumbOpSTRStack(ThumbInstruction& ins)
 	u8 imm8 = ins.imm8();
 
 	u32 address = sp + (imm8 * 4);	
+	address &= 0xFFFFFFFC;
+
 	writeU32(address, reg_rd);
 
 	return 1;
@@ -3597,6 +3624,9 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 
 u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
+	u8 swi = (ins.encoding & 0xFF);
+	printf("THUMB swi: 0x%02X\n", swi);
+
 	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;
 
@@ -3883,10 +3913,10 @@ u8 Arm::thumbOpPUSH(ThumbInstruction& ins)
 	u8 R = ins.R(); 
 
 	u32 start_address = sp - 4 * (R + numSetBitsU8(reg_list));
-	start_address &= 0xFFFFFFFE;
 
 	u32 end_address = sp - 4;
 	u32 address = start_address;
+	address &= 0xFFFFFFFC;
 
 	for (s32 i = 0; i <= 7; i++) {
 		bool included = testBit(reg_list, i);
@@ -3918,10 +3948,10 @@ u8 Arm::thumbOpPOP(ThumbInstruction& ins)
 	u8 R = ins.R();
 
 	u32 start_address = sp;
-	start_address &= 0xFFFFFFFE;
 
 	u32 end_address = sp + 4 * (R + numSetBitsU8(reg_list));
 	u32 address = start_address;
+	address &= 0xFFFFFFFC;
 
 	for (s32 i = 0; i <= 7; i++) {
 		bool included = testBit(reg_list, i);
@@ -3944,6 +3974,22 @@ u8 Arm::thumbOpPOP(ThumbInstruction& ins)
 	writeRegister(RegisterID{ R13_ID }, sp);
 
 	return 1;
+}
+
+void Arm::pushIntoRingBuffer(u32 opcode)
+{
+	CpuState state;
+	state.opcode = opcode;
+	for (u32 i = 0; i < 13; i++) {
+		state.regs[i] = getRegister(RegisterID{ (u8)i });
+	}
+	state.sp = getRegister(RegisterID{ R13_ID });
+	state.lr = getRegister(RegisterID{ R14_ID });
+	state.r15 = R15;
+	state.cpsr = CPSR;
+	state.spsr = getSPSR();
+
+	rbuffer.add(state);
 }
 
 

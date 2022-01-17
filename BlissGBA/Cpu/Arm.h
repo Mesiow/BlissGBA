@@ -3,6 +3,7 @@
 #include "AddressingModes.h"
 #include "../Core/Interrupts.h"
 #include "../Core/Dma.h"
+#include "../Utils/Ringbuffer.h"
 #include <array>
 #include <functional>
 
@@ -141,7 +142,6 @@ public:
 	void writeRegister(RegisterID reg, u32 value);
 	void writeUserModeRegister(RegisterID reg, u32 value);
 	void writeSPSR(u32 spsr);
-	void writePC(u32 pc);
 
 	//Set condition codes (S bit)
 	void setCC(u32 result, RegisterID rd, bool borrow, bool overflow,
@@ -362,6 +362,8 @@ private:
 	u8 thumbOpPUSH(ThumbInstruction& ins);
 	u8 thumbOpPOP(ThumbInstruction& ins);
 
+	void pushIntoRingBuffer(u32 opcode);
+
 
 public:
 	State state;
@@ -423,4 +425,6 @@ public:
 
 	MemoryBus* mbus;
 	bool halted = false;
+
+	Ringbuffer rbuffer;
 };
