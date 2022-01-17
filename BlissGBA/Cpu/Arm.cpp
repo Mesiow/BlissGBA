@@ -3253,7 +3253,7 @@ u8 Arm::thumbOpADD(ThumbInstruction& ins, RegisterID rm, RegisterID rd)
 	u32 result = reg_rd + reg_rm;
 
 	if (actual_reg_rd.id == R15_ID) {
-		R15 = result & 0xFFFFFFFC;
+		R15 = result & 0xFFFFFFFE;
 		flushThumbPipeline();
 	}
 	else
@@ -3507,7 +3507,7 @@ u8 Arm::thumbOpSTMIA(ThumbInstruction& ins)
 
 	//Empty list
 	if (reg_list == 0x0) {
-		writeU32(address, R15 + 2);
+		writeU32(address, (R15 + 2) & 0xFFFFFFFC);
 		reg_rn += 0x40;
 	}
 
@@ -3843,6 +3843,8 @@ u8 Arm::thumbOpSTR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + (immediate5 * 4);
+	//address &= 0xFFFFFFFC;
+
 	writeU32(address, reg_rd);
 
 	return 1;
@@ -3855,6 +3857,8 @@ u8 Arm::thumbOpSTR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
+	address &= 0xFFFFFFFC;
+
 	writeU32(address, reg_rd);
 
 	return 1;
@@ -3889,6 +3893,8 @@ u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + (immediate5 * 2);
+	address &= 0xFFFFFFFE;
+
 	writeU16(address, reg_rd & 0xFFFF);
 
 	return 1;
@@ -3901,6 +3907,8 @@ u8 Arm::thumbOpSTRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
+	address &= 0xFFFFFFFE;
+
 	writeU16(address, reg_rd & 0xFFFF);
 
 	return 1;
