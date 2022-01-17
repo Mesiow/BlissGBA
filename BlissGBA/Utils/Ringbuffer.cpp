@@ -14,19 +14,18 @@ Ringbuffer::~Ringbuffer()
 
 void Ringbuffer::print()
 {
+	printf("\n");
 	for (u32 i = 0; i < size; i++) {
-		printf("Opcode: 0x%08X\n", buffer[i].opcode);
+		printf("Opcode: 0x%08X ", buffer[i].opcode);
 		for (u32 j = 0; j < 13; j++) {
 			printf("R%d: ", j);
-			printf("0x%08X\n", buffer[i].regs[j]);
+			printf("0x%08X ", buffer[i].regs[j]);
 		}
-		printf("SP: 0x%08X\n", buffer[i].sp);
-		printf("LR: 0x%08X\n", buffer[i].lr);
-		printf("R15: 0x%08X\n", buffer[i].r15);
-		printf("CPSR: 0x%08X\n", buffer[i].cpsr);
-		printf("SPSR: 0x%08X\n", buffer[i].spsr);
-
-		printf("\n\n\n");
+		printf("SP: 0x%08X ", buffer[i].sp);
+		printf("LR: 0x%08X ", buffer[i].lr);
+		printf("R15: 0x%08X ", buffer[i].r15);
+		printf("CPSR: 0x%08X ", buffer[i].cpsr);
+		printf("SPSR: 0x%08X \n", buffer[i].spsr);
 	}
 }
 
