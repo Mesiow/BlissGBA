@@ -169,7 +169,8 @@
     <ClCompile Include="Memory\MemoryBus.cpp" />
     <ClCompile Include="Memory\Mmio.cpp" />
     <ClCompile Include="Ppu\Ppu.cpp" />
-    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Utils\Ringbuffer.cpp" />
+    <ClCompile Include="Utils\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cartridge\GamePak.h" />
@@ -189,7 +190,8 @@
     <ClInclude Include="Memory\Mmio.h" />
     <ClInclude Include="Ppu\Lcd.h" />
     <ClInclude Include="Ppu\Ppu.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="Utils\Ringbuffer.h" />
+    <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
