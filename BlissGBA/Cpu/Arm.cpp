@@ -21,6 +21,9 @@ u8 Arm::clock()
 
 			pushIntoRingBuffer(currentExecutingArmOpcode);
 
+			//force align r15
+			R15 &= 0xFFFFFFFC;
+
 			ArmInstruction ins;
 			ins.encoding = currentExecutingArmOpcode;
 			executeArmIns(ins);
@@ -30,6 +33,9 @@ u8 Arm::clock()
 		else if (state == State::THUMB) {
 			currentExecutingThumbOpcode = thumbpipeline[0];
 			thumbpipeline[0] = thumbpipeline[1];
+
+			//force align r15
+			R15 &= 0xFFFFFFFE;
 
 			ThumbInstruction ins;
 			ins.encoding = currentExecutingThumbOpcode;
@@ -86,6 +92,7 @@ void Arm::handleInterrupts()
 		R15 = IRQ_VECTOR;
 		R15 &= 0xFFFFFFFC;
 		flushAndRefillPipeline();
+		checkStateAndProcessorMode();
 	}
 }
 
@@ -3626,6 +3633,13 @@ u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
 	u8 swi = (ins.encoding & 0xFF);
 	printf("THUMB swi: 0x%02X\n", swi);
+	
+	if (swi == 0xB) //cpu set
+	{
+		printf("Source Address: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
+		printf("Dest Address: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
+		printf("Control: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
+	}
 
 	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;
