@@ -48,6 +48,7 @@ struct Mmio {
 	void writeDISPSTAT(u16 value);
 	void writeVCOUNT(u16 value);
 	void writeBG0CNT(u16 value);
+	u16 readDISPCNT();
 
 	GeneralMemory* gm;
 	DmaController* dmac = nullptr;
