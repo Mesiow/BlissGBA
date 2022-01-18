@@ -3857,7 +3857,7 @@ u8 Arm::thumbOpSTR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + (immediate5 * 4);
-	//address &= 0xFFFFFFFC;
+	address &= 0xFFFFFFFC;
 
 	writeU32(address, reg_rd);
 
