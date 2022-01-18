@@ -32,6 +32,12 @@ void DisplayMemory::writeU8(u32 address, u8 value)
 		vram[vram_addr] = value;
 		vram[vram_addr + 1] = value;
 	}
+	else if (address >= address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
+		u32 addr = address & (OAM_SIZE - 1);
+
+		oam[addr] = value;
+		oam[addr + 1] = value;
+	}
 }
 
 void DisplayMemory::writeU16(u32 address, u16 value)
