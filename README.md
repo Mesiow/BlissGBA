@@ -1,8 +1,5 @@
 # BlissGBA
-### A WIP GBA Emulator
-#### 🌟Goal: Aiming for a balance of usability/accuracy and to be able to play most commercial games
- - Cpu state: WIP
- - Ppu state: WIP
+### 🌟Goal: Aiming for a balance of usability/accuracy and to be able to play most commercial games🌟
 
 ## Cpu
 ✅Hardware Interrupts\
