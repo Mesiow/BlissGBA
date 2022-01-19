@@ -172,9 +172,15 @@ void Ppu::renderBitmapMode3()
 
 void Ppu::renderBitmapMode4()
 {
+	u16 dispcnt = mbus->mmio.readDISPCNT();
+	u8 frame = (dispcnt >> 4) & 0x1;
+	
+	//Use frame 0 or 1
+	u32 page = VRAM_START_ADDR + (0xA000 * frame);
+
 	for (u32 x = 0; x < SCREEN_WIDTH; x++) {
 		u32 index = ((currentScanline * SCREEN_WIDTH + x) * mode4.bpp);
-		u8 paletteIndex = readU8(VRAM_START_ADDR + index);
+		u8 paletteIndex = readU8(page + index);
 
 		u32 pramAddr = PRAM_START_ADDR + (paletteIndex * 2);
 		u16 palette = readU16(pramAddr);
