@@ -7,7 +7,9 @@
 ## Cpu
 ✅Hardware Interrupts\
 ✅Software Interrupts\
-✅Boots and Passes Armwrestler CPU Test ROM
+✅Passes Armwrestler CPU test\
+✅Passes FuzzArm CPU test\
+✅Passes Jsmolka's CPU test suite
 
 ## DMA 
 ⬛DMA Channel 0\
