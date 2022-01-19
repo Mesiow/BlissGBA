@@ -1,13 +1,19 @@
 # BlissGBA
 ### A WIP GBA Emulator
-- Cpu state: WIP
-- Ppu state: WIP
+#### 🌟Goal: Aiming for a balance of usability/accuracy and to be able to play most commercial games
+ - Cpu state: WIP
+ - Ppu state: WIP
 
 ## Cpu
-⬛Hardware Interrupts\
+✅Hardware Interrupts\
 ✅Software Interrupts\
-⬛DMA\
 ✅Boots and Passes Armwrestler CPU Test ROM
+
+## DMA 
+⬛DMA Channel 0\
+⬛DMA Channel 1\
+⬛DMA Channel 2\
+✅DMA Channel 3
 
 ## Ppu
 ✅Basic Mode Switching\
