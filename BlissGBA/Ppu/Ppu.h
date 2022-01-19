@@ -56,7 +56,7 @@ struct BitmapMode4 {
 
 class Ppu {
 public:
-	Ppu(MemoryBus *mbus);
+	Ppu(MemoryBus *mbus, float displayScaleFactor);
 	void update(s32 cycles);
 	void render(sf::RenderTarget& target);
 	void reset();
@@ -95,4 +95,5 @@ public:
 	u32 cycleCounter = 0;
 	u16 currentScanline = 0;
 	MemoryBus* mbus;
+	float displayScaleFactor;
 };

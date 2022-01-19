@@ -1,13 +1,13 @@
 #include "Emulator.h"
 
 Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
-	:mbus(), ppu(&mbus), cpu(&mbus), dmac(&mbus),
+	:mbus(), ppu(&mbus, displayScaleFactor), cpu(&mbus), dmac(&mbus),
 	joypad(&mbus), debug(window, this)
 {
 	this->displayScaleFactor = displayScaleFactor;
-	showDebugger = true;
-	debuggerRunning = true;
-	running = false;
+	showDebugger = false;
+	debuggerRunning = false;
+	running = true;
 	debug.running = &running;
 	debug.showDebugger = &showDebugger;
 
@@ -44,15 +44,11 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 
 	//mbus.loadGamePak("test_roms/tonc tests/pageflip.gba"); //passing
 
-	//Doom issues
-	//bl 358h at irq user handler address 0x03FFFFFC
-	//doom gets stuck in irq mode and after address 11C pc goes into open bus
-	//r13_irq gets wrong value loaded
+	//Playable
 	mbus.loadGamePak("roms/AGBDOOM.gba");
-	//mbus.loadGamePak("roms/DOOM2.gba");
 
-	//boots to menu
-	//mbus.loadGamePak("roms/Motoracer Advance (USA) (En,Fr,De,Es,It).gba");
+	//Boots to menu
+    //mbus.loadGamePak("roms/Motoracer Advance (USA) (En,Fr,De,Es,It).gba");
 	
 	//mbus.loadGamePak("roms/Grand Theft Auto Advance (USA).gba");
 	//mbus.loadGamePak("roms/Need for Speed - Porsche Unleashed (U).gba");

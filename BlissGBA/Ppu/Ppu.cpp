@@ -1,9 +1,10 @@
 #include "Ppu.h"
 #include "../Memory/MemoryBus.h"
 
-Ppu::Ppu(MemoryBus *mbus)
+Ppu::Ppu(MemoryBus *mbus, float displayScaleFactor)
 	:mbus(mbus)
 {
+	this->displayScaleFactor = displayScaleFactor;
 	reset();
 }
 
@@ -81,10 +82,9 @@ void Ppu::reset()
 	mode4.framebuffer.loadFromImage(mode4.pixels);
 	mode4.frame = sf::Sprite(mode4.framebuffer);
 
-	float scaleFactor = 2.5;
-	mode0.frame.setScale(scaleFactor, scaleFactor);
-	mode3.frame.setScale(scaleFactor, scaleFactor);
-	mode4.frame.setScale(scaleFactor, scaleFactor);
+	mode0.frame.setScale(displayScaleFactor, displayScaleFactor);
+	mode3.frame.setScale(displayScaleFactor, displayScaleFactor);
+	mode4.frame.setScale(displayScaleFactor, displayScaleFactor);
 
 	displayMode = DisplayMode::Visible;
 	currentScanline = 0;
