@@ -109,9 +109,9 @@ void Arm::reset()
 	for (s32 i = 0; i < NUM_REGISTERS_FIQ; i++) registersFiq[i].value = 0x0;
 	
 	//System/User
-	LR = 0x00000000; //R14
+	LR = 0x00000000;
 	R15 = 0x08000000;
-	SP = 0x03007F00; //R13
+	SP = 0x03007F00;
 	CPSR = 0x000000DF;
 
 	SPSR = CPSR;
@@ -133,7 +133,7 @@ void Arm::reset()
 	LR_abt = 0x0;
 	LR_und = 0x0;
 
-	mode = getProcessorMode();
+	checkStateAndProcessorMode();
 
 	armpipeline[0] = fetchU32();
 	armpipeline[1] = fetchU32();
@@ -673,6 +673,7 @@ u8 Arm::getConditionCode(u8 cond)
 
 void Arm::writeU8(u32 address, u8 value)
 {
+	cyclesThisIns++;
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		mbus->mmio.writeU8(address, value);
 	}
@@ -682,6 +683,7 @@ void Arm::writeU8(u32 address, u8 value)
 
 void Arm::writeU16(u32 address, u16 value)
 {
+	cyclesThisIns++;
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		mbus->mmio.writeU16(address, value);
 	}
@@ -691,21 +693,7 @@ void Arm::writeU16(u32 address, u16 value)
 
 void Arm::writeU32(u32 address, u32 value)
 {
-	/*if (address >= 0x03000000 && address <= 0x03FFFFFF){
-		if ((address & 0x7FFC) == 0x7FFC) {
-			printf("write to user handler 0x%08X\n", value);
-			if (value == 0x0) {
-				rbuffer.print();
-				return;
-			}
-		}
-	}*/
-	if (address >= 0x80000000) {
-		printf("--Open Bus writeU32-- at address: 0x%08X\n", address);
-		printf("R15: 0x%08X", R15);
-		return;
-	}
-
+	cyclesThisIns++;
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		mbus->mmio.writeU32(address, value);
 	}
@@ -713,8 +701,33 @@ void Arm::writeU32(u32 address, u32 value)
 		mbus->writeU32(address, value);
 }
 
+u8 Arm::readU8(u32 address)
+{
+	cyclesThisIns++;
+	return mbus->readU8(address);
+}
+
+u16 Arm::readU16(u32 address)
+{
+	cyclesThisIns++;
+	return mbus->readU16(address);
+}
+
+u32 Arm::readU32(u32 address)
+{
+	cyclesThisIns++;
+	return mbus->readU32(address);
+}
+
+u8 Arm::readU8()
+{
+	cyclesThisIns++;
+	return mbus->readU8(R15);
+}
+
 u16 Arm::readU16()
 {
+	cyclesThisIns++;
 	u16 halfword = (mbus->readU8(R15)) |
 		(mbus->readU8(R15 + 1) << 8);
 
@@ -723,6 +736,7 @@ u16 Arm::readU16()
 
 u16 Arm::fetchU16()
 {
+	cyclesThisIns++;
 	u16 halfword = (mbus->readU8(R15++)) |
 		(mbus->readU8(R15++) << 8);
 
@@ -731,6 +745,7 @@ u16 Arm::fetchU16()
 
 u32 Arm::readU32()
 {
+	cyclesThisIns++;
 	u32 word = (mbus->readU8(R15)) |
 		(mbus->readU8(R15 + 1) << 8) |
 		(mbus->readU8(R15 + 2) << 16) |
@@ -741,6 +756,7 @@ u32 Arm::readU32()
 
 u32 Arm::fetchU32()
 {
+	cyclesThisIns++;
 	u32 word = (mbus->readU8(R15++)) |
 		(mbus->readU8(R15++) << 8) |
 		(mbus->readU8(R15++) << 16) |
@@ -990,6 +1006,7 @@ u32 Arm::rrx(u32 value, u8 &shiftedBit)
 
 void Arm::executeArmIns(ArmInstruction& ins)
 {
+	cyclesThisIns = 1;
 	u8 cond = getConditionCode(ins.cond());
 	if (!cond) {
 		cycles = 1;
@@ -998,12 +1015,16 @@ void Arm::executeArmIns(ArmInstruction& ins)
 	
 	u16 instruction = ins.instruction();
 	cycles = armlut[instruction](ins);
+	cycles += cyclesThisIns; //add any remaining cycles from mem accessing etc..
 }
 
 void Arm::executeThumbIns(ThumbInstruction& ins)
 {
+	cyclesThisIns = 1;
+
 	u8 instruction = ins.instruction();
 	cycles = thumblut[instruction](ins);
+	cycles += cyclesThisIns; 
 }
 
 u8 Arm::executeDataProcessing(ArmInstruction& ins, bool flags, bool immediate)
@@ -1302,7 +1323,7 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 	//Empty list
 	if (reg_list == 0x0) {
 		//Load value from reg_rn address into r15
-		u32 addr = mbus->readU32(address);
+		u32 addr = readU32(address);
 		R15 = addr & 0xFFFFFFFC;
 		flushPipeline();
 
@@ -1315,7 +1336,7 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 		bool included = testBit(reg_list, i);
 		if (included) {
 			RegisterID id; id.id = i;
-			u32 value = mbus->readU32(address);
+			u32 value = readU32(address);
 			//Load user mode registers
 			if (S == 0x1 && !load_pc) {
 				writeUserModeRegister(id, value);
@@ -1332,7 +1353,7 @@ u8 Arm::executeLDM(ArmInstruction& ins)
 
 	//R15
 	if (load_pc) {
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		if (S == 0x1) {
 			CPSR = getSPSR();
 
@@ -2336,9 +2357,9 @@ u8 Arm::opBX(ArmInstruction& ins)
 
 u8 Arm::opSWI(ArmInstruction& ins)
 {
-	u32 swi = (ins.encoding & 0xFFFFFF);
+	/*u32 swi = (ins.encoding & 0xFFFFFF);
 	printf("arm swi: 0x%08X\n", swi);
-	printf("r15: 0x%08X", R15);
+	printf("r15: 0x%08X", R15);*/
 
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;
@@ -2380,13 +2401,13 @@ u8 Arm::opLDRH(ArmInstruction& ins, RegisterID rd, u32 address)
 		address &= 0xFFFFFFFE;
 
 		//read value and ror
-		u32 value = mbus->readU16(address);
+		u32 value = readU16(address);
 		value = ror(value, 8 * aligned);
 
 		writeRegister(rd, value);
 	}
 	else {
-		u16 value = mbus->readU16(address);
+		u16 value = readU16(address);
 		writeRegister(rd, value);
 	}
 
@@ -2395,7 +2416,7 @@ u8 Arm::opLDRH(ArmInstruction& ins, RegisterID rd, u32 address)
 
 u8 Arm::opLDRSB(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u32 value = (s8)mbus->readU8(address);
+	u32 value = (s8)readU8(address);
 	value = signExtend32(value, 8);
 	writeRegister(rd, value);
 
@@ -2408,13 +2429,13 @@ u8 Arm::opLDRSH(ArmInstruction& ins, RegisterID rd, u32 address)
 	if (aligned != 0b0) {
 		//LDRSB happens when misaligned LDRSH
 		//read a signed byte from the misaligned address then sign extends it and loads it
-		u32 value = (s8)mbus->readU8(address);
+		u32 value = (s8)readU8(address);
 		value = signExtend32(value, 8);
 
 		writeRegister(rd, value);
 	}
 	else {
-		u32 value = (s16)mbus->readU16(address);
+		u32 value = (s16)readU16(address);
 		value = signExtend32(value, 16);
 		writeRegister(rd, value);
 	}
@@ -2431,12 +2452,12 @@ u8 Arm::opSWP(ArmInstruction& ins, RegisterID rd, RegisterID rn)
 	u8 aligned = (reg_rn & 0x3);
 	u32 temp = 0;
 	if (aligned == 0b00) {
-		temp = mbus->readU32(reg_rn);
+		temp = readU32(reg_rn);
 	}
 	//Misaligned
 	else {
 		reg_rn &= 0xFFFFFFFC;
-		temp = mbus->readU32(reg_rn);
+		temp = readU32(reg_rn);
 		temp = ror(temp, 8 * aligned);
 	}
 	writeU32(reg_rn, reg_rm);
@@ -2451,7 +2472,7 @@ u8 Arm::opSWPB(ArmInstruction& ins, RegisterID rd, RegisterID rn)
 	u32 reg_rm = getRegister(rm);
 	u32 reg_rn = getRegister(rn);
 
-	u32 temp = mbus->readU8(reg_rn);
+	u32 temp = readU8(reg_rn);
 	writeU8(reg_rn, reg_rm & 0xFF);
 	writeRegister(rd, temp);
 
@@ -2460,7 +2481,7 @@ u8 Arm::opSWPB(ArmInstruction& ins, RegisterID rd, RegisterID rn)
 
 u8 Arm::opLDRB(ArmInstruction& ins, RegisterID rd, u32 address)
 {
-	u8 value = mbus->readU8(address);
+	u8 value = readU8(address);
 	writeRegister(rd, value);
 
 	return 1;
@@ -2476,7 +2497,7 @@ u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 		//force align address
 		address &= 0xFFFFFFFC;
 
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		value = ror(value, 8 * aligned);
 
 		if (r15) {
@@ -2488,7 +2509,7 @@ u8 Arm::opLDR(ArmInstruction& ins, RegisterID rd, u32 address)
 	}
 	//Aligned
 	else {
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		if (r15) {
 			R15 = value & 0xFFFFFFFC;
 			flushPipeline();
@@ -2789,7 +2810,7 @@ u8 Arm::thumbOpLDRPool(ThumbInstruction& ins)
 	u8 imm8 = ins.imm8();
 
 	u32 address = (R15 & 0xFFFFFFFC) + (imm8 * 4);
-	u32 value = mbus->readU32(address);
+	u32 value = readU32(address);
 
 	writeRegister(rd, value);
 
@@ -2812,14 +2833,14 @@ u8 Arm::thumbOpLDRStack(ThumbInstruction& ins)
 		address &= 0xFFFFFFFC;
 
 		//read value and ror
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		value = ror(value, 8 * aligned);
 		reg_rd = value;
 
 		writeRegister(rd, reg_rd);
 	}
 	else {
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
 	}
@@ -3577,7 +3598,7 @@ u8 Arm::thumbOpLDMIA(ThumbInstruction& ins)
 	//Empty list
 	if (reg_list == 0x0) {
 		//Load value from reg_rn address into r15
-		u32 addr = mbus->readU32(address);
+		u32 addr = readU32(address);
 		R15 = addr & 0xFFFFFFFE;
 		flushThumbPipeline();
 
@@ -3593,7 +3614,7 @@ u8 Arm::thumbOpLDMIA(ThumbInstruction& ins)
 		if (included) {
 			RegisterID id; id.id = i;
 			
-			u32 value = mbus->readU32(address);
+			u32 value = readU32(address);
 			writeRegister(id, value);
 			address += 4;
 		}
@@ -3631,15 +3652,15 @@ u8 Arm::thumbOpBX(ThumbInstruction& ins)
 
 u8 Arm::thumbOpSWI(ThumbInstruction& ins)
 {
-	u8 swi = (ins.encoding & 0xFF);
-	printf("THUMB swi: 0x%02X\n", swi);
-	
-	if (swi == 0xB) //cpu set
-	{
-		printf("Source Address: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
-		printf("Dest Address: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
-		printf("Control: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
-	}
+	//u8 swi = (ins.encoding & 0xFF);
+	//printf("THUMB swi: 0x%02X\n", swi);
+	//
+	//if (swi == 0xB) //cpu set
+	//{
+	//	printf("Source Address: 0x%08X\n", getRegister(RegisterID{ (u8)0 }));
+	//	printf("Dest Address: 0x%08X\n", getRegister(RegisterID{ (u8)1 }));
+	//	printf("Control: 0x%08X\n", getRegister(RegisterID{ (u8)2 }));
+	//}
 
 	LR_svc = R15 - 2; //store address of next instruction after this one
 	SPSR_svc = CPSR;
@@ -3670,14 +3691,14 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 immed
 		address &= 0xFFFFFFFC;
 
 		//read value and ror
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		value = ror(value, 8 * aligned);
 		reg_rd = value;
 
 		writeRegister(rd, reg_rd);
 	}
 	else {
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
 	}
@@ -3701,7 +3722,7 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 		address &= 0xFFFFFFFC;
 
 		//read value and ror
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		value = ror(value, 8 * aligned);
 		reg_rd = value;
 
@@ -3709,7 +3730,7 @@ u8 Arm::thumbOpLDR(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Register
 	}
 	//Aligned
 	else {
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
 	}
@@ -3723,7 +3744,7 @@ u8 Arm::thumbOpLDRB(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + immediate5;
-	u8 value = mbus->readU8(address);
+	u8 value = readU8(address);
 	reg_rd = value;
 
 	writeRegister(rd, reg_rd);
@@ -3738,7 +3759,7 @@ u8 Arm::thumbOpLDRB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 	u32 reg_rd = getRegister(rd);
 
 	u32 address = reg_rn + reg_rm;
-	u8 value = mbus->readU8(address);
+	u8 value = readU8(address);
 	reg_rd = value;
 
 	writeRegister(rd, reg_rd);
@@ -3754,7 +3775,7 @@ u8 Arm::thumbOpLDRSB(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Regist
 
 	u32 address = reg_rn + reg_rm;
 
-	u32 value = (s8)mbus->readU8(address);
+	u32 value = (s8)readU8(address);
 	value = signExtend32(value, 8);
 	reg_rd = value;
 
@@ -3775,14 +3796,14 @@ u8 Arm::thumbOpLDRSH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Regist
 	if (aligned != 0b0) {
 		//LDRSB happens when misaligned LDRSH
 		//read a signed byte from the misaligned address then sign extend it and load it
-		u32 value = (s8)mbus->readU8(address);
+		u32 value = (s8)readU8(address);
 		value = signExtend32(value, 8);
 		reg_rd = value;
 
 		writeRegister(rd, reg_rd);
 	}
 	else {
-		u32 value = (s16)mbus->readU16(address);
+		u32 value = (s16)readU16(address);
 		value = signExtend32(value, 16);
 		reg_rd = value;
 
@@ -3805,14 +3826,14 @@ u8 Arm::thumbOpLDRH(ThumbInstruction& ins, RegisterID rn, RegisterID rd, u8 imme
 		address &= 0xFFFFFFFE;
 
 		//read value and ror
-		u32 value = mbus->readU16(address);
+		u32 value = readU16(address);
 		value = ror(value, 8 * aligned);
 		reg_rd = value;
 
 		writeRegister(rd, reg_rd);
 	}
 	else {
-		u16 value = mbus->readU16(address);
+		u16 value = readU16(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
 	}
@@ -3835,7 +3856,7 @@ u8 Arm::thumbOpLDRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 		address &= 0xFFFFFFFE;
 
 		//read value and ror
-		u32 value = mbus->readU16(address);
+		u32 value = readU16(address);
 		value = ror(value, 8 * aligned);
 		reg_rd = value;
 
@@ -3843,7 +3864,7 @@ u8 Arm::thumbOpLDRH(ThumbInstruction& ins, RegisterID rm, RegisterID rn, Registe
 	}
 	//Aligned
 	else {
-		u16 value = mbus->readU16(address);
+		u16 value = readU16(address);
 		reg_rd = value;
 		writeRegister(rd, reg_rd);
 	}
@@ -3981,14 +4002,14 @@ u8 Arm::thumbOpPOP(ThumbInstruction& ins)
 			RegisterID id;
 			id.id = i;
 
-			u32 value = mbus->readU32(address);
+			u32 value = readU32(address);
 			writeRegister(id, value);
 			address += 4;
 		}
 	}
 
 	if (R == 0x1) {
-		u32 value = mbus->readU32(address);
+		u32 value = readU32(address);
 		R15 = value & 0xFFFFFFFE;
 		flushThumbPipeline();
 	}

@@ -67,12 +67,11 @@ void Emulator::run()
 			if (debuggerRunning)
 				debug.update();
 	
-			u8 cycle = cpu.clock();
-			cycle *= 2;
-			cycles_this_frame += cycle;
+			u8 cycles = cpu.clock();
+			cycles_this_frame += cycles;
 
 			cpu.handleTimers();
-			ppu.update(cycle);
+			ppu.update(cycles);
 			cpu.handleInterrupts();
 			dmac.handleDMA();
 		}

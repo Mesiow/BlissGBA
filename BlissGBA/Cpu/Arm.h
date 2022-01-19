@@ -156,6 +156,12 @@ public:
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
 	void writeU32(u32 address, u32 value);
+	u8 readU8(u32 address);
+	u16 readU16(u32 address);
+	u32 readU32(u32 address);
+
+	//Reads/Fetches for R15
+	u8 readU8();
 	u16 readU16();
 	u16 fetchU16();
 	u32 readU32();
@@ -420,6 +426,7 @@ public:
 	u16 thumbpipeline[2];
 
 	u32 cycles = 0;
+	u32 cyclesThisIns = 0;
 	u32 currentExecutingArmOpcode;
 	u16 currentExecutingThumbOpcode;
 
