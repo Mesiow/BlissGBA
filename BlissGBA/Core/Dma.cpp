@@ -69,6 +69,8 @@ void DmaController::handleChannelTransfer(DmaChannel channel)
 			u32 source = mbus->mmio.readDMASource(DMA3SAD);
 			u32 dest = mbus->mmio.readDMADest(DMA3DAD);
 
+			//printf("Source: 0x%08X\n", source);
+			//printf("Dest: 0x%08X\n", dest);
 			
 			u16 length = mbus->mmio.readDMACNT(DMA3CNT_L);
 			if (transfer_type == 0x0) { //16 bit transfer
@@ -97,6 +99,8 @@ void DmaController::handleChannelTransfer(DmaChannel channel)
 
 void DmaController::enableTransfer(bool enable, DmaChannel channel)
 {
+	if (channel == DmaChannel::CH2 || channel == DmaChannel::CH1) return;
+
 	transfer = enable;
 	channelToTransfer = channel;
 }

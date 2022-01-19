@@ -19,7 +19,7 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	//Cpu/irq Test roms
 	//mbus.loadGamePak("test_roms/gba-tests-master/arm/arm.gba"); //pass
 	//mbus.loadGamePak("test_roms/gba-tests-master/thumb/thumb.gba"); //pass
-	mbus.loadGamePak("test_roms/armwrestler-gba-fixed.gba"); //pass
+	//mbus.loadGamePak("test_roms/armwrestler-gba-fixed.gba"); //pass
 	//mbus.loadGamePak("test_roms/gba fuzzarm tests/ARM_DataProcessing.gba"); //pass
 	//mbus.loadGamePak("test_roms/gba fuzzarm tests/ARM_Any.gba"); //pass
 	//mbus.loadGamePak("test_roms/gba fuzzarm tests/FuzzARM.gba"); //pass
@@ -32,14 +32,30 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	//mbus.loadGamePak("test_roms/gba-tests-master/memory/memory.gba"); //pass
 	//mbus.loadGamePak("test_roms/irqs/retAddr.gba"); //passing
 	//mbus.loadGamePak("test_roms/irqs/irqDemo.gba"); //passing
+	//mbus.loadGamePak("test_roms/irqs/irqDemo_2.gba");
 	//mbus.loadGamePak("test_roms/yoshi_dma.gba"); //passing
 	//mbus.loadGamePak("test_roms/gang-ldmstm.gba");
+	//mbus.loadGamePak("test_roms/gba-tests-master/bios/bios.gba");
+	//mbus.loadGamePak("test_roms/tonc tests/txt_obj.gba");
 
 	//Mode 0 test roms
 	//mbus.loadGamePak("test_roms/tonc tests/brin_demo.gba");
 	//mbus.loadGamePak("test_roms/tonc tests/irq_demo.gba");
 
-	//mbus.loadGamePak("roms/AGBDOOM.gba");
+	//mbus.loadGamePak("test_roms/tonc tests/pageflip.gba"); //passing
+
+	//Doom issues
+	//bl 358h at irq user handler address 0x03FFFFFC
+	//doom gets stuck in irq mode and after address 11C pc goes into open bus
+	//r13_irq gets wrong value loaded
+	mbus.loadGamePak("roms/AGBDOOM.gba");
+	//mbus.loadGamePak("roms/DOOM2.gba");
+
+	//boots to menu
+	//mbus.loadGamePak("roms/Motoracer Advance (USA) (En,Fr,De,Es,It).gba");
+	
+	//mbus.loadGamePak("roms/Grand Theft Auto Advance (USA).gba");
+	//mbus.loadGamePak("roms/Need for Speed - Porsche Unleashed (U).gba");
 	reset();
 }
 
@@ -50,39 +66,13 @@ void Emulator::run()
 		while (cycles_this_frame < maxCycles) {
 			if (debuggerRunning)
 				debug.update();
-
-		/*	if ((cpu.R15 - 8) == 0x0800021C) {
-				printf("hit set ime instruction\n");
-				running = false;
-				break;
-			}*/
-			/*if ((cpu.R15 - 8) == 0x03000000) {
-				printf("hit user interrupt handler\n");
-				running = false;
-				break;
-			}*/
-			/*if ((cpu.R15 - 8) == 0x03000034) {
-				printf("hit ldr r15 in user handler (jumps back to bios)\n");
-				running = false;
-				break;
-			}*/
-			/*if ((cpu.R15 - 8) == 0x08000408) {
-				printf("hit pop r15\n");
-				running = false;
-				break;
-			}*/
-			/*if ((cpu.R15 - 8) == 0x18) {
-				printf("hit interrupt exception in bios\n");
-				running = false;
-				break;
-			}*/
-
+	
 			u8 cycle = cpu.clock();
 			cycle *= 2;
 			cycles_this_frame += cycle;
 
 			cpu.handleTimers();
-			ppu.update(cycles_this_frame);
+			ppu.update(cycle);
 			cpu.handleInterrupts();
 			dmac.handleDMA();
 		}
