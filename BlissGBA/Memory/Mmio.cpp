@@ -785,4 +785,12 @@ u16 Mmio::readDISPCNT()
 	return dispcnt;
 }
 
+u16 Mmio::readBG0CNT()
+{
+	u32 addr = BG0CNT - IO_START_ADDR;
+	u16 bg0cnt = readU16(addr);
+	
+	return bg0cnt;
+}
+
 
