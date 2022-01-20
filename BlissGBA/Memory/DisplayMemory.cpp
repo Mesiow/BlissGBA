@@ -24,7 +24,7 @@ void DisplayMemory::writeU8(u32 address, u8 value)
 		pram[addr] = value;
 		pram[addr + 1] = value;
 	}
-	else if (address >= VRAM_START_ADDR && address <= (VRAM_START_ADDR + 0xFFFF)) {
+	else if (address >= VRAM_START_ADDR && address <= (VRAM_START_ADDR + 0x13FFF)) {
 		u32 vram_addr = address & 0x1FFFF;
 		if (vram_addr > (VRAM_SIZE - 1))
 			vram_addr -= 0x8000;
@@ -32,7 +32,8 @@ void DisplayMemory::writeU8(u32 address, u8 value)
 		vram[vram_addr] = value;
 		vram[vram_addr + 1] = value;
 	}
-	else if (address >= address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
+	//Ignore writes to 7000000 - 70003FF
+	else if (address >= (OAM_START_ADDR + 0x400) && address <= OAM_END_ADDR) {
 		u32 addr = address & (OAM_SIZE - 1);
 
 		oam[addr] = value;
