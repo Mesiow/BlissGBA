@@ -1,7 +1,7 @@
 #pragma once
 #include "../Utils/Utils.h"
 #include "../Ppu/Lcd.h"
-#include "../Core/io.h"
+#include "../Core/Keypad.h"
 
 class GeneralMemory;
 struct DmaController;
