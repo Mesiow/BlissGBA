@@ -651,6 +651,8 @@ State Arm::getState()
 
 u8 Arm::getConditionCode(u8 cond)
 {
+	if (cond == 0xE) return 1;
+
 	switch (cond) {
 		case 0b0000: return getFlag(Z); break;
 		case 0b0001: return (getFlag(Z) == 0); break;
