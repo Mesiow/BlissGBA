@@ -73,6 +73,10 @@ using namespace std::placeholders;
 #define R15_ID 0xF
 #define NUM_REGISTERS_FIQ 4
 
+#define U8 1
+#define U16 2
+#define U32 3
+
 union Register {
 	struct {
 		u16 lo;
@@ -153,6 +157,7 @@ public:
 	State getState();
 	u8 getConditionCode(u8 cond);
 
+	void addCyclesFromAccess(u32 address, u8 width);
 	void writeU8(u32 address, u8 value);
 	void writeU16(u32 address, u16 value);
 	void writeU32(u32 address, u32 value);

@@ -671,9 +671,47 @@ u8 Arm::getConditionCode(u8 cond)
 	}
 }
 
+void Arm::addCyclesFromAccess(u32 address, u8 width)
+{
+	//General memory
+	if (address < BIOS_SIZE) {
+		cyclesThisIns += 1;
+	}
+	else if (address >= OB_WRAM_START_ADDR && address <= OB_WRAM_END_ADDR) {
+		if (width == U8 || width == U16) cyclesThisIns += 3;
+		else cyclesThisIns += 6;
+	}
+	else if (address >= OC_WRAM_START_ADDR && address <= OC_WRAM_END_ADDR) {
+		cyclesThisIns += 1;
+	}
+	else if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		cyclesThisIns += 1;
+	}
+	//Video memory
+	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
+		if (width == U8 || width == U16) cyclesThisIns += 1;
+		else cyclesThisIns += 2;
+	}
+	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR_MIRROR) {
+		if (width == U8 || width == U16) cyclesThisIns += 1;
+		else cyclesThisIns += 2;
+	}
+	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
+		cyclesThisIns += 1;
+	}
+	//Gamepak memory
+	else if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
+		if (width == U8 || width == U16) cyclesThisIns += 5;
+		else cyclesThisIns += 8;
+	}
+	else if (address >= GAMEPAK_SRAM_START_ADDR && address <= GAMEPAK_SRAM_END_ADDR) {
+		if(width == U8) cyclesThisIns += 5;
+	}
+}
+
 void Arm::writeU8(u32 address, u8 value)
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(address, U8);
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		mbus->mmio.writeU8(address, value);
 	}
@@ -683,7 +721,7 @@ void Arm::writeU8(u32 address, u8 value)
 
 void Arm::writeU16(u32 address, u16 value)
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(address, U16);
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		mbus->mmio.writeU16(address, value);
 	}
@@ -693,7 +731,7 @@ void Arm::writeU16(u32 address, u16 value)
 
 void Arm::writeU32(u32 address, u32 value)
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(address, U32);
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		mbus->mmio.writeU32(address, value);
 	}
@@ -703,31 +741,31 @@ void Arm::writeU32(u32 address, u32 value)
 
 u8 Arm::readU8(u32 address)
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(address, U8);
 	return mbus->readU8(address);
 }
 
 u16 Arm::readU16(u32 address)
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(address, U16);
 	return mbus->readU16(address);
 }
 
 u32 Arm::readU32(u32 address)
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(address, U32);
 	return mbus->readU32(address);
 }
 
 u8 Arm::readU8()
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(R15, U8);
 	return mbus->readU8(R15);
 }
 
 u16 Arm::readU16()
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(R15, U16);
 	u16 halfword = (mbus->readU8(R15)) |
 		(mbus->readU8(R15 + 1) << 8);
 
@@ -736,7 +774,7 @@ u16 Arm::readU16()
 
 u16 Arm::fetchU16()
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(R15, U16);
 	u16 halfword = (mbus->readU8(R15++)) |
 		(mbus->readU8(R15++) << 8);
 
@@ -745,7 +783,7 @@ u16 Arm::fetchU16()
 
 u32 Arm::readU32()
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(R15, U32);
 	u32 word = (mbus->readU8(R15)) |
 		(mbus->readU8(R15 + 1) << 8) |
 		(mbus->readU8(R15 + 2) << 16) |
@@ -756,7 +794,7 @@ u32 Arm::readU32()
 
 u32 Arm::fetchU32()
 {
-	cyclesThisIns++;
+	addCyclesFromAccess(R15, U32);
 	u32 word = (mbus->readU8(R15++)) |
 		(mbus->readU8(R15++) << 8) |
 		(mbus->readU8(R15++) << 16) |
