@@ -44,7 +44,7 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 
 	//mbus.loadGamePak("test_roms/tonc tests/pageflip.gba"); //passing
 
-	//Playable
+	//Boots and Gets in game (mostly playable, gameplay a bit slow though)
 	mbus.loadGamePak("roms/AGBDOOM.gba");
 
 	//Boots to menu
@@ -52,6 +52,9 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	
 	//mbus.loadGamePak("roms/Grand Theft Auto Advance (USA).gba");
 	//mbus.loadGamePak("roms/Need for Speed - Porsche Unleashed (U).gba");
+	//mbus.loadGamePak("roms/OpenLara.gba");
+	//mbus.loadGamePak("roms/Wolfenstein 3D (USA, Europe).gba");
+
 	reset();
 }
 

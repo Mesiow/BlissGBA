@@ -1,0 +1,11 @@
+#pragma once
+
+#define TM0CNT_L 0x4000100
+#define TM1CNT_L 0x4000104
+#define TM2CNT_L 0x4000108
+#define TM3CNT_L 0x400010C
+
+#define TM0CNT_H 0x4000102
+#define TM1CNT_H 0x4000106
+#define TM2CNT_H 0x400010A
+#define TM3CNT_H 0x400010E
