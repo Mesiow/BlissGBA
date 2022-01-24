@@ -137,13 +137,16 @@
     <ClInclude Include="Ppu\Lcd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\io.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Ringbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Keypad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

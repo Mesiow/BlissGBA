@@ -176,7 +176,8 @@
     <ClInclude Include="Cartridge\GamePak.h" />
     <ClInclude Include="Core\Dma.h" />
     <ClInclude Include="Core\Emulator.h" />
-    <ClInclude Include="Core\io.h" />
+    <ClInclude Include="Core\Keypad.h" />
+    <ClInclude Include="Core\Timer.h" />
     <ClInclude Include="Cpu\AddressingModes.h" />
     <ClInclude Include="Cpu\Arm.h" />
     <ClInclude Include="Cpu\Instruction.h" />
