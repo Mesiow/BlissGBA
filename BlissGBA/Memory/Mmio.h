@@ -5,6 +5,7 @@
 
 class GeneralMemory;
 struct DmaController;
+struct TimerController;
 class Arm;
 
 struct Mmio {
@@ -12,13 +13,16 @@ struct Mmio {
 	//Connect components to allow mmio to interact/tell other components
 	//about events
 	void connect(DmaController* dmac);
+	void connect(TimerController* tmc);
 	void connect(Arm* cpu);
 
 	void writeU8(u32 address, u8 value); //used internally
 	void writeU16(u32 address, u16 value);
 	void writeU32(u32 address, u32 value);
-	u16 readU16(u32 address);
-	u32 readU32(u32 address);
+
+	u8 readU8(u32 absoluteAddress);
+	u16 readU16(u32 absoluteAddress);
+	u32 readU32(u32 absoluteAddress);
 
 	//Dma
 	void writeDMASource(u32 address, u32 value);
@@ -52,10 +56,12 @@ struct Mmio {
 	u16 readBG0CNT();
 
 	//Timers
-	u16 readTMCNTL(u32 address);
+	void writeTMCNTL(u32 address, u16 value);
+	void writeTMCNTH(u32 address, u16 value);
 	u16 readTMCNTH(u32 address);
 
 	GeneralMemory* gm;
 	DmaController* dmac = nullptr;
+	TimerController* tmc = nullptr;
 	Arm* cpu = nullptr;
 };

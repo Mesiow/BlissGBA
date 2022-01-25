@@ -14,6 +14,11 @@ void Mmio::connect(DmaController* dmac)
 	this->dmac = dmac;
 }
 
+void Mmio::connect(TimerController* tmc)
+{
+	this->tmc = tmc;
+}
+
 void Mmio::connect(Arm* cpu)
 {
 	this->cpu = cpu;
@@ -53,6 +58,13 @@ void Mmio::writeU16(u32 address, u16 value)
 		case DMA2CNT_L: writeDMACNT(DMA2CNT_L, value); break;
 		case DMA3CNT_H: writeDMACNT(DMA3CNT_H, value); break;
 		case DMA3CNT_L: writeDMACNT(DMA3CNT_L, value); break;
+
+		//Timers
+		case TM0CNT_L: writeTMCNTL(TM0CNT_L, value); break;
+		case TM1CNT_L: writeTMCNTL(TM1CNT_L, value); break;
+		case TM2CNT_L: writeTMCNTL(TM2CNT_L, value); break;
+		case TM3CNT_L: writeTMCNTL(TM3CNT_L, value); break;
+
 
 		//Interrupt/Control
 		case IE: writeIE(value); break;
@@ -138,8 +150,28 @@ void Mmio::writeU32(u32 address, u32 value)
 	}
 }
 
-u16 Mmio::readU16(u32 address)
+u8 Mmio::readU8(u32 absoluteAddress)
 {
+	u32 address = absoluteAddress - IO_START_ADDR;
+	return gm->io[address];
+}
+
+u16 Mmio::readU16(u32 absoluteAddress)
+{
+	//Reading from timer counter/reload mmio returns the current counter value
+	//(or the recent/frozen counter value if the timer has stopped)
+	if (absoluteAddress == TM0CNT_L || absoluteAddress == TM1CNT_L
+		|| absoluteAddress == TM2CNT_L || absoluteAddress == TM3CNT_L) {
+		switch (absoluteAddress) {
+			case TM0CNT_L: return tmc->getTimerCounter(Timer::TM0); break;
+			case TM1CNT_L: return tmc->getTimerCounter(Timer::TM1); break;
+			case TM2CNT_L: return tmc->getTimerCounter(Timer::TM2); break;
+			case TM3CNT_L: return tmc->getTimerCounter(Timer::TM3); break;
+		}
+	}
+
+	u32 address = absoluteAddress - IO_START_ADDR;
+
 	u8 lo, hi;
 	lo = gm->io[address];
 	hi = gm->io[address + 1];
@@ -149,8 +181,10 @@ u16 Mmio::readU16(u32 address)
 	return value;
 }
 
-u32 Mmio::readU32(u32 address)
+u32 Mmio::readU32(u32 absoluteAddress)
 {
+	u32 address = absoluteAddress - IO_START_ADDR;
+
 	u8 byte1, byte2, byte3, byte4;
 	byte1 = gm->io[address];
 	byte2 = gm->io[address + 1];
@@ -169,37 +203,15 @@ void Mmio::writeDMASource(u32 address, u32 value)
 	u8 upper1 = (value >> 16) & 0xFF;
 	u8 upper2 = (value >> 24) & 0xFF;
 
-	u32 addr = 0;
-	switch (address) {
-		case DMA0SAD: {
-			//printf("write to dma 0 SAD\n");
-			addr = DMA0SAD - IO_START_ADDR;
-		}
-		break;
-		case DMA1SAD: {
-			//printf("write to dma 1 SAD\n");
-			addr = DMA1SAD - IO_START_ADDR;
-		}
-		break;
-		case DMA2SAD: {
-			//printf("write to dma 2 SAD\n");
-			addr = DMA2SAD - IO_START_ADDR;
-		}
-		break;
-		case DMA3SAD: {
-			//printf("write to dma 3 SAD\n");
-			addr = DMA3SAD - IO_START_ADDR;
-		}
-		break;
+	if (address == DMA0SAD || address == DMA1SAD
+		|| address == DMA2SAD || address == DMA3SAD) {
+		u32 addr = address - IO_START_ADDR;
 
-		default:
-			break;
+		gm->io[addr] = lower1;
+		gm->io[addr + 1] = lower2;
+		gm->io[addr + 2] = upper1;
+		gm->io[addr + 3] = upper2;
 	}
-
-	gm->io[addr] = lower1;
-	gm->io[addr + 1] = lower2;
-	gm->io[addr + 2] = upper1;
-	gm->io[addr + 3] = upper2;
 }
 
 void Mmio::writeDMADest(u32 address, u32 value)
@@ -209,37 +221,15 @@ void Mmio::writeDMADest(u32 address, u32 value)
 	u8 upper1 = (value >> 16) & 0xFF;
 	u8 upper2 = (value >> 24) & 0xFF;
 
-	u32 addr = 0;
-	switch (address) {
-		case DMA0DAD: {
-			//printf("write to dma 0 DAD\n");
-			addr = DMA0DAD - IO_START_ADDR;
-		}
-		break;
-		case DMA1DAD: {
-			//printf("write to dma 1 DAD\n");
-			addr = DMA1DAD - IO_START_ADDR;
-		}
-		break;
-		case DMA2DAD: {
-			//printf("write to dma 2 DAD\n");
-			addr = DMA2DAD - IO_START_ADDR;
-		}
-		break;
-		case DMA3DAD: {
-			//printf("write to dma 3 DAD\n");
-			addr = DMA3DAD - IO_START_ADDR;
-		}
-		break;
+	if (address == DMA0DAD || address == DMA1DAD
+		|| address == DMA2DAD || address == DMA3DAD) {
+		u32 addr = address - IO_START_ADDR;
 
-		default:
-			break;
+		gm->io[addr] = lower1;
+		gm->io[addr + 1] = lower2;
+		gm->io[addr + 2] = upper1;
+		gm->io[addr + 3] = upper2;
 	}
-
-	gm->io[addr] = lower1;
-	gm->io[addr + 1] = lower2;
-	gm->io[addr + 2] = upper1;
-	gm->io[addr + 3] = upper2;
 }
 
 void Mmio::writeDMACNT(u32 address, u16 value)
@@ -248,122 +238,37 @@ void Mmio::writeDMACNT(u32 address, u16 value)
 	lo = value & 0xFF;
 	hi = (value >> 8) & 0xFF;
 
-	switch (address) {
-		//DMA 0
-		case DMA0CNT_L: {
-			//printf("write to dma 0 cnt L");
-			u32 addr = DMA0CNT_L - IO_START_ADDR;
+	if (address == DMA0CNT_L || address == DMA1CNT_L
+		|| address == DMA2CNT_L || address == DMA3CNT_L) {
+		u32 addr = address - IO_START_ADDR;
 
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
+		gm->io[addr] = lo;
+		gm->io[addr + 1] = hi;
+	}
+	else if (address == DMA0CNT_H || address == DMA1CNT_H
+		|| address == DMA2CNT_H || address == DMA3CNT_H) {
+		u32 addr = address - IO_START_ADDR;
+
+		//Dma enable check
+		u16 dma_cnt_h = readU16(address);
+		u8 enable_bit = (dma_cnt_h >> 15) & 0x1;
+
+		gm->io[addr] = lo;
+		gm->io[addr + 1] = hi;
+
+		DmaChannel channel = DmaChannel::None;
+		switch (address) {
+			case DMA0CNT_H: channel = DmaChannel::CH0; break;
+			case DMA1CNT_H: channel = DmaChannel::CH1; break;
+			case DMA2CNT_H: channel = DmaChannel::CH2; break;
+			case DMA3CNT_H: channel = DmaChannel::CH3; break;
 		}
-	    break;
-		case DMA0CNT_H: {
-			//printf("write to dma 0 cnt H\n");
-			u32 addr = DMA0CNT_H - IO_START_ADDR;
 
-			//Dma enable check
-			u16 dma0_cnt_h = readU16(addr);
-			u8 enable_bit = (dma0_cnt_h >> 15) & 0x1;
-
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
-
-			if (enable_bit == 0x0) {
-				if ((value >> 15) & 0x1) {
-					dmac->enableTransfer(true, DmaChannel::CH0);
-				}
+		if (enable_bit == 0x0) {
+			if ((value >> 15) & 0x1) {
+				dmac->enableTransfer(true, channel);
 			}
 		}
-		break;
-
-		//DMA 1
-		case DMA1CNT_L: {
-			//printf("write to dma 1 cnt L");
-			u32 addr = DMA1CNT_L - IO_START_ADDR;
-
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
-		}
-		break;
-		case DMA1CNT_H: {
-			//printf("write to dma 1 cnt H\n");
-			u32 addr = DMA1CNT_H - IO_START_ADDR;
-
-			//Dma enable check
-			u16 dma1_cnt_h = readU16(addr);
-			u8 enable_bit = (dma1_cnt_h >> 15) & 0x1;
-
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
-
-			if (enable_bit == 0x0) {
-				if ((value >> 15) & 0x1) {
-					dmac->enableTransfer(true, DmaChannel::CH1);
-				}
-			}
-		}
-		break;
-
-		//DMA 2
-		case DMA2CNT_L: {
-			//printf("write to dma 2 cnt L");
-			u32 addr = DMA2CNT_L - IO_START_ADDR;
-
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
-		}
-		break;
-		case DMA2CNT_H: {
-			//printf("write to dma 2 cnt H\n");
-			u32 addr = DMA2CNT_H - IO_START_ADDR;
-
-			//Dma enable check
-			u16 dma2_cnt_h = readU16(addr);
-			u8 enable_bit = (dma2_cnt_h >> 15) & 0x1;
-
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
-
-			if (enable_bit == 0x0) {
-				if ((value >> 15) & 0x1) {
-					dmac->enableTransfer(true, DmaChannel::CH2);
-				}
-			}
-		}
-		break;
-
-		//DMA 3
-		case DMA3CNT_L: {
-			//printf("write to dma 3 cnt L\n");
-			u32 addr = DMA3CNT_L - IO_START_ADDR;
-			
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
-		}
-		break;
-		case DMA3CNT_H: {
-			//printf("write to dma 3 cnt H\n");
-			u32 addr = DMA3CNT_H - IO_START_ADDR;
-
-			//Dma enable check
-			u16 dma3_cnt_h = readU16(addr);
-			u8 enable_bit = (dma3_cnt_h >> 15) & 0x1;
-
-			//write new value
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
-
-			if (enable_bit == 0x0) { //off
-				if ((value >> 15) & 0x1) { //write back to dma_cnt_h to start 
-					dmac->enableTransfer(true, DmaChannel::CH3);
-				}
-			}
-		}
-		break;
-
-		default:
-			break;
 	}
 }
 
@@ -374,273 +279,92 @@ void Mmio::writeDMACNT(u32 address, u32 value)
 	u8 upper1 = (value >> 16) & 0xFF;
 	u8 upper2 = (value >> 24) & 0xFF;
 
-	switch (address) {
-		//DMA 0
-		case DMA0CNT_L: {
-			//printf("write(32bit) to dma 0 cnt L");
-			u32 addr = DMA0CNT_L - IO_START_ADDR;
+	if (address == DMA0CNT_L || address == DMA1CNT_L || address == DMA2CNT_L) {
+		u32 addr = address - IO_START_ADDR;
 
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
+		gm->io[addr] = lower1;
+		gm->io[addr + 1] = lower2;
+		gm->io[addr + 2] = upper1;
+		gm->io[addr + 3] = upper2;
+	}
+	else if (address == DMA0CNT_H || address == DMA1CNT_H || address == DMA2CNT_H) {
+		u32 addr = address - IO_START_ADDR;
+
+		//Dma enable check
+		u16 dma_cnt_h = readU16(address);
+		u8 enable_bit = (dma_cnt_h >> 15) & 0x1;
+
+		gm->io[addr] = lower1;
+		gm->io[addr + 1] = lower2;
+		gm->io[addr + 2] = upper1;
+		gm->io[addr + 3] = upper2;
+
+		DmaChannel channel = DmaChannel::None;
+		switch (address) {
+			case DMA0CNT_H: channel = DmaChannel::CH0; break;
+			case DMA1CNT_H: channel = DmaChannel::CH1; break;
+			case DMA2CNT_H: channel = DmaChannel::CH2; break;
+			case DMA3CNT_H: channel = DmaChannel::CH3; break;
 		}
-		break;
-		case DMA0CNT_H: {
-			//printf("write(32bit) to dma 0 cnt H\n");
-			u32 addr = DMA0CNT_H - IO_START_ADDR;
 
-			//Dma enable check
-			u16 dma1_cnt_h = readU16(addr);
-			u8 enable_bit = (dma1_cnt_h >> 15) & 0x1;
-
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
-
-			if (enable_bit == 0x0) {
-				if ((value >> 15) & 0x1) {
-					dmac->enableTransfer(true, DmaChannel::CH1);
-				}
+		if (enable_bit == 0x0) {
+			if ((value >> 15) & 0x1) {
+				dmac->enableTransfer(true, channel);
 			}
 		}
-		break;
-		
-		//DMA 1
-		case DMA1CNT_L: {
-			//printf("write to dma 1 cnt L");
-			u32 addr = DMA1CNT_L - IO_START_ADDR;
+	}
+	else if (address == DMA3CNT_L) {
+		//32 bit write to dma3 cnt L also writes into cnt H
+		u32 addr = DMA3CNT_L - IO_START_ADDR;
+		u32 cnt_h_addr = DMA3CNT_H - IO_START_ADDR;
 
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
-		}
-		break;
-		case DMA1CNT_H: {
-			//printf("write to dma 1 cnt H\n");
-			u32 addr = DMA1CNT_H - IO_START_ADDR;
+		//Dma enable check
+		u16 dma3_cnt_h = readU16(DMA3CNT_H);
+		u8 enable_bit = (dma3_cnt_h >> 15) & 0x1;
 
-			//Dma enable check
-			u16 dma1_cnt_h = readU16(addr);
-			u8 enable_bit = (dma1_cnt_h >> 15) & 0x1;
+		gm->io[addr] = lower1;
+		gm->io[addr + 1] = lower2;
+		gm->io[addr + 2] = upper1;
+		gm->io[addr + 3] = upper2;
 
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
-
-			if (enable_bit == 0x0) {
-				if ((value >> 15) & 0x1) {
-					dmac->enableTransfer(true, DmaChannel::CH1);
-				}
+		if (enable_bit == 0x0) { //off
+			if ((value >> 31) & 0x1) { //write back to dma_cnt_h to start 
+				dmac->enableTransfer(true, DmaChannel::CH3);
 			}
 		}
-		break;
-
-		//DMA 2
-		case DMA2CNT_L: {
-			//printf("write(32bit) to dma 2 cnt L");
-			u32 addr = DMA2CNT_L - IO_START_ADDR;
-
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
-		}
-		break;
-		case DMA2CNT_H: {
-			//printf("write(32bit) to dma 2 cnt H\n");
-			u32 addr = DMA2CNT_H - IO_START_ADDR;
-
-			//Dma enable check
-			u16 dma2_cnt_h = readU16(addr);
-			u8 enable_bit = (dma2_cnt_h >> 15) & 0x1;
-
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
-
-			if (enable_bit == 0x0) {
-				if ((value >> 15) & 0x1) {
-					dmac->enableTransfer(true, DmaChannel::CH2);
-				}
-			}
-		}
-		break;
-
-		//DMA 3
-		case DMA3CNT_L: {
-			//32 bit write to cnt L also writes into cnt H
-			//printf("write(32bit) to dma 3 cnt L and cnt H\n");
-			u32 addr = DMA3CNT_L - IO_START_ADDR;
-
-			u32 cnt_h_addr = DMA3CNT_H - IO_START_ADDR;
-
-			//Dma enable check
-			u16 dma3_cnt_h = readU16(cnt_h_addr);
-			u8 enable_bit = (dma3_cnt_h >> 15) & 0x1;
-
-			gm->io[addr] = lower1;
-			gm->io[addr + 1] = lower2;
-			gm->io[addr + 2] = upper1;
-			gm->io[addr + 3] = upper2;
-
-			if (enable_bit == 0x0) { //off
-				if ((value >> 31) & 0x1) { //write back to dma_cnt_h to start 
-					dmac->enableTransfer(true, DmaChannel::CH3);
-				}
-			}
-		}
-		break;
-
-		default:
-			break;
 	}
 }
 
 u16 Mmio::readDMACNT(u32 address)
 {
-	switch (address) {
-		//DMA 0
-		case DMA0CNT_L: {
-			u32 addr = DMA0CNT_L - IO_START_ADDR;
-			u16 dma0_cnt_l = readU16(addr);
-
-			return dma0_cnt_l;
-		}
-		break;
-		case DMA0CNT_H: {
-			u32 addr = DMA0CNT_H - IO_START_ADDR;
-			u16 dma0_cnt_h = readU16(addr);
-
-			return dma0_cnt_h;
-		}
-		break;
-
-		//DMA 1
-		case DMA1CNT_L: {
-			u32 addr = DMA1CNT_L - IO_START_ADDR;
-			u16 dma1_cnt_l = readU16(addr);
-
-			return dma1_cnt_l;
-		}
-		break;
-		case DMA1CNT_H: {
-			u32 addr = DMA1CNT_H - IO_START_ADDR;
-			u16 dma1_cnt_h = readU16(addr);
-
-			return dma1_cnt_h;
-		}
-		break;
-
-		//DMA 2
-		case DMA2CNT_L: {
-			u32 addr = DMA2CNT_L - IO_START_ADDR;
-			u16 dma2_cnt_l = readU16(addr);
-
-			return dma2_cnt_l;
-		}
-		break;
-		case DMA2CNT_H: {
-			u32 addr = DMA2CNT_H - IO_START_ADDR;
-			u16 dma2_cnt_h = readU16(addr);
-
-			return dma2_cnt_h;
-		}
-		break;
-
-		//DMA 3
-		case DMA3CNT_L: {
-			u32 addr = DMA3CNT_L - IO_START_ADDR;
-			u16 dma3_cnt_l = readU16(addr);
-
-			return dma3_cnt_l;
-		}
-		break;
-		case DMA3CNT_H: {
-			u32 addr = DMA3CNT_H - IO_START_ADDR;
-			u16 dma3_cnt_h = readU16(addr);
-			
-			return dma3_cnt_h;
-		}
-		break;
-
-		default: 
-			break;
+	if (address == DMA0CNT_L || address == DMA0CNT_H
+		|| address == DMA1CNT_L || address == DMA1CNT_H
+		|| address == DMA2CNT_L || address == DMA2CNT_H
+		|| address == DMA3CNT_L || address == DMA3CNT_H) {
+		u16 dmacnt = readU16(address);
+		return dmacnt;
 	}
-
 	return 0;
 }
 
 u32 Mmio::readDMASource(u32 address)
 {
-	switch (address) {
-		case DMA0SAD: {
-			u32 addr = DMA0SAD - IO_START_ADDR;
-			u32 dma0_source_addr = readU32(addr);
-
-			return dma0_source_addr;
-		}
-		break;
-		case DMA1SAD: {
-			u32 addr = DMA1SAD - IO_START_ADDR;
-			u32 dma1_source_addr = readU32(addr);
-
-			return dma1_source_addr;
-		}
-		break;
-		case DMA2SAD: {
-			u32 addr = DMA2SAD - IO_START_ADDR;
-			u32 dma2_source_addr = readU32(addr);
-
-			return dma2_source_addr;
-		}
-		break;
-		case DMA3SAD: {
-			u32 addr = DMA3SAD - IO_START_ADDR;
-			u32 dma3_source_addr = readU32(addr);
-
-			return dma3_source_addr;
-		}
-		break;
+	if (address == DMA0SAD || address == DMA1SAD
+		|| address == DMA2SAD || address == DMA3SAD) {
+		u32 dmasource_addr = readU32(address);
+		return dmasource_addr;
 	}
+	return 0;
 }
 
 u32 Mmio::readDMADest(u32 address)
 {
-	switch (address) {
-		case DMA0DAD: {
-			u32 addr = DMA0DAD - IO_START_ADDR;
-			u32 dma0_dest_addr = readU32(addr);
-
-			return dma0_dest_addr;
-		}
-		break;
-		case DMA1DAD: {
-			u32 addr = DMA1DAD - IO_START_ADDR;
-			u32 dma1_dest_addr = readU32(addr);
-
-			return dma1_dest_addr;
-		}
-		break;
-		case DMA2DAD: {
-			u32 addr = DMA2DAD - IO_START_ADDR;
-			u32 dma2_dest_addr = readU32(addr);
-
-			return dma2_dest_addr;
-		}
-		break;
-		case DMA3DAD: {
-			u32 addr = DMA3DAD - IO_START_ADDR;
-			u32 dma3_dest_addr = readU32(addr);
-
-			return dma3_dest_addr;
-		}
-		break;
+	if (address == DMA0DAD || address == DMA1DAD
+		|| address == DMA2DAD || address == DMA3DAD) {
+		u32 dmadest_addr = readU32(address);
+		return dmadest_addr;
 	}
+	return 0;
 }
 
 void Mmio::writeKEYINPUT(u16 value)
@@ -706,25 +430,19 @@ void Mmio::writeIME(u32 value)
 
 u16 Mmio::readIF()
 {
-	u32 addr = IF - IO_START_ADDR;
-	u16 irq_flag = readU16(addr);
-
+	u16 irq_flag = readU16(IF);
 	return irq_flag;
 }
 
 u16 Mmio::readIE()
 {
-	u32 addr = IE - IO_START_ADDR;
-	u16 ie = readU16(addr);
-
+	u16 ie = readU16(IE);
 	return ie;
 }
 
 u32 Mmio::readIME()
 {
-	u32 addr = IME - IO_START_ADDR;
-	u32 ime = readU32(addr) & 0x1;
-
+	u32 ime = readU32(IME) & 0x1;
 	return ime;
 }
 
@@ -780,92 +498,54 @@ void Mmio::writeBG0CNT(u16 value)
 
 u16 Mmio::readDISPCNT()
 {
-	u32 addr = DISPCNT - IO_START_ADDR;
-	u16 dispcnt = readU16(addr);
-	
+	u16 dispcnt = readU16(DISPCNT);
 	return dispcnt;
 }
 
 u16 Mmio::readBG0CNT()
 {
-	u32 addr = BG0CNT - IO_START_ADDR;
-	u16 bg0cnt = readU16(addr);
-	
+	u16 bg0cnt = readU16(BG0CNT);
 	return bg0cnt;
 }
 
-u16 Mmio::readTMCNTL(u32 address)
+void Mmio::writeTMCNTL(u32 address, u16 value)
 {
+	//Writing to the timer counter/reload registers sets
+	//the reload value (does not actually affect the mmio register/current counter value)
 	switch (address) {
-		case TM0CNT_L: {
-			u32 addr = TM0CNT_L - IO_START_ADDR;
-			u16 tm0cntl = readU16(addr);
+		case TM0CNT_L: tmc->setTimerReload(Timer::TM0, value); break;
+		case TM1CNT_L: tmc->setTimerReload(Timer::TM1, value); break;
+		case TM2CNT_L: tmc->setTimerReload(Timer::TM2, value); break;
+		case TM3CNT_L: tmc->setTimerReload(Timer::TM3, value); break;
+	}
+}
 
-			return tm0cntl;
-		}
-		break;
-		case TM1CNT_L: {
-			u32 addr = TM1CNT_L - IO_START_ADDR;
-			u16 tm1cntl = readU16(addr);
+void Mmio::writeTMCNTH(u32 address, u16 value)
+{
+	if (address == TM0CNT_H || address == TM1CNT_H
+		|| address == TM2CNT_H || address == TM3CNT_H) {
+		u32 addr = address - IO_START_ADDR;
+		
+		u8 hi, lo;
+		lo = value & 0xFF;
+		hi = (value >> 8) & 0xFF;
 
-			return tm1cntl;
-		}
-		break;
-		case TM2CNT_L: {
-			u32 addr = TM2CNT_L - IO_START_ADDR;
-			u16 tm2cntl = readU16(addr);
-
-			return tm2cntl;
-		}
-		break;
-		case TM3CNT_L: {
-			u32 addr = TM3CNT_L - IO_START_ADDR;
-			u16 tm3cntl = readU16(addr);
-
-			return tm3cntl;
-		}
-		break;
-
-		default:
-			return 0;
+		gm->io[addr] = lo;
+		gm->io[addr + 1] = hi;
 	}
 }
 
 u16 Mmio::readTMCNTH(u32 address)
 {
-	switch (address) {
-		case TM0CNT_H: {
-			u32 addr = TM0CNT_H - IO_START_ADDR;
-			u16 tm0cnth = readU16(addr);
+	if (address == TM0CNT_H || address == TM1CNT_H
+		|| address == TM2CNT_H || address == TM3CNT_H) {
+		u32 addr = address - IO_START_ADDR;
+		u16 tmcnth = readU16(addr);
 
-			return tm0cnth;
-		}
-					 break;
-		case TM1CNT_H: {
-			u32 addr = TM1CNT_H - IO_START_ADDR;
-			u16 tm1cnth = readU16(addr);
-
-			return tm1cnth;
-		}
-					 break;
-		case TM2CNT_H: {
-			u32 addr = TM2CNT_H - IO_START_ADDR;
-			u16 tm2cnth = readU16(addr);
-
-			return tm2cnth;
-		}
-					 break;
-		case TM3CNT_H: {
-			u32 addr = TM3CNT_H - IO_START_ADDR;
-			u16 tm3cnth = readU16(addr);
-
-			return tm3cnth;
-		}
-		break;
-
-		default:
-			return 0;
+		return tmcnth;
 	}
+
+	return 0;
 }
 
 
