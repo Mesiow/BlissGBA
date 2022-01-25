@@ -52,3 +52,13 @@ void TimerController::setTimerReload(Timer timer, u16 value)
 {
 	timerReloadValues[(u8)timer] = value;
 }
+
+u16 TimerController::getTimerCounter(Timer timer)
+{
+	return timerCounterValues[(u8)timer];
+}
+
+u16 TimerController::getTimerReload(Timer timer)
+{
+	return timerReloadValues[(u8)timer];
+}

@@ -29,6 +29,8 @@ struct TimerController {
 
 	void setTimerCounter(Timer timer, u16 value);
 	void setTimerReload(Timer timer, u16 value);
+	u16 getTimerCounter(Timer timer);
+	u16 getTimerReload(Timer timer);
 
 	MemoryBus* mbus;
 	u16 timerCounterValues[4];
