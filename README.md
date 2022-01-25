@@ -6,7 +6,8 @@
 ✅Software Interrupts\
 ✅Passes Armwrestler CPU test\
 ✅Passes FuzzArm CPU test\
-✅Passes Jsmolka's CPU test suite
+✅Passes Jsmolka's CPU test suite\
+⬛Timers
 
 ## DMA 
 ⬛DMA Channel 0\
