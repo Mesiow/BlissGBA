@@ -111,7 +111,6 @@ class Arm {
 public:
 	Arm(MemoryBus *mbus);
 	u8 clock();
-	void handleTimers();
 	void handleInterrupts();
 	void checkStateAndProcessorMode();
 	void reset();

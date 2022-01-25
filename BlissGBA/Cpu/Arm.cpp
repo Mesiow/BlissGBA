@@ -49,11 +49,6 @@ u8 Arm::clock()
 	return cycles;
 }
 
-void Arm::handleTimers()
-{
-
-}
-
 void Arm::handleInterrupts()
 {
 	u16 ie = mbus->mmio.readIE();
