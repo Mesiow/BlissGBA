@@ -150,6 +150,7 @@
     <ClCompile Include="Cartridge\GamePak.cpp" />
     <ClCompile Include="Core\Dma.cpp" />
     <ClCompile Include="Core\Emulator.cpp" />
+    <ClCompile Include="Core\Timer.cpp" />
     <ClCompile Include="Cpu\AddressingModes.cpp" />
     <ClCompile Include="Cpu\Arm.cpp" />
     <ClCompile Include="Cpu\Instruction.cpp" />
