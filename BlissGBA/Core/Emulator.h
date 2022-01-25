@@ -2,6 +2,7 @@
 #include "../Debugger/DebugUI.h"
 #include "../Ppu/Ppu.h"
 #include "../Joypad/Joypad.h"
+#include "Timer.h"
 
 
 class Emulator {
@@ -16,6 +17,7 @@ public:
 	Ppu ppu;
 	Arm cpu;
 	DmaController dmac;
+	TimerController tmc;
 	Joypad joypad;
 	DebugUI debug;
 

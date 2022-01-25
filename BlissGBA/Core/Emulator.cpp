@@ -2,7 +2,7 @@
 
 Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	:mbus(), ppu(&mbus, displayScaleFactor), cpu(&mbus), dmac(&mbus),
-	joypad(&mbus), debug(window, this)
+	tmc(&mbus), joypad(&mbus), debug(window, this)
 {
 	this->displayScaleFactor = displayScaleFactor;
 	showDebugger = false;
@@ -11,10 +11,11 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	debug.running = &running;
 	debug.showDebugger = &showDebugger;
 
-	//Pass dma controller pointer to mmio so that mmio can
-	//tell dma when there is a transfer ready from a received write
+	//Pass dma/timer controller pointer to mmio so that mmio can
+	//tell dma/timer when a specific event happens
 	mbus.mmio.connect(&cpu);
 	mbus.mmio.connect(&dmac);
+	mbus.mmio.connect(&tmc);
 
 	//Cpu/irq Test roms
 	//mbus.loadGamePak("test_roms/gba-tests-master/arm/arm.gba"); //pass
@@ -69,7 +70,7 @@ void Emulator::run()
 			u8 cycles = cpu.clock();
 			cycles_this_frame += cycles;
 
-			cpu.handleTimers();
+			tmc.handleTimers(cycles);
 			ppu.update(cycles);
 			cpu.handleInterrupts();
 			dmac.handleDMA();
