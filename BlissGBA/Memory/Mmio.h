@@ -51,6 +51,10 @@ struct Mmio {
 	u16 readDISPCNT();
 	u16 readBG0CNT();
 
+	//Timers
+	u16 readTMCNTL(u32 address);
+	u16 readTMCNTH(u32 address);
+
 	GeneralMemory* gm;
 	DmaController* dmac = nullptr;
 	Arm* cpu = nullptr;

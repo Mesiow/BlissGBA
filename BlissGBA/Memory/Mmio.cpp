@@ -2,6 +2,7 @@
 #include "GeneralMemory.h"
 #include "../Core/Dma.h"
 #include "../Cpu/Arm.h"
+#include "../Core/Timer.h"
 
 Mmio::Mmio(GeneralMemory* gm)
 {
@@ -791,6 +792,80 @@ u16 Mmio::readBG0CNT()
 	u16 bg0cnt = readU16(addr);
 	
 	return bg0cnt;
+}
+
+u16 Mmio::readTMCNTL(u32 address)
+{
+	switch (address) {
+		case TM0CNT_L: {
+			u32 addr = TM0CNT_L - IO_START_ADDR;
+			u16 tm0cntl = readU16(addr);
+
+			return tm0cntl;
+		}
+		break;
+		case TM1CNT_L: {
+			u32 addr = TM1CNT_L - IO_START_ADDR;
+			u16 tm1cntl = readU16(addr);
+
+			return tm1cntl;
+		}
+		break;
+		case TM2CNT_L: {
+			u32 addr = TM2CNT_L - IO_START_ADDR;
+			u16 tm2cntl = readU16(addr);
+
+			return tm2cntl;
+		}
+		break;
+		case TM3CNT_L: {
+			u32 addr = TM3CNT_L - IO_START_ADDR;
+			u16 tm3cntl = readU16(addr);
+
+			return tm3cntl;
+		}
+		break;
+
+		default:
+			return 0;
+	}
+}
+
+u16 Mmio::readTMCNTH(u32 address)
+{
+	switch (address) {
+		case TM0CNT_H: {
+			u32 addr = TM0CNT_H - IO_START_ADDR;
+			u16 tm0cnth = readU16(addr);
+
+			return tm0cnth;
+		}
+					 break;
+		case TM1CNT_H: {
+			u32 addr = TM1CNT_H - IO_START_ADDR;
+			u16 tm1cnth = readU16(addr);
+
+			return tm1cnth;
+		}
+					 break;
+		case TM2CNT_H: {
+			u32 addr = TM2CNT_H - IO_START_ADDR;
+			u16 tm2cnth = readU16(addr);
+
+			return tm2cnth;
+		}
+					 break;
+		case TM3CNT_H: {
+			u32 addr = TM3CNT_H - IO_START_ADDR;
+			u16 tm3cnth = readU16(addr);
+
+			return tm3cnth;
+		}
+		break;
+
+		default:
+			return 0;
+	}
 }
 
 
