@@ -739,18 +739,27 @@ void Arm::writeU32(u32 address, u32 value)
 u8 Arm::readU8(u32 address)
 {
 	addCyclesFromAccess(address, U8);
+	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		return mbus->mmio.readU8(address);
+	}
 	return mbus->readU8(address);
 }
 
 u16 Arm::readU16(u32 address)
 {
 	addCyclesFromAccess(address, U16);
+	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		return mbus->mmio.readU16(address);
+	}
 	return mbus->readU16(address);
 }
 
 u32 Arm::readU32(u32 address)
 {
 	addCyclesFromAccess(address, U32);
+	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
+		return mbus->mmio.readU32(address);
+	}
 	return mbus->readU32(address);
 }
 
