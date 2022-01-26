@@ -165,8 +165,8 @@ u16 Mmio::readU16(u32 absoluteAddress)
 		switch (absoluteAddress) {
 			case TM0CNT_L: return tmc->getTimerCounter(Timer::TM0); break;
 			case TM1CNT_L: return tmc->getTimerCounter(Timer::TM1); break;
-			case TM2CNT_L: return tmc->getTimerCounter(Timer::TM2); break;
-			case TM3CNT_L: return tmc->getTimerCounter(Timer::TM3); break;
+			case TM2CNT_L: printf("tm2 counter read\n"); return tmc->getTimerCounter(Timer::TM2); break;
+			case TM3CNT_L: printf("tm3 counter read\n"); return tmc->getTimerCounter(Timer::TM3); break;
 		}
 	}
 
@@ -515,7 +515,7 @@ void Mmio::writeTMCNTL(u32 address, u16 value)
 	switch (address) {
 		case TM0CNT_L: tmc->setTimerReload(Timer::TM0, value); break;
 		case TM1CNT_L: tmc->setTimerReload(Timer::TM1, value); break;
-		case TM2CNT_L: tmc->setTimerReload(Timer::TM2, value); break;
+		case TM2CNT_L: printf("write to tm2 reload\n"); tmc->setTimerReload(Timer::TM2, value); break;
 		case TM3CNT_L: tmc->setTimerReload(Timer::TM3, value); break;
 	}
 }
@@ -539,12 +539,9 @@ u16 Mmio::readTMCNTH(u32 address)
 {
 	if (address == TM0CNT_H || address == TM1CNT_H
 		|| address == TM2CNT_H || address == TM3CNT_H) {
-		u32 addr = address - IO_START_ADDR;
-		u16 tmcnth = readU16(addr);
-
+		u16 tmcnth = readU16(address);
 		return tmcnth;
 	}
-
 	return 0;
 }
 
