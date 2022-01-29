@@ -52,10 +52,30 @@ struct Mmio {
 	void writeDISPSTAT(u16 value);
 	void writeVCOUNT(u16 value);
 	void writeBG0CNT(u16 value);
+	void writeBG0HOFS(u16 value);
+	void writeBG0VOFS(u16 value);
+	void writeBG1CNT(u16 value);
+	void writeBG1HOFS(u16 value);
+	void writeBG1VOFS(u16 value);
+	void writeBG2CNT(u16 value);
+	void writeBG2HOFS(u16 value);
+	void writeBG2VOFS(u16 value);
+	void writeBG3CNT(u16 value);
+	void writeBG3HOFS(u16 value);
+	void writeBG3VOFS(u16 value);
 	u16 readDISPCNT();
 	u16 readBG0CNT();
 	u16 readBG0HOFS();
 	u16 readBG0VOFS();
+	u16 readBG1CNT();
+	u16 readBG1HOFS();
+	u16 readBG1VOFS();
+	u16 readBG2CNT();
+	u16 readBG2HOFS();
+	u16 readBG2VOFS();
+	u16 readBG3CNT();
+	u16 readBG3HOFS();
+	u16 readBG3VOFS();
 
 	//Timers
 	void writeTMCNTL(u32 address, u16 value);

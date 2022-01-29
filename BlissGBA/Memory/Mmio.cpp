@@ -50,6 +50,17 @@ void Mmio::writeU16(u32 address, u16 value)
 		case DISPSTAT: writeDISPSTAT(value); break;
 		case VCOUNT: writeVCOUNT(value); break;
 		case BG0CNT: writeBG0CNT(value); break;
+		case BG0HOFS: writeBG0HOFS(value); break;
+		case BG0VOFS: writeBG0VOFS(value); break;
+		case BG1CNT: writeBG1CNT(value); break;
+		case BG1HOFS: writeBG1HOFS(value); break;
+		case BG1VOFS: writeBG1VOFS(value); break;
+		case BG2CNT: writeBG2CNT(value); break;
+		case BG2HOFS: writeBG2HOFS(value); break;
+		case BG2VOFS: writeBG2VOFS(value); break;
+		case BG3CNT: writeBG3CNT(value); break;
+		case BG3HOFS: writeBG3HOFS(value); break;
+		case BG3VOFS: writeBG3VOFS(value); break;
 
 		//DMA
 		case DMA1CNT_H: writeDMACNT(DMA1CNT_H, value); break;
@@ -99,6 +110,17 @@ void Mmio::writeU32(u32 address, u32 value)
 		case DISPSTAT: writeDISPSTAT(value); break;
 		case VCOUNT: writeVCOUNT(value); break;
 		case BG0CNT: writeBG0CNT(value); break;
+		case BG0HOFS: writeBG0HOFS(value); break;
+		case BG0VOFS: writeBG0VOFS(value); break;
+		case BG1CNT: writeBG0CNT(value); break;
+		case BG1HOFS: writeBG1HOFS(value); break;
+		case BG1VOFS: writeBG1VOFS(value); break;
+		case BG2CNT: writeBG2CNT(value); break;
+		case BG2HOFS: writeBG2HOFS(value); break;
+		case BG2VOFS: writeBG2VOFS(value); break;
+		case BG3CNT: writeBG3CNT(value); break;
+		case BG3HOFS: writeBG3HOFS(value); break;
+		case BG3VOFS: writeBG3VOFS(value); break;
 
 		//DMA
 		case DMA1SAD: writeDMASource(address, value); break;
@@ -496,6 +518,127 @@ void Mmio::writeBG0CNT(u16 value)
 	gm->io[addr + 1] = hi;
 }
 
+void Mmio::writeBG0HOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG0HOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG0VOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG0VOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG1CNT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG1CNT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG1HOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG1HOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG1VOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG1VOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG2CNT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG2CNT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG2HOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG2HOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG2VOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG2VOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG3CNT(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG3CNT - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG3HOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG3HOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
+void Mmio::writeBG3VOFS(u16 value)
+{
+	u8 hi, lo;
+	lo = value & 0xFF;
+	hi = (value >> 8) & 0xFF;
+
+	u32 addr = BG3VOFS - IO_START_ADDR;
+	gm->io[addr] = lo;
+	gm->io[addr + 1] = hi;
+}
+
 u16 Mmio::readDISPCNT()
 {
 	u16 dispcnt = readU16(DISPCNT);
@@ -518,6 +661,60 @@ u16 Mmio::readBG0VOFS()
 {
 	u16 bg0vofs = readU16(BG0VOFS);
 	return bg0vofs;
+}
+
+u16 Mmio::readBG1CNT()
+{
+	u16 bg1cnt = readU16(BG1CNT);
+	return bg1cnt;
+}
+
+u16 Mmio::readBG1HOFS()
+{
+	u16 bg1hofs = readU16(BG1HOFS);
+	return bg1hofs;
+}
+
+u16 Mmio::readBG1VOFS()
+{
+	u16 bg1vofs = readU16(BG1VOFS);
+	return bg1vofs;
+}
+
+u16 Mmio::readBG2CNT()
+{
+	u16 bg2cnt = readU16(BG2CNT);
+	return bg2cnt;
+}
+
+u16 Mmio::readBG2HOFS()
+{
+	u16 bg2hofs = readU16(BG2HOFS);
+	return bg2hofs;
+}
+
+u16 Mmio::readBG2VOFS()
+{
+	u16 bg2vofs = readU16(BG2VOFS);
+	return bg2vofs;
+}
+
+u16 Mmio::readBG3CNT()
+{
+	u16 bg3cnt = readU16(BG3CNT);
+	return bg3cnt;
+}
+
+u16 Mmio::readBG3HOFS()
+{
+	u16 bg3hofs = readU16(BG3HOFS);
+	return bg3hofs;
+}
+
+u16 Mmio::readBG3VOFS()
+{
+	u16 bg3vofs = readU16(BG3VOFS);
+	return bg3vofs;
 }
 
 void Mmio::writeTMCNTL(u32 address, u16 value)
