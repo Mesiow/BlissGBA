@@ -54,6 +54,8 @@ struct Mmio {
 	void writeBG0CNT(u16 value);
 	u16 readDISPCNT();
 	u16 readBG0CNT();
+	u16 readBG0HOFS();
+	u16 readBG0VOFS();
 
 	//Timers
 	void writeTMCNTL(u32 address, u16 value);

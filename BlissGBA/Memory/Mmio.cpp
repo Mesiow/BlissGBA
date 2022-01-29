@@ -508,6 +508,18 @@ u16 Mmio::readBG0CNT()
 	return bg0cnt;
 }
 
+u16 Mmio::readBG0HOFS()
+{
+	u16 bg0hofs = readU16(BG0HOFS);
+	return bg0hofs;
+}
+
+u16 Mmio::readBG0VOFS()
+{
+	u16 bg0vofs = readU16(BG0VOFS);
+	return bg0vofs;
+}
+
 void Mmio::writeTMCNTL(u32 address, u16 value)
 {
 	//Writing to the timer counter/reload registers sets
