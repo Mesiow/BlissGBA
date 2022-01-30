@@ -31,17 +31,9 @@ void GamePak::load(const std::string& fileName)
 		bool loaded = false;
 		if (size <= GAMEPAK_WS_SIZE) {
 			loaded = true;
-			//wait state 0
 			gamepakWS0 = new u8[GAMEPAK_WS_SIZE];
+			gamepakSRAM = new u8[GAMEPAK_SRAM_SIZE];
 			file.read((char*)gamepakWS0, GAMEPAK_WS_SIZE);
-		}
-		else if (size > GAMEPAK_WS_SIZE && size < GAMEPAK_WS_SIZE * 2) {
-			loaded = true;
-			//wait state 1
-		}
-		else if (size > GAMEPAK_WS_SIZE * 2 && size < GAMEPAK_WS_SIZE * 3) {
-			loaded = true;
-			//wait state 3
 		}
 
 		if (loaded)
@@ -56,14 +48,20 @@ void GamePak::load(const std::string& fileName)
 
 void GamePak::writeU8(u32 address, u8 value)
 {
+	if (address >= GAMEPAK_SRAM_START_ADDR && address <= GAMEPAK_SRAM_END_ADDR) {
+		u32 addr = address & (GAMEPAK_SRAM_SIZE - 1);
+		gamepakSRAM[addr] = value;
+	}
 }
 
 void GamePak::writeU16(u32 address, u16 value)
 {
+
 }
 
 void GamePak::writeU32(u32 address, u32 value)
 {
+
 }
 
 u8 GamePak::readU8(u32 address)
@@ -71,6 +69,10 @@ u8 GamePak::readU8(u32 address)
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
 		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 		return gamepakWS0[addr];
+	}
+	else if (address >= GAMEPAK_SRAM_START_ADDR && address <= GAMEPAK_SRAM_END_ADDR) {
+		u32 addr = address & (GAMEPAK_SRAM_SIZE - 1);
+		return gamepakSRAM[addr];
 	}
 }
 
