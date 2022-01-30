@@ -167,12 +167,15 @@ void Mmio::writeU32(u32 address, u32 value)
 			//If address case not implemented yet just write freely to io
 			u32 addr = address - IO_START_ADDR;
 
-			u8 hi, lo;
-			lo = value & 0xFF;
-			hi = (value >> 8) & 0xFF;
+			u8 lower1 = value & 0xFF;
+			u8 lower2 = (value >> 8) & 0xFF;
+			u8 upper1 = (value >> 16) & 0xFF;
+			u8 upper2 = (value >> 24) & 0xFF;
 
-			gm->io[addr] = lo;
-			gm->io[addr + 1] = hi;
+			gm->io[addr] = lower1;
+			gm->io[addr + 1] = lower2;
+			gm->io[addr + 2] = upper1;
+			gm->io[addr + 3] = upper2;
 		}
 	}
 }
