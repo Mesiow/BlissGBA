@@ -1,6 +1,7 @@
 #pragma once
 #include "../Utils/Utils.h"
 #include "../Ppu/Lcd.h"
+#include "../Apu/Audio.h"
 #include "../Core/Keypad.h"
 
 class GeneralMemory;
@@ -81,6 +82,10 @@ struct Mmio {
 	void writeTMCNTL(u32 address, u16 value);
 	void writeTMCNTH(u32 address, u16 value);
 	u16 readTMCNTH(u32 address);
+
+	//Apu
+	void writeSOUNDBIAS(u32 value);
+	u32 readSOUNDBIAS();
 
 	GeneralMemory* gm;
 	DmaController* dmac = nullptr;

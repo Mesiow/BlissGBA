@@ -76,6 +76,8 @@ void Mmio::writeU16(u32 address, u16 value)
 		case TM2CNT_L: writeTMCNTL(TM2CNT_L, value); break;
 		case TM3CNT_L: writeTMCNTL(TM3CNT_L, value); break;
 
+		case SOUNDBIAS: writeSOUNDBIAS(value); break;
+
 
 		//Interrupt/Control
 		case IE: writeIE(value); break;
@@ -136,6 +138,9 @@ void Mmio::writeU32(u32 address, u32 value)
 		case DMA2CNT_L: writeDMACNT(DMA2CNT_L, value); break;
 		case DMA3CNT_H: writeDMACNT(DMA3CNT_H, value); break;
 		case DMA3CNT_L: writeDMACNT(DMA3CNT_L, value); break;
+
+		//Audio
+		case SOUNDBIAS: writeSOUNDBIAS(value); break;
 
 		//Interrupt/Control
 		case IE: { 
@@ -771,6 +776,29 @@ u16 Mmio::readTMCNTH(u32 address)
 		return tmcnth;
 	}
 	return 0;
+}
+
+void Mmio::writeSOUNDBIAS(u32 value)
+{
+	u8 upper2, upper1;
+	u8 lower2, lower1;
+
+	lower1 = value & 0xFF;
+	lower2 = (value >> 8) & 0xFF;
+	upper1 = (value >> 16) & 0xFF;
+	upper2 = (value >> 24) & 0xFF;
+
+	u32 addr = SOUNDBIAS - IO_START_ADDR;
+	gm->io[addr] = lower1;
+	gm->io[addr + 1] = lower2;
+	gm->io[addr + 2] = upper1;
+	gm->io[addr + 3] = upper2;
+}
+
+u32 Mmio::readSOUNDBIAS()
+{
+	u32 soundbias = readU32(SOUNDBIAS);
+	return soundbias;
 }
 
 
