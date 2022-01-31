@@ -27,6 +27,13 @@ void Mmio::connect(Arm* cpu)
 void Mmio::writeU8(u32 address, u8 value)
 {
 	switch (address) {
+		case IF: {
+			//Cpu writes to IF clears the bit
+			u16 irq_flag = readIF();
+			irq_flag &= ~(value);
+			gm->io[IF - IO_START_ADDR] = irq_flag & 0xFF;
+		}
+		break;
 		case HALTCNT:{
 			u8 halt = (value >> 7) & 0x1;
 			if (halt == 0x0)
