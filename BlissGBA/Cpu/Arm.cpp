@@ -19,8 +19,6 @@ u8 Arm::clock()
 			currentExecutingArmOpcode = armpipeline[0];
 			armpipeline[0] = armpipeline[1];
 
-			pushIntoRingBuffer(currentExecutingArmOpcode);
-
 			//force align r15
 			R15 &= 0xFFFFFFFC;
 
@@ -146,136 +144,14 @@ void Arm::setFlag(u32 flagBits, bool condition)
 	}
 }
 
-void Arm::setFlag(u32 flagBits)
+inline void Arm::setFlag(u32 flagBits)
 {
-	//M0 - M4
-	for (s32 i = 0; i < 5; i++) {
-		u8 mi = (1 << i);
-		if (flagBits & mi) {
-			CPSR |= mi;
-		}
-	}
-
-	if (flagBits & T) {
-		CPSR |= T;
-	}
-	if (flagBits & F) {
-		CPSR |= F;
-	}
-	if (flagBits & I) {
-		CPSR |= I;
-	}
-	if (flagBits & V) {
-		CPSR |= V;
-	}
-	if (flagBits & C) {
-		CPSR |= C;
-	}
-	if (flagBits & Z) {
-		CPSR |= Z;
-	}
-	if (flagBits & N) {
-		CPSR |= N;
-	}
+	CPSR |= (flagBits & 0b1111'0000'0000'0000'0000'0000'1111'1111);
 }
 
-void Arm::clearFlag(u32 flagBits)
+inline void Arm::clearFlag(u32 flagBits)
 {
-	//M0 - M4
-	for (s32 i = 0; i < 5; i++) {
-		u8 mi = (1 << i);
-		if (flagBits & mi) {
-			CPSR &= ~(mi);
-		}
-	}
-
-	if (flagBits & T) {
-		CPSR &= ~(T);
-	}
-	if (flagBits & F) {
-		CPSR &= ~(F);
-	}
-	if (flagBits & I) {
-		CPSR &= ~(I);
-	}
-	if (flagBits & V) {
-		CPSR &= ~(V);
-	}
-	if (flagBits & C) {
-		CPSR &= ~(C);
-	}
-	if (flagBits & Z) {
-		CPSR &= ~(Z);
-	}
-	if (flagBits & N) {
-		CPSR &= ~(N);
-	}
-}
-
-void Arm::setFlagSPSR(u32 flagBits)
-{
-	//M0 - M4
-	for (s32 i = 0; i < 5; i++) {
-		u8 mi = (1 << i);
-		if (flagBits & mi) {
-			SPSR |= mi;
-		}
-	}
-
-	if (flagBits & T) {
-		SPSR |= T;
-	}
-	if (flagBits & F) {
-		SPSR |= F;
-	}
-	if (flagBits & I) {
-		SPSR |= I;
-	}
-	if (flagBits & V) {
-		SPSR |= V;
-	}
-	if (flagBits & C) {
-		SPSR |= C;
-	}
-	if (flagBits & Z) {
-		SPSR |= Z;
-	}
-	if (flagBits & N) {
-		SPSR |= N;
-	}
-}
-
-void Arm::clearFlagSPSR(u32 flagBits)
-{
-	//M0 - M4
-	for (s32 i = 0; i < 5; i++) {
-		u8 mi = (1 << i);
-		if (flagBits & mi) {
-			SPSR &= ~(mi);
-		}
-	}
-
-	if (flagBits & T) {
-		SPSR &= ~(T);
-	}
-	if (flagBits & F) {
-		SPSR &= ~(F);
-	}
-	if (flagBits & I) {
-		SPSR &= ~(I);
-	}
-	if (flagBits & V) {
-		SPSR &= ~(V);
-	}
-	if (flagBits & C) {
-		SPSR &= ~(C);
-	}
-	if (flagBits & Z) {
-		SPSR &= ~(Z);
-	}
-	if (flagBits & N) {
-		SPSR &= ~(N);
-	}
+	CPSR &= ~(flagBits & 0b1111'0000'0000'0000'0000'0000'1111'1111);
 }
 
 void Arm::fillPipeline()

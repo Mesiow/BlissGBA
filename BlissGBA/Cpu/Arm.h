@@ -116,10 +116,8 @@ public:
 	void reset();
 	void halt();
 	void setFlag(u32 flagBits, bool condition);
-	void setFlag(u32 flagBits);
-	void clearFlag(u32 flagBits);
-	void setFlagSPSR(u32 flagBits);
-	void clearFlagSPSR(u32 flagBits);
+	inline void setFlag(u32 flagBits);
+	inline void clearFlag(u32 flagBits);
 
 	void fillPipeline();
 	void flushPipeline();
