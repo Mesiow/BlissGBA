@@ -766,7 +766,14 @@ void Mmio::writeTMCNTH(u32 address, u16 value)
 				//reload value copied into counter
 				u16 reload_value = tmc->getTimerReload(tm);
 				tmc->setTimerCounter(tm, reload_value);
+
+				tmc->enableTimer(tm);
 			}
+		}
+		else {
+			//Timer being stopped
+			if (((value >> 7) & 0x1) == 0x0)
+				tmc->disableTimer(tm);
 		}
 		
 		u8 hi, lo;
