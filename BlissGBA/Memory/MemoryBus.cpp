@@ -22,6 +22,15 @@ void MemoryBus::writeU8(u32 address, u8 value)
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
 		pak.writeU8(address, value);
 	}
+
+	if (address >= 0x80000000) {
+		printf("--Open Bus writeU8-- at address: 0x%08X", address);
+	}
+
+	//Open bus
+	if (address >= 0x10000000) {
+		printf("--Open Bus writeU8-- at address: 0x%08X", address);
+	}
 }
 
 void MemoryBus::writeU16(u32 address, u16 value)
@@ -39,6 +48,15 @@ void MemoryBus::writeU16(u32 address, u16 value)
 	}
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
 		pak.writeU16(address, value);
+	}
+
+	if (address >= 0x80000000) {
+		printf("--Open Bus writeU16-- at address: 0x%08X", address);
+	}
+
+	//Open bus
+	if (address >= 0x10000000) {
+		printf("--Open Bus writeU16-- at address: 0x%08X", address);
 	}
 }
 
@@ -65,13 +83,17 @@ void MemoryBus::writeU32(u32 address, u32 value)
 
 	//Open bus
 	if (address >= 0x10000000) {
-		printf("--Open Bus readU32-- at address: 0x%08X", address);
+		printf("--Open Bus writeU32-- at address: 0x%08X", address);
 	}
 }
 
 u8 MemoryBus::readU8(u32 address)
 {
 	if (address < GENERAL_MEM_END) {
+		//Bios open bus read handling
+		if (address >= BIOS_OPEN_BUS_START_ADDR && address <= BIOS_OPEN_BUS_END_ADDR) {
+			printf("--Bios Open Bus U8 Read occured--\n");
+		}
 		return genMem.readU8(address);
 	}
 	else if (address >= GENERAL_MEM_END && address <= DISPLAY_MEM_END) {
@@ -80,6 +102,16 @@ u8 MemoryBus::readU8(u32 address)
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
 		return pak.readU8(address);
 	}
+
+	if (address >= 0x80000000) {
+		printf("--Open Bus readU8-- at address: 0x%08X", address);
+	}
+
+	//Open bus
+	if (address >= 0x10000000) {
+		printf("--Open Bus readU8-- at address: 0x%08X", address);
+	}
+	return 0;
 }
 
 u16 MemoryBus::readU16(u32 address)
@@ -90,6 +122,10 @@ u16 MemoryBus::readU16(u32 address)
 	}
 
 	if (address < GENERAL_MEM_END) {
+		//Bios open bus read handling
+		if (address >= BIOS_OPEN_BUS_START_ADDR && address <= BIOS_OPEN_BUS_END_ADDR) {
+			printf("--Bios Open Bus U16 Read occured--\n");
+		}
 		return genMem.readU16(address);
 	}
 	else if (address >= GENERAL_MEM_END && address <= DISPLAY_MEM_END) {
@@ -98,6 +134,16 @@ u16 MemoryBus::readU16(u32 address)
 	else if (address >= EXTERNAL_MEM_START && address <= EXTERNAL_MEM_END) {
 		return pak.readU16(address);
 	}
+
+	if (address >= 0x80000000) {
+		printf("--Open Bus readU16-- at address: 0x%08X", address);
+	}
+
+	//Open bus
+	if (address >= 0x10000000) {
+		printf("--Open Bus readU16-- at address: 0x%08X", address);
+	}
+	return 0;
 }
 
 u32 MemoryBus::readU32(u32 address)
@@ -108,6 +154,10 @@ u32 MemoryBus::readU32(u32 address)
 	}
 
 	if (address < GENERAL_MEM_END) {
+		//Bios open bus read handling
+		if (address >= BIOS_OPEN_BUS_START_ADDR && address <= BIOS_OPEN_BUS_END_ADDR) {
+			printf("--Bios Open Bus U32 Read occured--\n");
+		}
 		return genMem.readU32(address);
 	}
 	else if (address >= GENERAL_MEM_END && address <= DISPLAY_MEM_END) {

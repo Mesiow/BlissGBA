@@ -38,6 +38,9 @@ Unused Memory Area
 #define EXTERNAL_MEM_START 0x8000000
 #define EXTERNAL_MEM_END 0xE00FFFF
 
+#define BIOS_OPEN_BUS_START_ADDR 0x4000
+#define BIOS_OPEN_BUS_END_ADDR 0x1FFFFFF
+
 class MemoryBus {
 public:
 	MemoryBus();
@@ -50,6 +53,9 @@ public:
 	u8 readU8(u32 address);
 	u16 readU16(u32 address);
 	u32 readU32(u32 address);
+
+	void handleBiosOpenBus();
+	void handleOpenBus();
 
 	bool isAlignedU16(u32 address);
 	bool isAlignedU32(u32 address);
