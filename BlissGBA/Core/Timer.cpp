@@ -4,36 +4,46 @@
 TimerController::TimerController(MemoryBus* mbus)
 	:mbus(mbus)
 {
-	memset(timerCounterValues, 0x0, 4);
-	memset(timerReloadValues, 0x0, 4);
-	memset(enabledTimers, 0x0, 4);
+	prescaler[0] = 1;
+	prescaler[1] = 64;
+	prescaler[2] = 256;
+	prescaler[3] = 1024;
 }
 
 void TimerController::handleTimers(u32 cycles)
 {
-	u16 timer_cnt_0 = mbus->mmio.readTMCNTH(TM0CNT_H);
-	u16 timer_cnt_1 = mbus->mmio.readTMCNTH(TM1CNT_H);
-	u16 timer_cnt_2 = mbus->mmio.readTMCNTH(TM2CNT_H);
-	u16 timer_cnt_3 = mbus->mmio.readTMCNTH(TM3CNT_H);
+	for (u32 i = 0; i < 4; i++) {
+		u16 old_counter = timers[i].counter;
+		timers[i].overflow = false;
 
-
-	if (enabledTimers[(u8)Timer::TM0]) {
-
+		if (timers[i].control.start) {
+			if (timers[i].control.countup && i != 0) {
+				if (timers[i - 1u].overflow) {
+					++timers[i].counter;
+				}
+			}
+			else {
+				++timers[i].subcounter;
+				if (timers[i].subcounter >= prescaler[timers[i].control.prescaler]) {
+					timers[i].subcounter = 0;
+					++timers[i].counter;
+				}
+			}
+			
+			if (old_counter == 0xFFFF && timers[i].counter == 0) {
+				timers->overflow = true;
+				timers[i].counter = timers[i].tmcntl;
+				if (timers[i].control.irq) {
+					switch (i) {
+						case 0: requestInterrupt(TIMER0_INT); break;
+						case 1: requestInterrupt(TIMER1_INT); break;
+						case 2: requestInterrupt(TIMER2_INT); break;
+						case 3: requestInterrupt(TIMER3_INT); break;
+					}
+				}
+			}
+		}
 	}
-	if (enabledTimers[(u8)Timer::TM1]) {
-
-	}
-	if (enabledTimers[(u8)Timer::TM2]) {
-
-	}
-	if (enabledTimers[(u8)Timer::TM3]) {
-
-	}
-}
-
-void TimerController::enableTimer(Timer timer)
-{
-	enabledTimers[(u8)timer] = true;
 }
 
 void TimerController::requestInterrupt(u16 interrupt)
@@ -43,22 +53,38 @@ void TimerController::requestInterrupt(u16 interrupt)
 	mbus->mmio.writeIF(irq_flag);
 }
 
-void TimerController::setTimerCounter(Timer timer, u16 value)
+void TimerController::setControl(eTimer timer, u16 value)
 {
-	timerCounterValues[(u8)timer] = value;
+	timers[(u8)timer].tmcnth = value;
+	timers[(u8)timer].subcounter = 0;
+
+	bool old_start_bit = timers[(u8)timer].control.start;
+	if (!old_start_bit && timers[(u8)timer].control.start) {
+		timers[(u8)timer].counter = timers[(u8)timer].tmcntl;
+	}
 }
 
-void TimerController::setTimerReload(Timer timer, u16 value)
+void TimerController::setTimerReload(eTimer timer, u16 value)
 {
-	timerReloadValues[(u8)timer] = value;
+	timers[(u8)timer].tmcntl = value;
 }
 
-u16 TimerController::getTimerCounter(Timer timer)
+u16 TimerController::getTimerCounter(eTimer timer)
 {
-	return timerCounterValues[(u8)timer];
+	return timers[(u8)timer].counter;
 }
 
-u16 TimerController::getTimerReload(Timer timer)
+u16 TimerController::getTimerReload(eTimer timer)
 {
-	return timerReloadValues[(u8)timer];
+	return timers[(u8)timer].tmcntl;
+}
+
+u16 TimerController::getTimerControlRegister(u32 index)
+{
+	switch (index) {
+		case 0: return timers[0].tmcnth; break;
+		case 1: return timers[1].tmcnth; break;
+		case 2: return timers[2].tmcnth; break;
+		case 3: return timers[3].tmcnth; break;
+	}
 }

@@ -12,28 +12,52 @@
 #define TM2CNT_H 0x400010A
 #define TM3CNT_H 0x400010E
 
+#define FREQ 16780000
+#define FREQ_64 262210
+#define FREQ_256 65536
+#define FREQ_1024 16384
+
 class MemoryBus;
 
-enum class Timer : u8 {
+enum class eTimer : u8 {
 	TM0 = 0,
 	TM1 = 1,
 	TM2 = 2,
 	TM3 = 3
 };
 
+struct Timer {
+	u16 tmcntl;
+	union {
+		struct {
+			u16 prescaler : 2;
+			bool countup : 1;
+			u16 unused_3_5 : 3;
+			bool irq : 1;
+			bool start : 1;
+			u16 unused_8_15 : 8;
+		}control;
+		u16 tmcnth;
+	};
+	u16 counter;
+	u16 subcounter;
+	bool overflow;
+};
+
 struct TimerController {
 	TimerController(MemoryBus* mbus);
 	void handleTimers(u32 cycles);
-	void enableTimer(Timer timer);
 	void requestInterrupt(u16 interrupt);
 
-	void setTimerCounter(Timer timer, u16 value);
-	void setTimerReload(Timer timer, u16 value);
-	u16 getTimerCounter(Timer timer);
-	u16 getTimerReload(Timer timer);
+	void setControl(eTimer timer, u16 value);
+	void setTimerReload(eTimer timer, u16 value);
+	u16 getTimerCounter(eTimer timer);
+	u16 getTimerReload(eTimer timer);
+	u16 getTimerControlRegister(u32 index);
 
 	MemoryBus* mbus;
-	u16 timerCounterValues[4];
-	u16 timerReloadValues[4];
-	bool enabledTimers[4];
+	Timer timers[4];
+	u16 cycleCounter = 0;
+
+	u32 prescaler[4];
 };
