@@ -146,6 +146,24 @@ void Mmio::writeU32(u32 address, u32 value)
 		case DMA3CNT_H: writeDMACNT(DMA3CNT_H, value); break;
 		case DMA3CNT_L: writeDMACNT(DMA3CNT_L, value); break;
 
+		//Timers
+		case TM0CNT_L: 
+			writeTMCNTL(TM0CNT_L, value);
+			writeTMCNTH(TM0CNT_H, value >> 16);
+			break;
+		case TM1CNT_L:
+			writeTMCNTL(TM1CNT_L, value);
+			writeTMCNTH(TM1CNT_H, value >> 16);
+			break;
+		case TM2CNT_L: 
+			writeTMCNTL(TM2CNT_L, value);
+			writeTMCNTH(TM2CNT_H, value >> 16);
+			break;
+		case TM3CNT_L: 	
+			writeTMCNTL(TM3CNT_L, value);
+			writeTMCNTH(TM3CNT_H, value >> 16);
+			break;
+		
 		//Audio
 		case SOUNDBIAS: writeSOUNDBIAS(value); break;
 
@@ -200,10 +218,10 @@ u16 Mmio::readU16(u32 absoluteAddress)
 	if (absoluteAddress == TM0CNT_L || absoluteAddress == TM1CNT_L
 		|| absoluteAddress == TM2CNT_L || absoluteAddress == TM3CNT_L) {
 		switch (absoluteAddress) {
-			case TM0CNT_L: return tmc->getTimerCounter(Timer::TM0); break;
-			case TM1CNT_L: return tmc->getTimerCounter(Timer::TM1); break;
-			case TM2CNT_L: return tmc->getTimerCounter(Timer::TM2); break;
-			case TM3CNT_L: return tmc->getTimerCounter(Timer::TM3); break;
+			case TM0CNT_L: return tmc->getTimerCounter(eTimer::TM0); break;
+			case TM1CNT_L: return tmc->getTimerCounter(eTimer::TM1); break;
+			case TM2CNT_L: return tmc->getTimerCounter(eTimer::TM2); break;
+			case TM3CNT_L: return tmc->getTimerCounter(eTimer::TM3); break;
 		}
 	}
 
@@ -737,10 +755,10 @@ void Mmio::writeTMCNTL(u32 address, u16 value)
 	//Writing to the timer counter/reload registers sets
 	//the reload value (does not actually affect the mmio register/current counter value)
 	switch (address) {
-		case TM0CNT_L: tmc->setTimerReload(Timer::TM0, value); break;
-		case TM1CNT_L: tmc->setTimerReload(Timer::TM1, value); break;
-		case TM2CNT_L: tmc->setTimerReload(Timer::TM2, value); break;
-		case TM3CNT_L: tmc->setTimerReload(Timer::TM3, value); break;
+		case TM0CNT_L: tmc->setTimerReload(eTimer::TM0, value); break;
+		case TM1CNT_L: tmc->setTimerReload(eTimer::TM1, value); break;
+		case TM2CNT_L: tmc->setTimerReload(eTimer::TM2, value); break;
+		case TM3CNT_L: tmc->setTimerReload(eTimer::TM3, value); break;
 	}
 }
 
@@ -750,38 +768,15 @@ void Mmio::writeTMCNTH(u32 address, u16 value)
 		|| address == TM2CNT_H || address == TM3CNT_H) {
 		u32 addr = address - IO_START_ADDR;
 
-		Timer tm;
+		eTimer tm;
 		switch (address) {
-			case TM0CNT_H: tm = Timer::TM0; break;
-			case TM1CNT_H: tm = Timer::TM1; break;
-			case TM2CNT_H: tm = Timer::TM2; break;
-			case TM3CNT_H: tm = Timer::TM3; break;
+			case TM0CNT_H: tm = eTimer::TM0; break;
+			case TM1CNT_H: tm = eTimer::TM1; break;
+			case TM2CNT_H: tm = eTimer::TM2; break;
+			case TM3CNT_H: tm = eTimer::TM3; break;
 		}
 
-		//check if timer start bit is pulled from 0 to 1
-		u16 tmcnth = readU16(address);
-		u8 start_bit = (tmcnth >> 7) & 0x1;
-		if (start_bit == 0x0) {
-			if ((value >> 7) & 0x1) {
-				//reload value copied into counter
-				u16 reload_value = tmc->getTimerReload(tm);
-				tmc->setTimerCounter(tm, reload_value);
-
-				tmc->enableTimer(tm);
-			}
-		}
-		else {
-			//Timer being stopped
-			if (((value >> 7) & 0x1) == 0x0)
-				tmc->disableTimer(tm);
-		}
-		
-		u8 hi, lo;
-		lo = value & 0xFF;
-		hi = (value >> 8) & 0xFF;
-
-		gm->io[addr] = lo;
-		gm->io[addr + 1] = hi;
+		tmc->setControl(tm, value);
 	}
 }
 
@@ -789,8 +784,14 @@ u16 Mmio::readTMCNTH(u32 address)
 {
 	if (address == TM0CNT_H || address == TM1CNT_H
 		|| address == TM2CNT_H || address == TM3CNT_H) {
-		u16 tmcnth = readU16(address);
-		return tmcnth;
+		eTimer tm;
+		switch (address) {
+			case TM0CNT_H: tm = eTimer::TM0; break;
+			case TM1CNT_H: tm = eTimer::TM1; break;
+			case TM2CNT_H: tm = eTimer::TM2; break;
+			case TM3CNT_H: tm = eTimer::TM3; break;
+		}
+		return tmc->getTimerControlRegister((u8)tm);
 	}
 	return 0;
 }
