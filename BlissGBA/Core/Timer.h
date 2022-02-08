@@ -46,14 +46,14 @@ struct Timer {
 
 struct TimerController {
 	TimerController(MemoryBus* mbus);
-	void handleTimers(u32 cycles);
+	void handleTimers();
 	void requestInterrupt(u16 interrupt);
 
 	void setControl(eTimer timer, u16 value);
 	void setTimerReload(eTimer timer, u16 value);
 	u16 getTimerCounter(eTimer timer);
 	u16 getTimerReload(eTimer timer);
-	u16 getTimerControlRegister(u32 index);
+	u16 getTimerControlRegister(eTimer timer);
 
 	MemoryBus* mbus;
 	Timer timers[4];
