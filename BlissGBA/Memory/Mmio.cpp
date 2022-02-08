@@ -172,6 +172,7 @@ void Mmio::writeU32(u32 address, u32 value)
 			writeTMCNTL(TM3CNT_L, value);
 			writeTMCNTH(TM3CNT_H, value >> 16);
 			break;
+
 		
 		//Audio
 		case SOUNDBIAS: writeSOUNDBIAS(value); break;
@@ -224,14 +225,19 @@ u16 Mmio::readU16(u32 absoluteAddress)
 {
 	//Reading from timer counter/reload mmio returns the current counter value
 	//(or the recent/frozen counter value if the timer has stopped)
-	if (absoluteAddress == TM0CNT_L || absoluteAddress == TM1CNT_L
-		|| absoluteAddress == TM2CNT_L || absoluteAddress == TM3CNT_L) {
-		switch (absoluteAddress) {
-			case TM0CNT_L: return tmc->getTimerCounter(eTimer::TM0); break;
-			case TM1CNT_L: return tmc->getTimerCounter(eTimer::TM1); break;
-			case TM2CNT_L: return tmc->getTimerCounter(eTimer::TM2); break;
-			case TM3CNT_L: return tmc->getTimerCounter(eTimer::TM3); break;
-		}
+	
+	switch (absoluteAddress) {
+		case TM0CNT_L: return tmc->getTimerCounter(eTimer::TM0); break;
+		case TM1CNT_L: return tmc->getTimerCounter(eTimer::TM1); break;
+		case TM2CNT_L: return tmc->getTimerCounter(eTimer::TM2); break;
+		case TM3CNT_L: return tmc->getTimerCounter(eTimer::TM3); break;
+	}
+	
+	switch (absoluteAddress) {
+		case TM0CNT_H: return tmc->getTimerControlRegister(eTimer::TM0); break;
+		case TM1CNT_H: return tmc->getTimerControlRegister(eTimer::TM1); break;
+		case TM2CNT_H: return tmc->getTimerControlRegister(eTimer::TM2); break;
+		case TM3CNT_H: return tmc->getTimerControlRegister(eTimer::TM3); break;
 	}
 
 	u32 address = absoluteAddress - IO_START_ADDR;
@@ -247,6 +253,41 @@ u16 Mmio::readU16(u32 absoluteAddress)
 
 u32 Mmio::readU32(u32 absoluteAddress)
 {
+	switch (absoluteAddress) {
+		case TM0CNT_L: {
+			u16 counter = tmc->getTimerCounter(eTimer::TM0);
+			u16 ctrl = tmc->getTimerControlRegister(eTimer::TM0);
+			u32 value = (ctrl << 16) | counter;
+
+			return value;
+		}
+		break;
+		case TM1CNT_L: {
+			u16 counter = tmc->getTimerCounter(eTimer::TM1);
+			u16 ctrl = tmc->getTimerControlRegister(eTimer::TM1);
+			u32 value = (ctrl << 16) | counter;
+
+			return value;
+		}
+		break;
+		case TM2CNT_L: {
+			u16 counter = tmc->getTimerCounter(eTimer::TM2);
+			u16 ctrl = tmc->getTimerControlRegister(eTimer::TM2);
+			u32 value = (ctrl << 16) | counter;
+
+			return value;
+		}
+		break;
+		case TM3CNT_L: {
+			u16 counter = tmc->getTimerCounter(eTimer::TM3);
+			u16 ctrl = tmc->getTimerControlRegister(eTimer::TM3);
+			u32 value = (ctrl << 16) | counter;
+
+			return value;
+		}
+		break;
+	}
+
 	u32 address = absoluteAddress - IO_START_ADDR;
 
 	u8 byte1, byte2, byte3, byte4;
@@ -800,7 +841,7 @@ u16 Mmio::readTMCNTH(u32 address)
 			case TM2CNT_H: tm = eTimer::TM2; break;
 			case TM3CNT_H: tm = eTimer::TM3; break;
 		}
-		return tmc->getTimerControlRegister((u8)tm);
+		return tmc->getTimerControlRegister(tm);
 	}
 	return 0;
 }
