@@ -26,8 +26,6 @@ void TimerController::handleTimers()
 
 		bool start = timers[i].control.start;
 		if (start) {
-			printf("timer %d active\n", i);
-		
 			//If countup timing enabled(not used for timer 0)
 			//then the counter is incremented each time the previous timer
 			//overflows
@@ -71,10 +69,22 @@ void TimerController::requestInterrupt(u16 interrupt)
 void TimerController::setControl(eTimer timer, u16 value)
 {
 	bool old_start_bit = timers[(u8)timer].control.start;
+
+	/*printf("Old:\n");
+	printf("control: 0x%04X\n", timers[(u8)timer].tmcnth);
+	printf("start: 0x%04X\n", old_start_bit);
+	printf("value: 0x%04X\n\n", value);*/
+
 	timers[(u8)timer].tmcnth = value;
 	timers[(u8)timer].subcounter = 0;
 
+	/*printf("New:\n");
+	printf("control: 0x%04X\n", timers[(u8)timer].tmcnth);
+	printf("start: 0x%04X\n", timers[(u8)timer].control.start);
+	printf("value: 0x%04X\n\n", value);*/
+
 	if ((old_start_bit == 0x0) && timers[(u8)timer].control.start) {
+		
 		timers[(u8)timer].counter = timers[(u8)timer].tmcntl;
 	}
 }

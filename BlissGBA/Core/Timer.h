@@ -30,12 +30,12 @@ struct Timer {
 	u16 tmcntl;
 	union {
 		struct {
-			u16 prescaler : 2;
+			u8 prescaler : 2;
 			bool countup : 1;
-			u16 unused_3_5 : 3;
+			u8 unused_3_5 : 3;
 			bool irq : 1;
 			bool start : 1;
-			u16 unused_8_15 : 8;
+			u8 unused_8_15 : 8;
 		}control;
 		u16 tmcnth;
 	};
