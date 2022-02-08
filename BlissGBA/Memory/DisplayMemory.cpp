@@ -19,11 +19,11 @@ void DisplayMemory::writeU8(u32 address, u8 value)
 	
 	if (address >= PRAM_START_ADDR && address <= (PRAM_START_ADDR + 0x3FF)) {
 		u32 addr = address & (BG_OBJ_PALETTE_SIZE - 1);
-
+		
 		//write 8 bit value to halfword address
 		pram[addr] = value;
 		pram[addr + 1] = value;
-	}
+	}	
 	else if (address >= VRAM_START_ADDR && address <= (VRAM_START_ADDR + 0x13FFF)) {
 		u32 vram_addr = address & 0x1FFFF;
 		if (vram_addr > (VRAM_SIZE - 1))
