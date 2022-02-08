@@ -78,10 +78,15 @@ void Mmio::writeU16(u32 address, u16 value)
 		case DMA3CNT_L: writeDMACNT(DMA3CNT_L, value); break;
 
 		//Timers
-		case TM0CNT_L: writeTMCNTL(TM0CNT_L, value); break;
-		case TM1CNT_L: writeTMCNTL(TM1CNT_L, value); break;
-		case TM2CNT_L: writeTMCNTL(TM2CNT_L, value); break;
-		case TM3CNT_L: writeTMCNTL(TM3CNT_L, value); break;
+		case TM0CNT_L: printf("u16 write to tm0 cntl: 0x%04X\n", value); writeTMCNTL(TM0CNT_L, value); break;
+		case TM1CNT_L: printf("u16 write to tm1 cntl: 0x%04X\n", value); writeTMCNTL(TM1CNT_L, value); break;
+		case TM2CNT_L: printf("u16 write to tm2 cntl: 0x%04X\n", value); writeTMCNTL(TM2CNT_L, value); break;
+		case TM3CNT_L: printf("u16 write to tm3 cntl: 0x%04X\n", value); writeTMCNTL(TM3CNT_L, value); break;
+
+		case TM0CNT_H: printf("u16 write to tm0 cnth: 0x%04X\n", value); writeTMCNTH(TM0CNT_H, value); break;
+		case TM1CNT_H: printf("u16 write to tm1 cnth: 0x%04X\n", value); writeTMCNTH(TM1CNT_H, value); break;
+		case TM2CNT_H: printf("u16 write to tm2 cnth: 0x%04X\n", value); writeTMCNTH(TM2CNT_H, value); break;
+		case TM3CNT_H: printf("u16 write to tm3 cnth: 0x%04X\n", value); writeTMCNTH(TM3CNT_H, value); break;
 
 		case SOUNDBIAS: writeSOUNDBIAS(value); break;
 
@@ -148,18 +153,22 @@ void Mmio::writeU32(u32 address, u32 value)
 
 		//Timers
 		case TM0CNT_L: 
+			printf("u32 write to tm0 cntl\n");
 			writeTMCNTL(TM0CNT_L, value);
 			writeTMCNTH(TM0CNT_H, value >> 16);
 			break;
 		case TM1CNT_L:
+			printf("u32 write to tm1 cntl\n");
 			writeTMCNTL(TM1CNT_L, value);
 			writeTMCNTH(TM1CNT_H, value >> 16);
 			break;
 		case TM2CNT_L: 
+			printf("u32 write to tm2 cntl\n");
 			writeTMCNTL(TM2CNT_L, value);
 			writeTMCNTH(TM2CNT_H, value >> 16);
 			break;
 		case TM3CNT_L: 	
+			printf("u32 write to tm3 cntl\n");
 			writeTMCNTL(TM3CNT_L, value);
 			writeTMCNTH(TM3CNT_H, value >> 16);
 			break;
