@@ -814,19 +814,11 @@ void Mmio::writeTMCNTL(u32 address, u16 value)
 
 void Mmio::writeTMCNTH(u32 address, u16 value)
 {
-	if (address == TM0CNT_H || address == TM1CNT_H
-		|| address == TM2CNT_H || address == TM3CNT_H) {
-		u32 addr = address - IO_START_ADDR;
-
-		eTimer tm;
-		switch (address) {
-			case TM0CNT_H: tm = eTimer::TM0; break;
-			case TM1CNT_H: tm = eTimer::TM1; break;
-			case TM2CNT_H: tm = eTimer::TM2; break;
-			case TM3CNT_H: tm = eTimer::TM3; break;
-		}
-
-		tmc->setControl(tm, value);
+	switch (address) {
+		case TM0CNT_H: tmc->setControl(eTimer::TM0, value); break;
+		case TM1CNT_H: tmc->setControl(eTimer::TM1, value); break;
+		case TM2CNT_H: tmc->setControl(eTimer::TM2, value); break;
+		case TM3CNT_H: tmc->setControl(eTimer::TM3, value); break;
 	}
 }
 
