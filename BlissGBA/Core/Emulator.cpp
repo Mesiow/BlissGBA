@@ -28,7 +28,7 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	//mbus.loadGamePak("test_roms/gba fuzzarm tests/THUMB_Any.gba"); //pass
 	//mbus.loadGamePak("test_roms/tonc tests/swi_demo.gba"); 
 	//mbus.loadGamePak("test_roms/swi.gba");
-	//mbus.loadGamePak("test_roms/CPUTest.gba"); 
+	//mbus.loadGamePak("test_roms/CPUTest.gba"); //passing 
 	//mbus.loadGamePak("test_roms/gba fuzzarm tests/main.gba"); //pass
 	//mbus.loadGamePak("test_roms/gba-tests-master/memory/memory.gba"); //pass
 	//mbus.loadGamePak("test_roms/irqs/retAddr.gba"); //passing
@@ -38,15 +38,24 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	//mbus.loadGamePak("test_roms/gang-ldmstm.gba");
 	//mbus.loadGamePak("test_roms/gba-tests-master/bios/bios.gba");
 	//mbus.loadGamePak("test_roms/tonc tests/txt_obj.gba");
+	//mbus.loadGamePak("test_roms/openbus_bios_misaligned.gba");
 
 	//Mode 0 test roms
 	//mbus.loadGamePak("test_roms/tonc tests/brin_demo.gba");
 	//mbus.loadGamePak("test_roms/tonc tests/irq_demo.gba");
+	//mbus.loadGamePak("test_roms/suite.gba");
+	//mbus.loadGamePak("test_roms/gba-tests-destoer/if_ack/if_ack.gba");
+	//mbus.loadGamePak("test_roms/gba-tests-destoer/isr/isr.gba");
+	//mbus.loadGamePak("test_roms/tonc tests/prio_demo.gba");
 
 	//mbus.loadGamePak("test_roms/tonc tests/pageflip.gba"); //passing
+	//mbus.loadGamePak("test_roms/tonc tests/tmr_demo.gba");
+	//mbus.loadGamePak("test_roms/AGB_CHECKER_TCHK10.gba");
+	//mbus.loadGamePak("test_roms/biosOpenBus.gba");
 
-	//Boots and Gets in game (mostly playable, gameplay a bit slow though)
+	//Boots and Gets in game (seems playable, gameplay a bit slow though, not sure why yet)
 	mbus.loadGamePak("roms/AGBDOOM.gba");
+	//mbus.loadGamePak("roms/DOOM2.gba");
 
 	//Boots to menu
     //mbus.loadGamePak("roms/Motoracer Advance (USA) (En,Fr,De,Es,It).gba");
@@ -55,6 +64,19 @@ Emulator::Emulator(sf::RenderWindow *window, float displayScaleFactor)
 	//mbus.loadGamePak("roms/Need for Speed - Porsche Unleashed (U).gba");
 	//mbus.loadGamePak("roms/OpenLara.gba");
 	//mbus.loadGamePak("roms/Wolfenstein 3D (USA, Europe).gba");
+
+	//Boots
+	//mbus.loadGamePak("roms/Kirby - Nightmare in Dream Land (USA).gba");
+	//mbus.loadGamePak("roms/Pokemon - Emerald Version (USA, Europe).gba");
+	//mbus.loadGamePak("roms/Super_Mario_Advance_3_-_Yoshis_Island_U_.gba");
+	//mbus.loadGamePak("roms/MARIOLUI.gba");
+	//mbus.loadGamePak("roms/Final Fight One (USA).gba");
+	//mbus.loadGamePak("roms/FF6ADVAN.gba");
+	//mbus.loadGamePak("roms/DRAGONBL.gba");
+	//mbus.loadGamePak("roms/STARWARS.gba");
+	//mbus.loadGamePak("roms/POKEMONR.gba");
+	//mbus.loadGamePak("roms/POKEMONS.gba");
+	//mbus.loadGamePak("roms/Mario Kart - Super Circuit (U)(Inferno).gba");
 
 	reset();
 }

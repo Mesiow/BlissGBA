@@ -2279,7 +2279,7 @@ u8 Arm::opSWI(ArmInstruction& ins)
 {
 	/*u32 swi = (ins.encoding & 0xFFFFFF);
 	printf("arm swi: 0x%08X\n", swi);
-	printf("r15: 0x%08X", R15);*/
+	printf("r15: 0x%08X\n", R15);*/
 
 	LR_svc = R15 - 4;
 	SPSR_svc = CPSR;

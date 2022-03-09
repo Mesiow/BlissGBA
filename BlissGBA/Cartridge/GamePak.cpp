@@ -72,6 +72,12 @@ u8 GamePak::readU8(u32 address)
 	}
 	else if (address >= GAMEPAK_SRAM_START_ADDR && address <= GAMEPAK_SRAM_END_ADDR) {
 		u32 addr = address & (GAMEPAK_SRAM_SIZE - 1);
+		//stub flash for now
+		if (address == 0x0E000000)
+			return 0x62;
+		else if (address == 0x0E000001)
+			return 0x13;
+	
 		return gamepakSRAM[addr];
 	}
 }
@@ -151,4 +157,16 @@ void GamePak::zeroMemory()
 	gamepakWS1 = nullptr;
 	gamepakWS2 = nullptr;
 	gamepakSRAM = nullptr;
+}
+
+void writeSRAMToDisk(u8* sram, u8 length)
+{
+	std::ofstream file;
+	file.open("game.sav", std::ios::binary);
+	if (file.is_open()) {
+		file.write((const char*)sram, length);
+	}
+	else {
+		std::cerr << "--Writing SRAM to Disk failed--" << std::endl;;
+	}
 }

@@ -152,5 +152,8 @@
     <ClInclude Include="Core\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Apu\Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
