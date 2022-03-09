@@ -1,5 +1,6 @@
 #pragma once
 #include "../Utils/Utils.h"
+#include <assert.h>
 
 //DMA source address registers
 #define DMA0SAD 0x40000B0
@@ -36,12 +37,21 @@ enum class DmaChannel : u8 {
 	None
 };
 
+enum class AddrControl : u8 {
+	INCREMENT = 0,
+	DECREMENT,
+	FIXED,
+	INCREMENT_RELOAD
+};
+
 class MemoryBus;
 
 struct DmaController {
 	DmaController(MemoryBus* mbus);
 	void handleDMA();
 	void handleChannelTransfer(DmaChannel channel);
+	void makeTransfer(DmaChannel channel, AddrControl destControl, AddrControl sourceControl, u32 sourceAddr, u32 destAddr, u16 length,
+		u8 transferType);
 	void enableTransfer(bool enable, DmaChannel channel);
 
 	MemoryBus* mbus;
