@@ -372,6 +372,7 @@ void Mmio::writeDMACNT(u32 address, u16 value)
 		if (enable_bit == 0x0) {
 			if ((value >> 15) & 0x1) {
 				dmac->enableTransfer(true, channel);
+				dmac->handleDMA();
 			}
 		}
 	}
@@ -415,6 +416,7 @@ void Mmio::writeDMACNT(u32 address, u32 value)
 		if (enable_bit == 0x0) {
 			if ((value >> 15) & 0x1) {
 				dmac->enableTransfer(true, channel);
+				dmac->handleDMA();
 			}
 		}
 	}
@@ -435,6 +437,7 @@ void Mmio::writeDMACNT(u32 address, u32 value)
 		if (enable_bit == 0x0) { //off
 			if ((value >> 31) & 0x1) { //write back to dma_cnt_h to start 
 				dmac->enableTransfer(true, DmaChannel::CH3);
+				dmac->handleDMA();
 			}
 		}
 	}
