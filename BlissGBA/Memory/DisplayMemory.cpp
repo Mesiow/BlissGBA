@@ -102,6 +102,13 @@ void DisplayMemory::writeU32(u32 address, u32 value)
 	}
 }
 
+void DisplayMemory::vramMirrorCheck(u32& address)
+{
+	address &= 0x1FFFF;
+	if (address > (VRAM_SIZE - 1))
+		address -= 0x8000;
+}
+
 u8 DisplayMemory::readU8(u32 address)
 {
 	if (address >= PRAM_START_ADDR && address <= PRAM_END_ADDR) {
@@ -109,11 +116,8 @@ u8 DisplayMemory::readU8(u32 address)
 		return pram[addr];
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR_MIRROR) {
-		u32 vram_addr = address & 0x1FFFF;
-		if (vram_addr > (VRAM_SIZE - 1))
-			vram_addr -= 0x8000;
-
-		return vram[vram_addr];
+		vramMirrorCheck(address);
+		return vram[address];
 	}
 	else if (address >= OAM_START_ADDR && address <= OAM_END_ADDR) {
 		u32 addr = address & (OAM_SIZE - 1);
@@ -130,11 +134,8 @@ u16 DisplayMemory::readU16(u32 address)
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR_MIRROR) {
-		u32 vram_addr = address & 0x1FFFF;
-		if (vram_addr > (VRAM_SIZE - 1))
-			vram_addr -= 0x8000;
-
-		u16 value = readVramU16(vram_addr);
+		vramMirrorCheck(address);
+		u16 value = readVramU16(address);
 
 		return value;
 	}
@@ -155,11 +156,8 @@ u32 DisplayMemory::readU32(u32 address)
 		return value;
 	}
 	else if (address >= VRAM_START_ADDR && address <= VRAM_END_ADDR_MIRROR) {
-		u32 vram_addr = address & 0x1FFFF; 
-		if (vram_addr > (VRAM_SIZE - 1)) //if greater than 96k, mirror the previous 32k block
-			vram_addr -= 0x8000;
-
-		u32 value = readVramU32(vram_addr);
+		vramMirrorCheck(address);
+		u32 value = readVramU32(address);
 
 		return value;
 	}
