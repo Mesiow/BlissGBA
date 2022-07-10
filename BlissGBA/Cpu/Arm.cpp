@@ -105,7 +105,7 @@ void Arm::reset()
 	LR = 0x00000000;
 	R15 = 0x08000000;
 	SP = 0x03007F00;
-	CPSR = 0x000000DF;
+	CPSR = 0x0000001F;
 
 	SPSR = CPSR;
 	SPSR_irq = 0x0;
@@ -633,6 +633,10 @@ u16 Arm::readU16(u32 address)
 u32 Arm::readU32(u32 address)
 {
 	addCyclesFromAccess(address, U32);
+	//if (address >= BIOS_OPEN_BUS_START_ADDR && address <= BIOS_OPEN_BUS_END_ADDR) {
+	//	printf("--Cpu Bios Open Bus U32 Read occured at address 0x%08X--\n", address);
+	//	printf("PC: 0x%08X\n", R15);
+	//}
 	if (address >= IO_START_ADDR && address <= IO_END_ADDR) {
 		return mbus->mmio.readU32(address);
 	}
