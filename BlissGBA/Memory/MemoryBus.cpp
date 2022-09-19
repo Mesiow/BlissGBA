@@ -1,7 +1,7 @@
 #include "MemoryBus.h"
 
 MemoryBus::MemoryBus()
-	:genMem(), displayMem(), mmio(&genMem)
+	:genMem(), displayMem(), mmio(&genMem), pak(this)
 {
 	genMem.loadBios("roms/cult_bios.bin");
 }
@@ -92,7 +92,7 @@ u8 MemoryBus::readU8(u32 address)
 	if (address < GENERAL_MEM_END) {
 		//Bios open bus read handling
 		if (address >= BIOS_OPEN_BUS_START_ADDR && address <= BIOS_OPEN_BUS_END_ADDR) {
-			printf("--Bios Open Bus U8 Read occured--\n");
+			printf("--Bios Open Bus U8 Read occured at address: 0x%08X--\n", address);
 		}
 		return genMem.readU8(address);
 	}
@@ -124,7 +124,7 @@ u16 MemoryBus::readU16(u32 address)
 	if (address < GENERAL_MEM_END) {
 		//Bios open bus read handling
 		if (address >= BIOS_OPEN_BUS_START_ADDR && address <= BIOS_OPEN_BUS_END_ADDR) {
-			printf("--Bios Open Bus U16 Read occured--\n");
+			printf("--Bios Open Bus U16 Read occured at address 0x%08X--\n", address);
 		}
 		return genMem.readU16(address);
 	}
@@ -156,7 +156,7 @@ u32 MemoryBus::readU32(u32 address)
 	if (address < GENERAL_MEM_END) {
 		//Bios open bus read handling
 		if (address >= BIOS_OPEN_BUS_START_ADDR && address <= BIOS_OPEN_BUS_END_ADDR) {
-			printf("--Bios Open Bus U32 Read occured--\n");
+			printf("--Bios Open Bus U32 Read occured at address 0x%08X--\n", address);
 		}
 		return genMem.readU32(address);
 	}

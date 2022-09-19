@@ -54,9 +54,6 @@ public:
 	u16 readU16(u32 address);
 	u32 readU32(u32 address);
 
-	void handleBiosOpenBus();
-	void handleOpenBus();
-
 	bool isAlignedU16(u32 address);
 	bool isAlignedU32(u32 address);
 
