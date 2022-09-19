@@ -16,7 +16,7 @@
 
 class GamePak {
 public:
-	GamePak();
+	GamePak(MemoryBus *mbus);
 	~GamePak();
 	void load(const std::string& fileName);
 	void writeU8(u32 address, u8 value);
