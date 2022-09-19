@@ -148,8 +148,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Cartridge\GamePak.cpp" />
+    <ClCompile Include="Cartridge\Rtc.cpp" />
     <ClCompile Include="Core\Dma.cpp" />
     <ClCompile Include="Core\Emulator.cpp" />
+    <ClCompile Include="Core\Interrupts.cpp" />
     <ClCompile Include="Core\Timer.cpp" />
     <ClCompile Include="Cpu\AddressingModes.cpp" />
     <ClCompile Include="Cpu\Arm.cpp" />
@@ -176,6 +178,7 @@
   <ItemGroup>
     <ClInclude Include="Apu\Audio.h" />
     <ClInclude Include="Cartridge\GamePak.h" />
+    <ClInclude Include="Cartridge\Rtc.h" />
     <ClInclude Include="Core\Dma.h" />
     <ClInclude Include="Core\Emulator.h" />
     <ClInclude Include="Core\Keypad.h" />
