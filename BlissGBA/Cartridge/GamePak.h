@@ -1,5 +1,5 @@
 #pragma once
-#include "../Utils/Utils.h"
+#include "Rtc.h"
 
 #define GAMEPAK_WS_SIZE 0x2000000 //game pak rom wait state
 #define GAMEPAK_WS0_START_ADDR 0x8000000
@@ -12,6 +12,7 @@
 #define GAMEPAK_SRAM_SIZE 0x8000
 #define GAMEPAK_SRAM_START_ADDR 0xE000000
 #define GAMEPAK_SRAM_END_ADDR 0xE007FFF
+
 
 class GamePak {
 public:
@@ -37,4 +38,6 @@ public:
 	u8* gamepakWS1;
 	u8* gamepakWS2;
 	u8* gamepakSRAM;
+
+	RtcDevice rtc;
 };
