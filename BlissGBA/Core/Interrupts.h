@@ -1,4 +1,5 @@
 #pragma once
+#include "../Utils/Utils.h"
 
 //Interrupt Control
 #define IME 0x4000208
@@ -21,3 +22,8 @@
 #define DMA2_INT 10
 #define DMA3_INT 11
 #define KEYPAD_INT 12
+#define GAMEPAK_INT 13
+
+class MemoryBus;
+
+void requestInterrupt(MemoryBus *mbus, u8 interrupt);
