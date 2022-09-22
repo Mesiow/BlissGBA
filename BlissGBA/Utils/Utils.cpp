@@ -69,3 +69,8 @@ u8 numSetBitsU8(u8 value)
 	}
 	return count;
 }
+
+u8 toBcd(s32 value)
+{
+	return ((value / 10) << 4) | (value % 10);
+}

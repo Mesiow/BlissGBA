@@ -28,3 +28,5 @@ u8 signExtend8(s8 value, u8 start);
 //Return the number of bits set
 u8 numSetBitsU16(u16 value);
 u8 numSetBitsU8(u8 value);
+
+u8 toBcd(s32 value);
