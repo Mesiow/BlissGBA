@@ -93,6 +93,9 @@ u8 GamePak::readU8(u32 address)
 u16 GamePak::readU16(u32 address)
 {
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
+		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control)
+			return rtc.read((GpioAddress)address);
+
 		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 
 		u8 lo = gamepakWS0[addr];
@@ -106,6 +109,9 @@ u16 GamePak::readU16(u32 address)
 u32 GamePak::readU32(u32 address)
 {
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
+		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control)
+			return rtc.read((GpioAddress)address);
+
 		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 
 		u8 byte1 = gamepakWS0[addr];
