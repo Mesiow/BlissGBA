@@ -65,6 +65,7 @@ struct Mmio {
 	void writeBG3HOFS(u16 value);
 	void writeBG3VOFS(u16 value);
 	u16 readDISPCNT();
+	u16 readDISPSTAT();
 	u16 readBG0CNT();
 	u16 readBG0HOFS();
 	u16 readBG0VOFS();

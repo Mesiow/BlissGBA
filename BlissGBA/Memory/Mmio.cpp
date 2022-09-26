@@ -38,7 +38,7 @@ void Mmio::writeU8(u32 address, u8 value)
 			u8 halt = (value >> 7) & 0x1;
 			if (halt == 0x0)
 				cpu->halt();
-
+			printf("write to haltcnt: 0x%02X\n", value);
 			writeHALTCNT(value);
 		}
 		break;
@@ -729,6 +729,12 @@ u16 Mmio::readDISPCNT()
 {
 	u16 dispcnt = readU16(DISPCNT);
 	return dispcnt;
+}
+
+u16 Mmio::readDISPSTAT()
+{
+	u16 dispstat = readU16(DISPSTAT);
+	return dispstat;
 }
 
 u16 Mmio::readBG0CNT()
