@@ -40,4 +40,5 @@ public:
 	u8* gamepakSRAM;
 
 	RtcDevice rtc;
+	bool has_rtc_chip = false;
 };

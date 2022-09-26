@@ -49,8 +49,10 @@ void GamePak::load(const std::string& fileName)
 
 void GamePak::writeU8(u32 address, u8 value)
 {
-	if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control)
+	if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control) {
+		has_rtc_chip = true;
 		rtc.write((GpioAddress)address, value);
+	}
 
 	if (address >= GAMEPAK_SRAM_START_ADDR && address <= GAMEPAK_SRAM_END_ADDR) {
 		u32 addr = address & (GAMEPAK_SRAM_SIZE - 1);
@@ -60,20 +62,27 @@ void GamePak::writeU8(u32 address, u8 value)
 
 void GamePak::writeU16(u32 address, u16 value)
 {
-	if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control)
+	if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control) {
+		has_rtc_chip = true;
 		rtc.write((GpioAddress)address, value);
+	}
 }
 
 void GamePak::writeU32(u32 address, u32 value)
 {
-
+	if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control) {
+		has_rtc_chip = true;
+		rtc.write((GpioAddress)address, value);
+	}
 }
 
 u8 GamePak::readU8(u32 address)
 {
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
-		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control)
-			return rtc.read((GpioAddress)address);
+		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control) {
+			if (has_rtc_chip)
+				return rtc.read((GpioAddress)address);
+		}
 
 		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 		return gamepakWS0[addr];
@@ -93,8 +102,10 @@ u8 GamePak::readU8(u32 address)
 u16 GamePak::readU16(u32 address)
 {
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
-		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control)
-			return rtc.read((GpioAddress)address);
+		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control) {
+			if (has_rtc_chip)
+				return rtc.read((GpioAddress)address);
+		}
 
 		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 
@@ -109,8 +120,10 @@ u16 GamePak::readU16(u32 address)
 u32 GamePak::readU32(u32 address)
 {
 	if (address >= GAMEPAK_WS0_START_ADDR && address <= GAMEPAK_WS2_END_ADDR) {
-		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control)
-			return rtc.read((GpioAddress)address);
+		if (address >= (u32)GpioAddress::Data && address <= (u32)GpioAddress::Control) {
+			if (has_rtc_chip)
+				return rtc.read((GpioAddress)address);
+		}
 
 		u32 addr = address & (GAMEPAK_WS_SIZE - 1);
 
