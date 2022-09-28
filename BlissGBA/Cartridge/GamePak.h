@@ -1,5 +1,6 @@
 #pragma once
 #include "Rtc.h"
+#include "Backups\SaveDetector.h"
 
 #define GAMEPAK_WS_SIZE 0x2000000 //game pak rom wait state
 #define GAMEPAK_WS0_START_ADDR 0x8000000
@@ -13,6 +14,11 @@
 #define GAMEPAK_SRAM_START_ADDR 0xE000000
 #define GAMEPAK_SRAM_END_ADDR 0xE007FFF
 
+struct RomHeader {
+	std::string game_title;
+	std::string game_code;
+	std::string maker_code;
+};
 
 class GamePak {
 public:
@@ -31,7 +37,7 @@ public:
 	void parseHeader(u32 size);
 	void zeroMemory();
 
-	std::string title;
+	RomHeader header;
 	std::string romSize;
 
 	u8* gamepakWS0;

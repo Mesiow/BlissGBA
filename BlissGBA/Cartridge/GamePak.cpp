@@ -7,7 +7,7 @@ GamePak::GamePak(MemoryBus *mbus)
 	gamepakSRAM(nullptr),
 	rtc(mbus)
 { 
-	
+	setupSaveDatabase();
 }	
 
 GamePak::~GamePak()
@@ -167,10 +167,14 @@ void GamePak::parseHeader(u32 size)
 			romSize = sizeStr + "MB";
 		}
 	}
+	for (s32 i = 0; i < 12; i++)
+		header.game_title.push_back((char)gamepakWS0[i + 0xA0]);
 
-	for (s32 i = 0; i < 12; i++) {
-		title.push_back((char)gamepakWS0[i + 0xA0]);
-	}
+	for (s32 i = 0; i < 4; i++)
+		header.game_code.push_back((char)gamepakWS0[i + 0xAC]);
+
+	header.maker_code.push_back((char)gamepakWS0[0 + 0xB0]);
+	header.maker_code.push_back((char)gamepakWS0[1 + 0xB0]);
 }
 
 void GamePak::zeroMemory()
