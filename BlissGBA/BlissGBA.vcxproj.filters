@@ -96,6 +96,9 @@
     <ClCompile Include="Core\Interrupts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Cartridge\Backups\SaveDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Memory\GeneralMemory.h">
@@ -162,6 +165,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Cartridge\Rtc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cartridge\Backups\CartridgeBackup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cartridge\Backups\SaveDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

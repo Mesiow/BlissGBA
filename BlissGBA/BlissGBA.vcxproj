@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Cartridge\Backups\SaveDetector.cpp" />
     <ClCompile Include="Cartridge\GamePak.cpp" />
     <ClCompile Include="Cartridge\Rtc.cpp" />
     <ClCompile Include="Core\Dma.cpp" />
@@ -177,6 +178,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Apu\Audio.h" />
+    <ClInclude Include="Cartridge\Backups\CartridgeBackup.h" />
+    <ClInclude Include="Cartridge\Backups\SaveDetector.h" />
     <ClInclude Include="Cartridge\GamePak.h" />
     <ClInclude Include="Cartridge\Rtc.h" />
     <ClInclude Include="Core\Dma.h" />
